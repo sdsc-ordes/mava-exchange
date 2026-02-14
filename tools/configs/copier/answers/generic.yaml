@@ -1,0 +1,20 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_src_path: src/generic
+project_affiliation: SDSC - Swiss Data Science Center
+project_authors:
+-   email: stefan.milosavljevic@sdsc.ethz.ch
+    first_name: Stefan
+    last_name: Milosavljevic
+-   email: sabine.maennel@sdsc.ethz.ch
+    first_name: Sabine
+    last_name: Maennel
+project_description: this an agent based compliance solution
+project_hosts:
+-   host: github.com
+    organization: sdsc-ordes
+    repo: mava-exchange
+project_language: python
+project_license: apache2
+project_name: Mava Exchange
+project_url: https://github.com/sdsc-ordes/mava-exchange
+project_version: 0.0.1

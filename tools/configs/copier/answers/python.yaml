@@ -1,0 +1,13 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_src_path: src/python
+module_name: mava-exchange
+project_authors:
+-   email: stefan.milosavljevic@sdsc.ethz.ch
+    first_name: Stefan
+    last_name: Milosavljevic
+-   email: sabine.maennel@sdsc.ethz.ch
+    first_name: Sabine
+    last_name: Maennel
+project_description: video annotation exchange format
+project_url: https://github.com/sdsc-ordes/mava-exchange
+project_version: 0.0.1
