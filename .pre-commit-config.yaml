@@ -1,0 +1,40 @@
+repos:
+  - repo: builtin
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: treefmt
+        name: treefmt
+        pass_filenames: false
+        always_run: true
+        language: system
+        entry: just format
+
+      - id: lint
+        name: lint
+        pass_filenames: false
+        always_run: true
+        language: system
+        entry: just lint
+
+      - id: build
+        name: build
+        pass_filenames: false
+        always_run: true
+        language: system
+        entry: just build
+
+      - id: test
+        name: test
+        pass_filenames: false
+        always_run: true
+        language: system
+        entry: just test

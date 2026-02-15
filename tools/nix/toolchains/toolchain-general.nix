@@ -29,6 +29,9 @@ let
       packages = [
         self'.packages.bootstrap
       ];
+      enterShell = ''
+        prek install
+      '';
     }
   ];
 
