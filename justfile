@@ -32,7 +32,7 @@ ci *args:
 # Lint the project.
 [group('general')]
 lint *args:
-    ruff check
+    uv run ruff check
 
 # Build the project.
 [group('general')]

@@ -2,10 +2,10 @@
 _src_path: src/python
 module_name: mava-exchange
 project_authors:
--   email: stefan.milosavljevic@sdsc.ethz.ch
+  - email: stefan.milosavljevic@sdsc.ethz.ch
     first_name: Stefan
     last_name: Milosavljevic
--   email: sabine.maennel@sdsc.ethz.ch
+  - email: sabine.maennel@sdsc.ethz.ch
     first_name: Sabine
     last_name: Maennel
 project_description: video annotation exchange format

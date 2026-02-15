@@ -1,4 +1,3 @@
-import pytest
 import re
 
 from mava_exchange import __version__
