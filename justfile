@@ -53,3 +53,19 @@ run *args:
 [group('general')]
 notebook *args:
     uv run python -m notebook "$@"
+
+# Generate pyLODE documentation
+[group('spec')]
+pylode +args='':
+    @echo "Generating pyLODE spec..."
+    @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/spec/html/mava.html" > /dev/null 2>&1
+    @echo "✅ HTML successfully generated at: {{root_dir}}/spec/html/mava.html"
+
+# Build and then serve the documentation locally
+[group('spec')]
+preview: pylode
+    @echo "Starting private server at http://localhost:8000/mava.html"
+    @echo "Press Ctrl+C to stop."
+    @# Automatically open the browser (works on macOS)
+    @open "http://localhost:8000/mava.html"
+    @python3 -m http.server 8000 --directory "{{root_dir}}/spec/html"
