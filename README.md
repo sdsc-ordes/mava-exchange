@@ -82,6 +82,10 @@ coordinates, `mava-exchange` uses time coordinates on a video timeline. Where
 GeoParquet metadata is purely operational, `mava-exchange` adds a semantic layer
 via JSON-LD to link columns to a shared ontology.
 
+## Specification
+
+See [here](spec/SPEC.md) for the exact specification of the format.
+
 ## Installation
 
 Describe the installation instruction here.
