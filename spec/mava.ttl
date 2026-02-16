@@ -1,0 +1,226 @@
+@prefix adms:    <http://www.w3.org/ns/adms#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix doap:    <http://usefulinc.com/ns/doap#> .
+@prefix mava:    <http://example.org/mava/ontology#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Ontology declaration
+# ═══════════════════════════════════════════════════════════════════════
+
+mava: a owl:Ontology ;
+    dcterms:title        "MAVA Ontology" ;
+    dcterms:abstract     "An ontology for multimodal audio-visual corpora to allow interoperability and data exchange" ;
+    dcterms:description  "This ontology provides classes and properties for representing corpora, documents, media resources, time and/or text annotations. It is designed to be a reference point for data exchange across annotation tools in linguistics." ;
+    dcterms:creator      "Swiss Data Science Center" ;
+    dcterms:publisher    "ETH Zurich" ;
+    dcterms:rightsHolder "ETH Zurich" ;
+    dcterms:license      <https://www.apache.org/licenses/LICENSE-2.0> ;
+    dcterms:created      "2025-08-12"^^xsd:date ;
+    dcterms:modified     "2025-08-12"^^xsd:date ;
+    owl:versionInfo      "0.1.0" ;
+    adms:versionNotes    "Initial release." ;
+    doap:repository      <https://github.com/sdsc-ordes/mava-exchange> ;
+    rdfs:label           "MAVA Ontology" ;
+.
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 1 — Core media classes
+#
+# This class describes the main objects of interest, that the data relate to:
+# a media corpus is a collections of videos.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:VideoCorpus a owl:Class ;
+    rdfs:label      "Video Corpus" ;
+    rdfs:comment    "A collection of videos that share a common context or purpose." ;
+    rdfs:subClassOf dcterms:Collection .
+
+mava:Video a owl:Class ;
+    rdfs:label      "Video" ;
+    rdfs:comment    "A media resource consisting of a sequence of images creating the illusion of movement." ;
+    rdfs:subClassOf dcterms:MovingImage .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 2 — Package class
+#
+# This class links a media package to the video or video corpus it dexcribes.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:MediaPackage a owl:Class ;
+    rdfs:label   "Media Package" ;
+    rdfs:comment "A .mediapkg archive: a ZIP containing a manifest.json and Parquet annotation files for one or more videos. The unit of interchange between tools." .
+
+mava:hasPackage a owl:ObjectProperty ;
+    rdfs:label   "has package" ;
+    rdfs:comment "Relates a VideoCorpus or Video to the MediaPackage containing its annotations." ;
+    rdfs:domain  mava:VideoCorpus, mava:Video ;
+    rdfs:range   mava:MediaPackage .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 3 — Annotation and observation series classes
+#
+# Two kinds of analysis, cleanly separated:
+#
+#   ObservationSeries  — dense time-series of numeric values
+#                         sampled at regular intervals (e.g. every 0.5s)
+#                         rows are ObservationPoints
+#                         examples: emotion scores, explosion scores,
+#                                   interior/exterior scores, any ML model output
+#
+#   AnnotationSeries   — sparse interval annotations
+#                         rows are AnnotationSegments with start + end time
+#                         examples: shots, transcripts, face emotion labels
+#
+# Neither class hardcodes what is being measured. The specific dimensions
+# (columns) are declared per-series via mava:hasDimension in the manifest.
+# This means the ontology works for any future score type without changes.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:AnnotationSeries a owl:Class ;
+    rdfs:label   "Annotation Series" ;
+    rdfs:comment "A series of interval-based annotations for a video. Each row covers a time span with a start and end time. Maps to an interval Parquet file in .mediapkg." .
+
+mava:AnnotationSegment a owl:Class ;
+    rdfs:label   "Annotation Segment" ;
+    rdfs:comment "A single interval annotation: a start time, end time, and a value. Maps to one row in an interval Parquet file." .
+
+mava:ObservationSeries a owl:Class ;
+    rdfs:label   "Observation Series" ;
+    rdfs:comment "A dense time-series of numeric observations sampled at regular intervals. The dimensions (what is measured) are declared via mava:hasDimension. Maps to a time-series Parquet file in .mediapkg." .
+
+mava:ObservationPoint a owl:Class ;
+    rdfs:label   "Observation Point" ;
+    rdfs:comment "A set of numeric values recorded at a single point in time. One row in a time-series Parquet file, with one value per dimension." .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 4 — Dimension description
+#
+# A mava:Dimension describes one measured quantity within an
+# ObservationSeries — e.g. "angry", "explosion_score", "interior_exterior".
+# The column name in Parquet IS the dimension name.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:Dimension a owl:Class ;
+    rdfs:label   "Dimension" ;
+    rdfs:comment "A single measured quantity within an ObservationSeries, corresponding to one column in the Parquet file. Examples: 'angry', 'explosion_score', 'interior_exterior'." .
+
+mava:hasDimension a owl:ObjectProperty ;
+    rdfs:label   "has dimension" ;
+    rdfs:comment "Relates an ObservationSeries to the dimensions it measures." ;
+    rdfs:domain  mava:ObservationSeries ;
+    rdfs:range   mava:Dimension .
+
+mava:dimensionName a owl:DatatypeProperty ;
+    rdfs:label   "dimension name" ;
+    rdfs:comment "The name of a dimension, matching the column name in the Parquet file." ;
+    rdfs:domain  mava:Dimension ;
+    rdfs:range   xsd:string .
+
+mava:dimensionDescription a owl:DatatypeProperty ;
+    rdfs:label   "dimension description" ;
+    rdfs:comment "Human-readable description of what this dimension measures." ;
+    rdfs:domain  mava:Dimension ;
+    rdfs:range   xsd:string .
+
+mava:valueRange a owl:DatatypeProperty ;
+    rdfs:label   "value range" ;
+    rdfs:comment "Description of the value range, e.g. '[0,1]', 'boolean', 'categorical'." ;
+    rdfs:domain  mava:Dimension ;
+    rdfs:range   xsd:string .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 5 — Linking properties
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:hasMember a owl:ObjectProperty ;
+    rdfs:label   "has member" ;
+    rdfs:comment "Relates a VideoCorpus to the videos it contains." ;
+    rdfs:domain  mava:VideoCorpus ;
+    rdfs:range   mava:Video .
+
+mava:hasAnalysis a owl:ObjectProperty ;
+    rdfs:label   "has analysis" ;
+    rdfs:comment "Relates a Video to one of its annotation or observation series." ;
+    rdfs:domain  mava:Video ;
+    rdfs:range   mava:ObservationSeries, mava:AnnotationSeries .
+
+mava:belongsToAnnotationSeries a owl:ObjectProperty ;
+    rdfs:label   "belongs to annotation series" ;
+    rdfs:comment "Relates an AnnotationSegment back to its parent AnnotationSeries." ;
+    rdfs:domain  mava:AnnotationSegment ;
+    rdfs:range   mava:AnnotationSeries .
+
+mava:belongsToObservationSeries a owl:ObjectProperty ;
+    rdfs:label   "belongs to observation series" ;
+    rdfs:comment "Relates an ObservationPoint back to its parent ObservationSeries." ;
+    rdfs:domain  mava:ObservationPoint ;
+    rdfs:range   mava:ObservationSeries .
+
+mava:seriesDescription a owl:DatatypeProperty ;
+    rdfs:label   "series description" ;
+    rdfs:comment "Human-readable description of what a series contains." ;
+    rdfs:domain  mava:AnnotationSeries, mava:ObservationSeries ;
+    rdfs:range   xsd:string .
+
+mava:samplingInterval a owl:DatatypeProperty ;
+    rdfs:label   "sampling interval" ;
+    rdfs:comment "For ObservationSeries: the interval between samples in seconds, e.g. 0.5." ;
+    rdfs:domain  mava:ObservationSeries ;
+    rdfs:range   xsd:decimal .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 6 — Time properties
+#
+# mava:atTime    — for ObservationPoints (single moment, no duration)
+# mava:startTime — for AnnotationSegments (interval start)
+# mava:endTime   — for AnnotationSegments (interval end)
+#                  preferred over duration: more directly queryable
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:atTime a owl:DatatypeProperty ;
+    rdfs:label   "at time" ;
+    rdfs:comment "Time of an ObservationPoint in seconds from the start of the video. Maps to 'start_seconds' column in time-series Parquet files." ;
+    rdfs:domain  mava:ObservationPoint ;
+    rdfs:range   xsd:decimal .
+
+mava:startTime a owl:DatatypeProperty ;
+    rdfs:label   "start time" ;
+    rdfs:comment "Start time of an AnnotationSegment in seconds from the start of the video." ;
+    rdfs:domain  mava:AnnotationSegment ;
+    rdfs:range   xsd:decimal .
+
+mava:endTime a owl:DatatypeProperty ;
+    rdfs:label   "end time" ;
+    rdfs:comment "End time of an AnnotationSegment in seconds from the start of the video. Primary field — duration is derivable as (endTime - startTime)." ;
+    rdfs:domain  mava:AnnotationSegment ;
+    rdfs:range   xsd:decimal .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 7 — Value properties
+#
+# mava:numericValue covers all numeric observation dimensions.
+# The specific meaning is carried by mava:Dimension, not by property names.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:numericValue a owl:DatatypeProperty ;
+    rdfs:label   "numeric value" ;
+    rdfs:comment "A numeric value at an ObservationPoint. In Parquet, each dimension has its own column — the column name identifies the dimension." ;
+    rdfs:domain  mava:ObservationPoint ;
+    rdfs:range   xsd:decimal .
+
+mava:stringValue a owl:DatatypeProperty ;
+    rdfs:label   "string value" ;
+    rdfs:comment "A string annotation value. Used for transcript text, shot labels, face emotion labels. Maps to 'annotations' column in interval Parquet files." ;
+    rdfs:domain  mava:ObservationPoint, mava:AnnotationSegment ;
+    rdfs:range   xsd:string .

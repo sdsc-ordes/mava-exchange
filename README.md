@@ -8,9 +8,9 @@
 <p align="center">
 </p>
 
-[![Current Release](https://img.shields.io/github/release/sdsc-ordes/mava-exchange.svg?label=release)](https://github.com/sdsc-ordes/mava-exchange/releases/latest)
-[![Pipeline Status](https://img.shields.io/github/actions/workflow/status/sdsc-ordes/mava-exchange/normal.yaml?label=ci)](https://github.com/sdsc-ordes/mava-exchange/actions/workflows/normal.yaml)
-[![License label](https://img.shields.io/badge/License-Apache2.0-blue.svg?)](http://www.apache.org/licenses/LICENSE-2.0.html)
+![Current Release](https://img.shields.io/badge/release-v0.1.0-orange)
+[![Pipeline Status](https://github.com/sdsc-ordes/mava-exchange/actions/workflows/normal.yaml/badge.svg)](https://github.com/sdsc-ordes/mava-exchange/actions/workflows/normal.yaml)
+[![License](https://img.shields.io/badge/License-Apache2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 **Authors:**
 
@@ -81,6 +81,10 @@ applies the same principle to temporal data: where GeoParquet uses spatial
 coordinates, `mava-exchange` uses time coordinates on a video timeline. Where
 GeoParquet metadata is purely operational, `mava-exchange` adds a semantic layer
 via JSON-LD to link columns to a shared ontology.
+
+## Specification
+
+See [here](spec/SPEC.md) for the exact specification of the format.
 
 ## Installation
 
