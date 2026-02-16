@@ -69,3 +69,18 @@ preview: pylode
     @# Automatically open the browser (works on macOS)
     @open "http://localhost:8000/mava.html"
     @python3 -m http.server 8000 --directory "{{root_dir}}/spec/html"
+
+# run example for building a mediapkg
+[group('usage')]
+example:
+    uv run examples/tsv_to_mediapkg.py
+
+# run example for building a mediapkg
+[group('usage')]
+inspect *args:
+    mediapkg-inspect examples/output/corpus.mediapkg
+
+# run example for building a mediapkg
+[group('usage')]
+validate *args:
+    mediapkg-validate examples/output/corpus.mediapkg

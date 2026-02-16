@@ -22,7 +22,8 @@ dev = [
 ]
 
 [project.scripts]
-cli = 'mava_exchange.cli:main'
+mediapkg-inspect  = "mava_exchange.cli:inspect_cmd"
+mediapkg-validate = "mava_exchange.cli:validate_cmd"
 
 [build-system]
 requires = ["hatchling"]
@@ -59,4 +60,5 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "tests/**" = ["INP001"]
+"examples/*" = ["INP001"]
 "[!t][!e][!s][!t][!s]*/**" = ["PT"]
