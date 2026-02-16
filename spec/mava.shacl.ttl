@@ -1,0 +1,152 @@
+@prefix mava:    <http://example.org/mava/ontology#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# MAVA SHACL Shapes
+#
+# Validation rules for RDF data exported from a .mediapkg file.
+#
+# These shapes define the same constraints enforced at the Parquet level
+# by src/mava_exchange/validate.py. They are provided here for:
+#   - Validating RDF exports of .mediapkg data
+#   - Formal documentation of the data constraints
+#   - Use by other tools that consume the MAVA ontology
+#
+# To validate RDF data against these shapes, use any SHACL validator
+# (e.g. pySHACL):
+#   pyshacl -s mava.shacl.ttl -d your_data.ttl
+# ═══════════════════════════════════════════════════════════════════════
+
+
+# ───────────────────────────────────────────────────────────────────────
+# ObservationPoint
+# Every point in a time-series must have a time, belong to a series,
+# and carry at least one numeric value.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:ObservationPointShape a sh:NodeShape ;
+    sh:targetClass mava:ObservationPoint ;
+    rdfs:comment   "Every ObservationPoint must have a time and belong to a series." ;
+
+    sh:property [
+        sh:path         mava:atTime ;
+        sh:minCount     1 ;
+        sh:maxCount     1 ;
+        sh:datatype     xsd:decimal ;
+        sh:minInclusive 0 ;
+        rdfs:comment    "Exactly one time value, non-negative." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:belongsToObservationSeries ;
+        sh:minCount  1 ;
+        rdfs:comment "Must belong to at least one ObservationSeries." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:numericValue ;
+        sh:minCount  1 ;
+        sh:datatype  xsd:decimal ;
+        rdfs:comment "Must have at least one numeric value." ;
+    ] .
+
+
+# ───────────────────────────────────────────────────────────────────────
+# AnnotationSegment
+# Every interval annotation must have start, end, and belong to a series.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:AnnotationSegmentShape a sh:NodeShape ;
+    sh:targetClass mava:AnnotationSegment ;
+    rdfs:comment   "Every AnnotationSegment must have start, end, and belong to a series." ;
+
+    sh:property [
+        sh:path         mava:startTime ;
+        sh:minCount     1 ;
+        sh:maxCount     1 ;
+        sh:datatype     xsd:decimal ;
+        sh:minInclusive 0 ;
+        rdfs:comment    "Exactly one start time, non-negative." ;
+    ] ;
+
+    sh:property [
+        sh:path         mava:endTime ;
+        sh:minCount     1 ;
+        sh:maxCount     1 ;
+        sh:datatype     xsd:decimal ;
+        sh:minInclusive 0 ;
+        rdfs:comment    "Exactly one end time, non-negative." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:belongsToAnnotationSeries ;
+        sh:minCount  1 ;
+        rdfs:comment "Must belong to at least one AnnotationSeries." ;
+    ] .
+
+
+# ───────────────────────────────────────────────────────────────────────
+# ObservationSeries
+# Every series must have a description and at least one declared dimension.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:ObservationSeriesShape a sh:NodeShape ;
+    sh:targetClass mava:ObservationSeries ;
+    rdfs:comment   "Every ObservationSeries must have a description and at least one dimension." ;
+
+    sh:property [
+        sh:path     mava:seriesDescription ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:hasDimension ;
+        sh:minCount  1 ;
+        rdfs:comment "Must declare at least one dimension (column)." ;
+    ] ;
+
+    sh:property [
+        sh:path        mava:samplingInterval ;
+        sh:maxCount    1 ;
+        sh:datatype    xsd:decimal ;
+        sh:minExclusive 0 ;
+        rdfs:comment   "Optional. If present, must be a positive number." ;
+    ] .
+
+
+# ───────────────────────────────────────────────────────────────────────
+# Dimension
+# Every dimension must have exactly one name matching its Parquet column.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:DimensionShape a sh:NodeShape ;
+    sh:targetClass mava:Dimension ;
+    rdfs:comment   "Every Dimension must have a name matching its Parquet column." ;
+
+    sh:property [
+        sh:path      mava:dimensionName ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:string ;
+        rdfs:comment "Exactly one name, matching the Parquet column name." ;
+    ] .
+
+
+# ───────────────────────────────────────────────────────────────────────
+# Video
+# A Video in a .mediapkg context must have at least one analysis series.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:VideoShape a sh:NodeShape ;
+    sh:targetClass mava:Video ;
+    rdfs:comment   "Every Video must have at least one analysis series." ;
+
+    sh:property [
+        sh:path      mava:hasAnalysis ;
+        sh:minCount  1 ;
+        rdfs:comment "A Video with no analysis series is not useful in this context." ;
+    ] .
