@@ -138,7 +138,7 @@ mediapkg-inspect  corpus.mediapkg
 mediapkg-validate corpus.mediapkg
 ```
 
-See `TUTORIAL.md` for a complete walkthrough.
+See [`docs/tutorial.md`](docs/tutorial.md) for a complete walkthrough.
 
 ## Development
 
@@ -170,15 +170,16 @@ just validate  # validate it
 
 ## Further Reading
 
-- `spec/SPEC.md` — full format specification
-- `spec/mava.ttl` — MAVA ontology and SHACL shapes
-- `TUTORIAL.md` — step-by-step guide
-- `examples/` — complete example converting TSV files to `.mediapkg`
+- [`spec/SPEC.md`](spec/SPEC.md) — full format specification
+- [`spec/mava.ttl`](spec/mava.ttl) — MAVA ontology
+- [`spec/mava.shacl.ttl`](spec/mava.shacl.ttl) — MAVA shacl shapes
+- [docs/tutorial.md`](docs/tutorial.md) — step-by-step guide
+- `examples`— complete example converting TSV files to `.mediapkg`
 
 For development:
 
-[Contribution Guidelines](/CONTRIBUTING.md)
-[Development Guide](docs/development-guide.md)
+- [Contribution Guidelines](/CONTRIBUTING.md)
+- [Development Guide](docs/development-guide.md)
 
 ## Acknowledgements
 
