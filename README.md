@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./docs/assets/logo.svg" alt="project logo" width="250">
+  <img src="./docs/assets/mava_logo.svg" alt="project logo" width="250">
 </p>
 
 <h1 align="center">
@@ -16,6 +16,11 @@
 
 - [Stefan Milosavljevic](mailto:stefan.milosavljevic@sdsc.ethz.ch)
 - [Sabine Maennel](mailto:sabine.maennel@sdsc.ethz.ch)
+
+# mava-exchange
+
+A Python library and standard package format for exchanging video annotation
+data between research tools.
 
 ## Project Context
 
@@ -82,24 +87,99 @@ coordinates, `mava-exchange` uses time coordinates on a video timeline. Where
 GeoParquet metadata is purely operational, `mava-exchange` adds a semantic layer
 via JSON-LD to link columns to a shared ontology.
 
-## Specification
+## Using the library
 
-See [here](spec/SPEC.md) for the exact specification of the format.
+Install from PyPI:
 
-## Installation
+```bash
+pip install mava-exchange
+# or with uv:
+uv add mava-exchange
+```
 
-Describe the installation instruction here.
+Write, read, and validate `.mediapkg` packages:
 
-## Usage
+```python
+from mava_exchange import (
+    MediaPackageWriter, MediaPackageReader,
+    ObservationSeries, AnnotationSeries, DimensionSpec,
+)
 
-Describe the installation instruction here.
+# Define what your tracks mean
+emotions = ObservationSeries(
+    name="emotions",
+    description="Face emotion scores from DeepFace",
+    sampling_interval=0.5,
+    dimensions=[
+        DimensionSpec("angry",   "Anger probability",  "[0,1]"),
+        DimensionSpec("neutral", "Neutral expression", "[0,1]"),
+    ]
+)
+transcript = AnnotationSeries(
+    name="transcript",
+    description="Whisper speech-to-text segments",
+)
+
+# Write a package
+with MediaPackageWriter("corpus.mediapkg") as writer:
+    writer.add_video("video_001", "https://example.org/talk.mp4")
+    writer.add_track("video_001", emotions,   emotions_df)
+    writer.add_track("video_001", transcript, transcript_df)
+
+# Read it back
+with MediaPackageReader("corpus.mediapkg") as reader:
+    df = reader.read_track("video_001", "emotions")
+```
+
+Two CLI tools are also available after installation:
+
+```bash
+mediapkg-inspect  corpus.mediapkg
+mediapkg-validate corpus.mediapkg
+```
+
+See [`docs/tutorial.md`](docs/tutorial.md) for a complete walkthrough.
 
 ## Development
 
-Read first the [Contribution Guidelines](/CONTRIBUTING.md).
+Clone the repository and install in editable mode with development dependencies:
 
-For technical documentation on setup and development, see the
-[Development Guide](docs/development-guide.md)
+```bash
+git clone https://github.com/sdsc-ordes/mava-exchange.git
+cd mava-exchange
+uv sync --group dev
+```
+
+The project uses [just](https://github.com/casey/just) as a task runner:
+
+```bash
+just test      # run the test suite
+just lint      # run ruff
+just format    # format with ruff and treefmt
+just build     # build the package
+```
+
+To run the example that converts real TSV annotation files into a `.mediapkg`
+corpus:
+
+```bash
+just example
+just inspect   # inspect the resulting corpus.mediapkg
+just validate  # validate it
+```
+
+## Further Reading
+
+- [`spec/SPEC.md`](spec/SPEC.md) — full format specification
+- [`spec/mava.ttl`](spec/mava.ttl) — MAVA ontology
+- [`spec/mava.shacl.ttl`](spec/mava.shacl.ttl) — MAVA shacl shapes
+- [`docs/tutorial.md`](docs/tutorial.md) — step-by-step guide
+- `examples`— complete example converting TSV files to `.mediapkg`
+
+For development:
+
+- [Contribution Guidelines](/CONTRIBUTING.md)
+- [Development Guide](docs/development-guide.md)
 
 ## Acknowledgements
 
