@@ -88,11 +88,24 @@ See [here](spec/SPEC.md) for the exact specification of the format.
 
 ## Installation
 
-Describe the installation instruction here.
+### Install it in your package
 
-## Usage
+```
+pip install mava-exchange
+```
 
-Describe the installation instruction here.
+### Development
+
+This repository relies on nix and direnv.
+
+- Clone the github repo.
+- `cd mava-exchange`
+- `direnv allow`
+- `just build`
+
+## Usage of the library
+
+See the [tutorial](docs/tutorial.md) on how to get started using the package.
 
 ## Development
 
