@@ -70,17 +70,25 @@ preview: pylode
     @open "http://localhost:8000/mava.html"
     @python3 -m http.server 8000 --directory "{{root_dir}}/spec/html"
 
-# run example for building a mediapkg
+# Build a .mediapkg from the example TSV files.
 [group('usage')]
 example:
     uv run examples/tsv_to_mediapkg.py
 
-# run example for building a mediapkg
+# Inspect a .mediapkg archive.
+# Usage: (default example corpus)
+#   just inspect
+#   just inspect path/to/corpus.mediapkg
+#   just inspect path/to/corpus.mediapkg --track emotions --video video_001
 [group('usage')]
-inspect *args:
-    mediapkg-inspect examples/output/corpus.mediapkg
+inspect pkg="examples/output/corpus.mediapkg" *args:
+    mediapkg-inspect "{{pkg}}" {{args}}
 
-# run example for building a mediapkg
+# Validate a .mediapkg archive.
+# Usage: (default example corpus)
+#   just validate
+#   just validate path/to/corpus.mediapkg
+#   just validate path/to/corpus.mediapkg --strict
 [group('usage')]
-validate *args:
-    mediapkg-validate examples/output/corpus.mediapkg
+validate pkg="examples/output/corpus.mediapkg" *args:
+    mediapkg-validate "{{pkg}}" {{args}}
