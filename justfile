@@ -69,3 +69,26 @@ preview: pylode
     @# Automatically open the browser (works on macOS)
     @open "http://localhost:8000/mava.html"
     @python3 -m http.server 8000 --directory "{{root_dir}}/spec/html"
+
+# Build a .mediapkg from the example TSV files.
+[group('usage')]
+example:
+    uv run examples/tsv_to_mediapkg.py
+
+# Inspect a .mediapkg archive.
+# Usage: (default example corpus)
+#   just inspect
+#   just inspect path/to/corpus.mediapkg
+#   just inspect path/to/corpus.mediapkg --track emotions --video video_001
+[group('usage')]
+inspect pkg="examples/output/corpus.mediapkg" *args:
+    mediapkg-inspect "{{pkg}}" {{args}}
+
+# Validate a .mediapkg archive.
+# Usage: (default example corpus)
+#   just validate
+#   just validate path/to/corpus.mediapkg
+#   just validate path/to/corpus.mediapkg --strict
+[group('usage')]
+validate pkg="examples/output/corpus.mediapkg" *args:
+    mediapkg-validate "{{pkg}}" {{args}}
