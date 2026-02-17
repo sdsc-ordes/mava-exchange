@@ -173,7 +173,7 @@ just validate  # validate it
 - [`spec/SPEC.md`](spec/SPEC.md) — full format specification
 - [`spec/mava.ttl`](spec/mava.ttl) — MAVA ontology
 - [`spec/mava.shacl.ttl`](spec/mava.shacl.ttl) — MAVA shacl shapes
-- [docs/tutorial.md`](docs/tutorial.md) — step-by-step guide
+- [`docs/tutorial.md`](docs/tutorial.md) — step-by-step guide
 - `examples`— complete example converting TSV files to `.mediapkg`
 
 For development:
