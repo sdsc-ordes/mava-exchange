@@ -12,7 +12,9 @@ version = "0.0.1"
 dependencies = [
     "pandas>=3.0.0",
     "pyarrow>=23.0.1",
+    "rdflib>=7.0",
 ]
+
 [dependency-groups]
 dev = [
     "notebook>=7.3.2",

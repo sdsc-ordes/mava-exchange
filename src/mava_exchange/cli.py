@@ -108,13 +108,27 @@ def inspect_cmd():
                         help="Video ID to use with --track (default: first video).")
     parser.add_argument("--head",   type=int, default=5,
                         help="Number of rows to show (default: 5).")
+    parser.add_argument("--format", type=str, default="summary",
+                        choices=["summary", "turtle", "json-ld"],
+                        help="Output format: summary (default), turtle, or json-ld.")
     args = parser.parse_args()
 
-    print(f"\n{'═' * 60}")
-    print(f"  {args.package}")
-    print('═' * 60 + "\n")
-
     with MediaPackageReader(args.package) as reader:
+        # RDF export modes
+        if args.format in ("turtle", "json-ld"):
+            try:
+                rdf = reader.export_manifest_as_rdf(format=args.format)
+                print(rdf)
+            except ImportError as e:
+                print(f"Error: {e}", file=sys.stderr)
+                sys.exit(1)
+            return
+
+        # Summary mode (default)
+        print(f"\n{'═' * 60}")
+        print(f"  {args.package}")
+        print('═' * 60 + "\n")
+
         if args.track:
             video_id = args.video or reader.video_ids[0]
             _print_track(reader, video_id, args.track, args.head)

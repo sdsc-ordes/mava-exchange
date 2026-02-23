@@ -24,12 +24,17 @@ import io
 import json
 import zipfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pandas as pd
 import pyarrow.parquet as pq
+from rdflib import Graph, Namespace, Literal, URIRef
+from rdflib.namespace import RDF, DCTERMS, XSD
 
 from .tracks import AnnotationSeries, DimensionSpec, ObservationSeries, Track
-from typing import Self
+
+if TYPE_CHECKING:
+    from typing import Self
 
 
 def _track_from_dict(name: str, d: dict) -> Track:
@@ -83,7 +88,7 @@ class MediaPackageReader:
         self._zf:       zipfile.ZipFile | None = None
         self._manifest: dict | None = None
 
-    def open(self) -> MediaPackageReader:
+    def open(self) -> Self:
         if not self.path.exists():
             raise FileNotFoundError(f"Package not found: {self.path}")
         if not zipfile.is_zipfile(self.path):
@@ -197,6 +202,99 @@ class MediaPackageReader:
                 "compressed_bytes": info.compress_size,
             })
         return stats
+
+    # ── RDF export ───────────────────────────────────────────────────
+
+    def export_manifest_as_rdf( # noqa: PLR0912
+        self, format: str = "turtle", base_uri: str = "http://example.org/data/"
+    ) -> str:
+        """
+        Export the manifest as RDF in Turtle or JSON-LD format.
+
+        This exports only the package structure (videos, tracks, dimensions),
+        not the actual Parquet data rows.
+
+        Args:
+            format: "turtle" or "json-ld"
+            base_uri: Base URI for generated resource identifiers
+
+        Returns:
+            RDF serialization as a string
+        """
+        self._require_open()
+
+        # Namespaces
+        MAVA = Namespace(self.manifest.get("ontology", "http://example.org/mava/ontology#"))
+        EX = Namespace(base_uri)
+
+        g = Graph()
+        g.bind("mava", MAVA)
+        g.bind("dcterms", DCTERMS)
+        g.bind("xsd", XSD)
+        g.bind("ex", EX)
+
+        # The package itself
+        pkg_uri = EX["package"]
+        g.add((pkg_uri, RDF.type, MAVA.MediaPackage))
+        if self.description:
+            g.add((pkg_uri, DCTERMS.description, Literal(self.description)))
+        if "created" in self.manifest:
+            g.add((pkg_uri, DCTERMS.created,
+                   Literal(self.manifest["created"], datatype=XSD.dateTime)))
+
+        # Videos
+        for video in self.manifest["videos"]:
+            video_uri = EX[f"video_{video['id']}"]
+            g.add((pkg_uri, MAVA.hasVideo, video_uri))
+            g.add((video_uri, RDF.type, MAVA.Video))
+
+            if "src" in video:
+                g.add((video_uri, DCTERMS.source, URIRef(video["src"])))
+
+            # Link to track series
+            for track_name in video.get("files", {}).keys():
+                series_uri = EX[f"series_{track_name}"]
+                g.add((video_uri, MAVA.hasAnalysis, series_uri))
+
+        # Tracks (series definitions)
+        for track_name, track_def in self.manifest["tracks"].items():
+            series_uri = EX[f"series_{track_name}"]
+
+            track_type = track_def.get("type")
+            if track_type == "mava:ObservationSeries":
+                g.add((series_uri, RDF.type, MAVA.ObservationSeries))
+
+                if "sampling_interval_seconds" in track_def:
+                    g.add((series_uri, MAVA.samplingInterval,
+                           Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
+
+                # Dimensions
+                for dim_name, dim_meta in track_def.get("dimensions", {}).items():
+                    dim_uri = EX[f"dim_{track_name}_{dim_name}"]
+                    g.add((series_uri, MAVA.hasDimension, dim_uri))
+                    g.add((dim_uri, RDF.type, MAVA.Dimension))
+                    g.add((dim_uri, MAVA.dimensionName, Literal(dim_name)))
+
+                    if "description" in dim_meta:
+                        g.add((dim_uri, MAVA.dimensionDescription,
+                               Literal(dim_meta["description"])))
+                    if "range" in dim_meta:
+                        g.add((dim_uri, MAVA.valueRange, Literal(dim_meta["range"])))
+
+            elif track_type == "mava:AnnotationSeries":
+                g.add((series_uri, RDF.type, MAVA.AnnotationSeries))
+
+            if "description" in track_def:
+                g.add((series_uri, MAVA.seriesDescription,
+                       Literal(track_def["description"])))
+
+        # Serialize
+        if format == "turtle":
+            return g.serialize(format="turtle")
+        elif format == "json-ld":
+            return g.serialize(format="json-ld", indent=2)
+        else:
+            raise ValueError(f"Unknown format '{format}'. Use 'turtle' or 'json-ld'.")
 
     # ── Internal helpers ─────────────────────────────────────────────
 

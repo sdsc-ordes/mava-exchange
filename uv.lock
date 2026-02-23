@@ -701,6 +701,7 @@ source = { editable = "." }
 dependencies = [
     { name = "pandas" },
     { name = "pyarrow" },
+    { name = "rdflib" },
 ]
 
 [package.dev-dependencies]
@@ -715,6 +716,7 @@ dev = [
 requires-dist = [
     { name = "pandas", specifier = ">=3.0.0" },
     { name = "pyarrow", specifier = ">=23.0.1" },
+    { name = "rdflib", specifier = ">=7.0" },
 ]
 
 [package.metadata.requires-dev]
