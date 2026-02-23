@@ -1,0 +1,428 @@
+[
+  {
+    "@id": "http://example.org/data/dim_emotions_fear",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Fear probability"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "fear"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_shots",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Shot boundary intervals detected by scene detection model."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_dominant_color",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_dominant_color_r"
+      },
+      {
+        "@id": "http://example.org/data/dim_dominant_color_g"
+      },
+      {
+        "@id": "http://example.org/data/dim_dominant_color_b"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Dominant RGB color sampled every 0.5s. Each channel is a float in [0,1]."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_dominant_color_g",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Green channel of dominant color"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "g"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_face_emotions",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Dominant face emotion label per detected interval."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_emotions_disgust",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Disgust probability"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "disgust"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/package",
+    "@type": [
+      "http://example.org/mava/ontology#MediaPackage"
+    ],
+    "http://example.org/mava/ontology#hasVideo": [
+      {
+        "@id": "http://example.org/data/video_video_001"
+      },
+      {
+        "@id": "http://example.org/data/video_video_002"
+      }
+    ],
+    "http://purl.org/dc/terms/created": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+        "@value": "2026-02-23T08:22:21.506352+00:00"
+      }
+    ],
+    "http://purl.org/dc/terms/description": [
+      {
+        "@value": "Example corpus: two videos with different annotation tracks"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_emotions_angry",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Anger probability"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "angry"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_emotions",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_emotions_angry"
+      },
+      {
+        "@id": "http://example.org/data/dim_emotions_disgust"
+      },
+      {
+        "@id": "http://example.org/data/dim_emotions_fear"
+      },
+      {
+        "@id": "http://example.org/data/dim_emotions_happy"
+      },
+      {
+        "@id": "http://example.org/data/dim_emotions_sad"
+      },
+      {
+        "@id": "http://example.org/data/dim_emotions_surprise"
+      },
+      {
+        "@id": "http://example.org/data/dim_emotions_neutral"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Per-frame probability scores from face analysis model, sampled every 0.5s."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_emotions_surprise",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Surprise probability"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "surprise"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_dominant_color_b",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Blue channel of dominant color"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "b"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_emotions_happy",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Happiness probability"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "happy"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_emotions_neutral",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Neutral expression"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "neutral"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_dominant_color_r",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Red channel of dominant color"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "r"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_rms_volume",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_rms_volume_rms"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.064"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "RMS audio volume sampled at ~0.064s intervals."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_transcript",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Speech-to-text segments from Whisper transcription model."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/video_video_001",
+    "@type": [
+      "http://example.org/mava/ontology#Video"
+    ],
+    "http://example.org/mava/ontology#hasAnalysis": [
+      {
+        "@id": "http://example.org/data/series_emotions"
+      },
+      {
+        "@id": "http://example.org/data/series_shots"
+      },
+      {
+        "@id": "http://example.org/data/series_face_emotions"
+      },
+      {
+        "@id": "http://example.org/data/series_transcript"
+      }
+    ],
+    "http://purl.org/dc/terms/source": [
+      {
+        "@id": "https://example.org/videos/talk_001.mp4"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_rms_volume_rms",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Root mean square audio volume"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "rms"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": ">=0"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/video_video_002",
+    "@type": [
+      "http://example.org/mava/ontology#Video"
+    ],
+    "http://example.org/mava/ontology#hasAnalysis": [
+      {
+        "@id": "http://example.org/data/series_shots"
+      },
+      {
+        "@id": "http://example.org/data/series_rms_volume"
+      },
+      {
+        "@id": "http://example.org/data/series_dominant_color"
+      }
+    ],
+    "http://purl.org/dc/terms/source": [
+      {
+        "@id": "https://example.org/videos/talk_002.mp4"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_emotions_sad",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Sadness probability"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "sad"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  }
+]

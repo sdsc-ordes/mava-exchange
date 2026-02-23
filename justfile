@@ -84,6 +84,16 @@ example:
 inspect pkg="examples/output/corpus.mediapkg" *args:
     mediapkg-inspect "{{pkg}}" {{args}}
 
+# Export manifest as Turtle RDF.
+[group('usage')]
+inspect-turtle pkg="examples/output/corpus.mediapkg":
+    mediapkg-inspect "{{pkg}}" --format turtle
+
+# Export manifest as JSON-LD.
+[group('usage')]
+inspect-jsonld pkg="examples/output/corpus.mediapkg":
+    mediapkg-inspect "{{pkg}}" --format json-ld
+
 # Validate a .mediapkg archive.
 # Usage: (default example corpus)
 #   just validate
