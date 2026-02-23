@@ -108,6 +108,7 @@ mava:ObservationSeriesShape a sh:NodeShape ;
 
     sh:property [
         sh:path      mava:hasDimension ;
+        sh:class     mava:Dimension ;
         sh:minCount  1 ;
         sh:message "Must declare at least one dimension (column)." ;
     ] ;
@@ -135,6 +136,21 @@ mava:DimensionShape a sh:NodeShape ;
         sh:maxCount  1 ;
         sh:datatype  xsd:string ;
         sh:message "Exactly one name, matching the Parquet column name." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:dimensionDescription ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:string ;
+        sh:message "Exactly one description." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:valueRange ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:string ;
+        sh:message "Optional. If present, must be a string describing the value range." ;
     ] .
 
 # ═════════════════════════════════════════════════════════════════════
