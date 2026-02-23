@@ -153,9 +153,10 @@ def load_dominant_color(data_dir: Path) -> pd.DataFrame:
 # ─────────────────────────────────────────────
 
 def main():
-    examples_dir = Path(__file__).parent
-    dir_001  = examples_dir / "video_001"
-    dir_002  = examples_dir / "video_002"
+    examples_dir = Path(__file__).parent.parent
+    input_dir  = examples_dir / "input"
+    dir_001  = input_dir / "video_001"
+    dir_002  = input_dir / "video_002"
     out_path = examples_dir / "output" / "corpus.mediapkg"
     out_path.parent.mkdir(exist_ok=True)
 

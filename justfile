@@ -73,7 +73,7 @@ preview: pylode
 # Build a .mediapkg from the example TSV files.
 [group('usage')]
 example:
-    uv run examples/tsv_to_mediapkg.py
+    uv run examples/scripts/tsv_to_mediapkg.py
 
 # Inspect a .mediapkg archive.
 # Usage: (default example corpus)
