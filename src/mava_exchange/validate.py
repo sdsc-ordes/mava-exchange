@@ -25,7 +25,7 @@ import pyarrow.parquet as pq
 
 
 KNOWN_VERSIONS = {"0.1"}
-KNOWN_TRACK_TYPES = {"mava:ObservationSeries", "mava:AnnotationSeries"}
+KNOWN_TRACK_TYPES = {"mava:ObservationSeries", "mava:AnnotationSeries", "mava:AnnotationListSeries"}
 
 
 # ─────────────────────────────────────────────
@@ -298,6 +298,42 @@ def _check_annotation_series(
             result.ok()
 
 
+def _check_annotation_list_series(
+    path: str, df: pd.DataFrame, result: ValidationResult
+) -> None:
+    """AnnotationListSeries: same as AnnotationSeries plus list validation."""
+    # Check end_seconds constraint
+    _check_annotation_series(path, df, result)
+
+    # Check annotations column is list type
+    if "annotations" not in df.columns:
+        result.error(f"{path}: AnnotationListSeries missing 'annotations'")
+        return
+    result.ok()
+
+    # Verify it's actually a list column
+    col = df["annotations"]
+    if not all(isinstance(val, list) for val in col.dropna()):
+        result.error(
+            f"{path}: 'annotations' column must contain lists, not strings. "
+            "Use AnnotationSeries for string-valued annotations."
+        )
+    else:
+        result.ok()
+
+    # Check list contents are strings
+    for idx, val in enumerate(col):
+        if pd.isna(val):
+            continue
+        if not all(isinstance(item, str) for item in val):
+            result.error(
+                f"{path}: row {idx} annotations list contains non-string values"
+            )
+            break
+    else:
+        result.ok()
+
+
 def _check_observation_series(
     path: str, df: pd.DataFrame, track_def: dict, result: ValidationResult
 ) -> None:
@@ -350,6 +386,9 @@ def _validate_parquet(
 
     if track_type == "mava:AnnotationSeries":
         _check_annotation_series(path, df, result)
+
+    if track_type == "mava:AnnotationListSeries":
+        _check_annotation_list_series(path, df, result)
 
     if track_type == "mava:ObservationSeries":
         _check_observation_series(path, df, track_def, result)
