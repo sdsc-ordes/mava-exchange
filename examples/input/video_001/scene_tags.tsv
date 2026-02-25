@@ -1,0 +1,6 @@
+# Scene classification from Places3 model
+# Each row can have multiple simultaneous tags
+start_seconds	end_seconds	tags
+0.0 2.2	outdoor,natural
+2.2	4.6	indoor
+6.3	8.0	outdoor,man-made
