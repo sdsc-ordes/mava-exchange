@@ -59,7 +59,7 @@ mava:MediaPackage a owl:Class ;
 mava:hasPackage a owl:ObjectProperty ;
     rdfs:label   "has package" ;
     rdfs:comment "Relates a VideoCorpus or Video to the MediaPackage containing its annotations." ;
-    rdfs:domain  mava:VideoCorpus, mava:Video ;
+    rdfs:domain  [ owl:unionOf (mava:VideoCorpus mava:Video) ] ;
     rdfs:range   mava:MediaPackage .
 
 
@@ -94,15 +94,22 @@ mava:AnnotationSeries a owl:Class ;
 
 mava:AnnotationListSeries a owl:Class ;
     rdfs:label   "Annotation List Series" ;
-    rdfs:comment "A series of interval-based annotations with multiple labels per interval for a video. Each row covers a time span with a start and end time. Maps to an Parquet file in .mediapkg with a list column." .
+    rdfs:comment "A series of interval-based annotations with multiple labels per interval for a video. Each row covers a time span with a start and end time. Maps to an Parquet file in .mediapkg with a list column." ;
+    rdfs:subClassOf mava:AnnotationSeries .
+
+mava:Annotation a owl:Class ;
+    rdfs:label   "Annotation" ;
+    rdfs:comment "A single annotation: a time interval with associated value(s). Maps to one row in an annotation Parquet file." .
 
 mava:AnnotationSegment a owl:Class ;
-    rdfs:label   "Annotation Segment" ;
-    rdfs:comment "A single interval annotation: a start time, end time, and a value. Maps to one row in an interval Parquet file." .
+    rdfs:label      "Annotation Segment" ;
+    rdfs:comment    "A single-valued annotation: one time interval with one string value." ;
+    rdfs:subClassOf mava:Annotation .
 
 mava:AnnotationListSegment a owl:Class ;
-    rdfs:label   "Annotation List Segment" ;
-    rdfs:comment "A single interval annotation with multiple labels: a start time, end time, and a list of values. Maps to one row in an interval Parquet file with a list column." .
+    rdfs:label      "Annotation List Segment" ;
+    rdfs:comment    "A multi-valued annotation: one time interval with multiple string values." ;
+    rdfs:subClassOf mava:Annotation .
 
 mava:ObservationSeries a owl:Class ;
     rdfs:label   "Observation Series" ;
@@ -111,7 +118,6 @@ mava:ObservationSeries a owl:Class ;
 mava:ObservationPoint a owl:Class ;
     rdfs:label   "Observation Point" ;
     rdfs:comment "A set of numeric values recorded at a single point in time. One row in a time-series Parquet file, with one value per dimension." .
-
 
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION 4 — Dimension description
@@ -149,7 +155,6 @@ mava:valueRange a owl:DatatypeProperty ;
     rdfs:domain  mava:Dimension ;
     rdfs:range   xsd:string .
 
-
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION 5 — Linking properties
 # ═══════════════════════════════════════════════════════════════════════
@@ -160,6 +165,12 @@ mava:hasMember a owl:ObjectProperty ;
     rdfs:domain  mava:VideoCorpus ;
     rdfs:range   mava:Video .
 
+mava:hasVideo a owl:ObjectProperty ;
+    rdfs:label   "has video" ;
+    rdfs:comment "Relates a MediaPackage to the videos it contains annotations for." ;
+    rdfs:domain  mava:MediaPackage ;
+    rdfs:range   mava:Video .
+
 mava:hasAnalysis a owl:ObjectProperty ;
     rdfs:label   "has analysis" ;
     rdfs:comment "Relates a Video to one of its annotation or observation series." ;
@@ -168,15 +179,9 @@ mava:hasAnalysis a owl:ObjectProperty ;
 
 mava:belongsToAnnotationSeries a owl:ObjectProperty ;
     rdfs:label   "belongs to annotation series" ;
-    rdfs:comment "Relates an AnnotationSegment back to its parent AnnotationSeries." ;
-    rdfs:domain  mava:AnnotationSegment ;
+    rdfs:comment "Relates an Annotation back to its parent AnnotationSeries." ;
+    rdfs:domain  mava:Annotation ;
     rdfs:range   mava:AnnotationSeries .
-
-mava:belongsToAnnotationListSeries a owl:ObjectProperty ;
-    rdfs:label   "belongs to annotation list series" ;
-    rdfs:comment "Relates an AnnotationListSegment back to its parent AnnotationListSeries." ;
-    rdfs:domain  mava:AnnotationListSegment ;
-    rdfs:range   mava:AnnotationListSeries .
 
 mava:belongsToObservationSeries a owl:ObjectProperty ;
     rdfs:label   "belongs to observation series" ;
@@ -215,13 +220,13 @@ mava:atTime a owl:DatatypeProperty ;
 mava:startTime a owl:DatatypeProperty ;
     rdfs:label   "start time" ;
     rdfs:comment "Start time of an AnnotationSegment in seconds from the start of the video." ;
-    rdfs:domain  [ owl:unionOf (mava:AnnotationSegment mava:AnnotationListSegment) ] ;
+    rdfs:domain  mava:Annotation ;
     rdfs:range   xsd:decimal .
 
 mava:endTime a owl:DatatypeProperty ;
     rdfs:label   "end time" ;
     rdfs:comment "End time of an AnnotationSegment in seconds from the start of the video. Primary field — duration is derivable as (endTime - startTime)." ;
-    rdfs:domain  [ owl:unionOf (mava:AnnotationSegment mava:AnnotationListSegment) ] ;
+    rdfs:domain  mava:Annotation ;
     rdfs:range   xsd:decimal .
 
 
@@ -241,7 +246,7 @@ mava:numericValue a owl:DatatypeProperty ;
 mava:stringValue a owl:DatatypeProperty ;
     rdfs:label   "string value" ;
     rdfs:comment "A string annotation value. Used for transcript text, shot labels, face emotion labels. Maps to 'annotations' column in interval Parquet files." ;
-    rdfs:domain  mava:ObservationPoint, mava:AnnotationSegment ;
+    rdfs:domain  mava:AnnotationSegment ;
     rdfs:range   xsd:string .
 
 mava:listValue a owl:DatatypeProperty ;
