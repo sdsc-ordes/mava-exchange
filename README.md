@@ -163,8 +163,10 @@ To run the example that converts real TSV annotation files into a `.mediapkg`
 corpus:
 
 ```bash
-just example
+just example # uses the script in examples/scripts to write a mediapkg example from the examples/input
 just inspect   # inspect the resulting corpus.mediapkg
+just inspect-turtle   # inspects the manifest.json as turtle
+just inspect-jsonld   # inspects the manifest.json as jsonld
 just validate  # validate it
 ```
 
