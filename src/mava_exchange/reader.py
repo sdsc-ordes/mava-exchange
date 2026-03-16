@@ -31,7 +31,7 @@ import pyarrow.parquet as pq
 from rdflib import Graph, Namespace, Literal, URIRef
 from rdflib.namespace import RDF, DCTERMS, XSD
 
-from .tracks import AnnotationSeries, DimensionSpec, ObservationSeries, Track
+from .tracks import AnnotationSeries, DimensionSpec, ObservationSeries, Track, AnnotationListSeries
 
 if TYPE_CHECKING:
     from typing import Self
@@ -57,6 +57,11 @@ def _track_from_dict(name: str, d: dict) -> Track:
         )
     elif track_type == "mava:AnnotationSeries":
         return AnnotationSeries(
+            name=name,
+            description=d.get("description", ""),
+        )
+    elif track_type == "mava:AnnotationListSeries":
+        return AnnotationListSeries(
             name=name,
             description=d.get("description", ""),
         )

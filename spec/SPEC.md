@@ -254,13 +254,13 @@ with no spaces (use underscores).
 
 Each track entry MUST contain:
 
-| Field                       | Type             | Required                     | Description                                                     |
-| --------------------------- | ---------------- | ---------------------------- | --------------------------------------------------------------- |
-| `type`                      | string           | MUST                         | Either `"mava:ObservationSeries"` or `"mava:AnnotationSeries"`. |
-| `description`               | string           | MUST                         | Human-readable description of the track.                        |
-| `columns`                   | array of strings | MUST                         | Ordered list of column names in the Parquet file.               |
-| `dimensions`                | object           | MUST for `ObservationSeries` | Maps each value column name to its description and value range. |
-| `sampling_interval_seconds` | number           | OPTIONAL                     | For `ObservationSeries`: the sampling interval in seconds.      |
+| Field                       | Type             | Required                     | Description                                                                                       |
+| --------------------------- | ---------------- | ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `type`                      | string           | MUST                         | Either `"mava:ObservationSeries"` or `"mava:AnnotationSeries"`, or `"mava:AnnotationListSeries"`. |
+| `description`               | string           | MUST                         | Human-readable description of the track.                                                          |
+| `columns`                   | array of strings | MUST                         | Ordered list of column names in the Parquet file.                                                 |
+| `dimensions`                | object           | MUST for `ObservationSeries` | Maps each value column name to its description and value range.                                   |
+| `sampling_interval_seconds` | number           | OPTIONAL                     | For `ObservationSeries`: the sampling interval in seconds.                                        |
 
 #### Track example — ObservationSeries
 
@@ -288,6 +288,16 @@ Each track entry MUST contain:
 "transcript": {
   "type": "mava:AnnotationSeries",
   "description": "Speech-to-text segments from Whisper transcription model.",
+  "columns": ["start_seconds", "end_seconds", "annotations"]
+}
+```
+
+#### Track example - AnnotationListSeries
+
+```json
+"scene_tags": {
+  "type": "mava:AnnotationListSeries",
+  "description": "Scene classification tags from Places3 model (indoor/outdoor + natural/man-made)",
   "columns": ["start_seconds", "end_seconds", "annotations"]
 }
 ```
@@ -336,9 +346,9 @@ values. Each row is a `mava:ObservationPoint`.
 
 **Required columns:**
 
-| Column          | Maps to       | Description                                                                |
-| --------------- | ------------- | -------------------------------------------------------------------------- |
-| `start_seconds` | `mava:atTime` | Time of the observation in seconds from video start. MUST be non-negative. |
+| Column          | Maps to       | Parquet type | Description                                                                |
+| --------------- | ------------- | ------------ | -------------------------------------------------------------------------- |
+| `start_seconds` | `mava:atTime` | `DOUBLE`     | Time of the observation in seconds from video start. MUST be non-negative. |
 
 **Dimension columns:** One column per declared dimension. Column names MUST
 match the keys in the track's `dimensions` object in the manifest. Values MUST
@@ -354,11 +364,25 @@ An `AnnotationSeries` is a sparse set of interval annotations. Each row is a
 
 **Required columns:**
 
-| Column          | Maps to            | Description                                                           |
-| --------------- | ------------------ | --------------------------------------------------------------------- |
-| `start_seconds` | `mava:startTime`   | Start of the interval in seconds. MUST be non-negative.               |
-| `end_seconds`   | `mava:endTime`     | End of the interval in seconds. MUST be greater than `start_seconds`. |
-| `annotations`   | `mava:stringValue` | The annotation value for this segment.                                |
+| Column          | Maps to            | Parquet type | Description                                                           |
+| --------------- | ------------------ | ------------ | --------------------------------------------------------------------- |
+| `start_seconds` | `mava:startTime`   | `DOUBLE`     | Start of the interval in seconds. MUST be non-negative.               |
+| `end_seconds`   | `mava:endTime`     | `DOUBLE`     | End of the interval in seconds. MUST be greater than `start_seconds`. |
+| `annotations`   | `mava:stringValue` | `STRING`     | The annotation value for this segment.                                |
+
+### 6.2 AnnotationListSeries
+
+An `AnnotationListSeries` is a sparse set of interval annotations where each
+segment has multiple simultaneous values. Each row is a
+mava:AnnotationListSegment with a start time, end time, and a list of strings.
+
+**Required columns:**
+
+| Column          | Maps to          | Parquet type   | Description                                                           |
+| --------------- | ---------------- | -------------- | --------------------------------------------------------------------- |
+| `start_seconds` | `mava:startTime` | `DOUBLE`       | Start of the interval in seconds. MUST be non-negative.               |
+| `end_seconds`   | `mava:endTime`   | `DOUBLE`       | End of the interval in seconds. MUST be greater than `start_seconds`. |
+| `annotations`   | `mava:listValue` | `LIST<STRING>` | A list of string annotations for this segment.                        |
 
 **Note on duration:** Duration is not stored as a column — it is derivable as
 `end_seconds - start_seconds`. This avoids redundancy and potential
@@ -395,12 +419,13 @@ There are two kinds of columns:
 `dimensions` object in the manifest. Their Parquet type is always `DOUBLE`
 regardless of the name.
 
-| Column            | Parquet type                | Notes                                  |
-| ----------------- | --------------------------- | -------------------------------------- |
-| `start_seconds`   | `DOUBLE`                    | Fixed name, always present             |
-| `end_seconds`     | `DOUBLE`                    | Fixed name, AnnotationSeries only      |
-| Dimension columns | `DOUBLE`                    | Variable names, ObservationSeries only |
-| `annotations`     | `BYTE_ARRAY` (UTF-8 string) | Fixed name, AnnotationSeries only      |
+| Column               | Parquet type                       | Notes                                  |
+| -------------------- | ---------------------------------- | -------------------------------------- |
+| `start_seconds`      | `DOUBLE`                           | Fixed name, always present             |
+| `end_seconds`        | `DOUBLE`                           | Fixed name, AnnotationSeries only      |
+| Dimension columns    | `DOUBLE`                           | Variable names, ObservationSeries only |
+| `annotations`        | `BYTE_ARRAY` (UTF-8 string)        | Fixed name, AnnotationSeries only      |
+| `annotations` (list) | `LIST<BYTE_ARRAY>` (UTF-8 strings) | Fixed name, AnnotationListSeries only  |
 
 #### Example — ObservationSeries (emotions track)
 
@@ -451,11 +476,23 @@ transcript.parquet
 └───────────────┴─────────────┴──────────────────────────────────┘
 ```
 
-**Note on structured annotations:** The `annotations` column is always a string.
-For multi-valued or structured annotations (e.g. lists of labels, hierarchical
-classifiers), the encoding MUST be documented in the track's `description` field
-in the manifest. Standard encodings for list-type annotations will be defined in
-a future version of the spec.
+#### Example — AnnotationListSeries (scene_tags track)
+
+Similar to the AnnotationSeries, just that the annotations are lists of variable
+length such as tags.
+
+```
+scene_tags.parquet
+┌───────────────┬─────────────┬───────────────────────────┐
+│ start_seconds │ end_seconds │       annotations         │
+│    DOUBLE     │   DOUBLE    │     LIST<STRING>          │
+├───────────────┼─────────────┼───────────────────────────┤
+│     0.000     │    45.200   │ ["outdoor", "natural"]    │
+│    45.200     │    78.500   │ ["indoor"]                │
+│    78.500     │   120.000   │ ["outdoor", "man-made"]   │
+└───────────────┴─────────────┴───────────────────────────┘
+
+```
 
 ### Compression
 
@@ -487,11 +524,11 @@ The ontology defines:
 - `mava:MediaPackage` — a `.mediapkg` archive
 - `mava:ObservationSeries` / `mava:ObservationPoint` — dense time-series
   analysis
-- `mava:AnnotationSeries` / `mava:AnnotationSegment` — sparse interval
-  annotations
+- `mava:AnnotationSeries` / `mava:AnnotationSegment` /
+  `mava:AnnotationListSegment` — sparse interval annotations
 - `mava:Dimension` — a single measured quantity within an ObservationSeries
 - Time properties: `mava:atTime`, `mava:startTime`, `mava:endTime`
-- Value properties: `mava:numericValue`, `mava:stringValue`
+- Value properties: `mava:numericValue`, `mava:stringValue`, `mava:ListValue`
 
 ### JSON-LD Context
 

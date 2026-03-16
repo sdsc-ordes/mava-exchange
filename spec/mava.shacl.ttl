@@ -14,12 +14,14 @@
 #    - VideoShape
 #    - ObservationSeriesShape
 #    - AnnotationSeriesShape
+#    - AnnotationListSeriesShape
 #    - DimensionShape
 #
-# 2. DATA SHAPES — validate individual Parquet rows in case you want to
-# exported them as RDF (not yet implemented)
+# 2. DATA SHAPES — validate individual Parquet rows exported as RDF
 #    - ObservationPointShape
+#    - AnnotationShape (parent for both single and list segments)
 #    - AnnotationSegmentShape
+#    - AnnotationListSegmentShape
 #
 # The manifest shapes correspond to the manifest.json structure.
 # The data shapes correspond to rows in the Parquet files.
@@ -69,6 +71,7 @@ mava:VideoShape a sh:NodeShape ;
         sh:or (
             [ sh:class mava:ObservationSeries ]
             [ sh:class mava:AnnotationSeries ]
+            [ sh:class mava:AnnotationListSeries ]
         ) ;
         sh:message "A Video with no analysis series is not useful in this context." ;
     ] .
@@ -81,6 +84,22 @@ mava:VideoShape a sh:NodeShape ;
 mava:AnnotationSeriesShape a sh:NodeShape ;
     sh:targetClass mava:AnnotationSeries ;
     sh:description   "Every AnnotationSeries must have a description." ;
+
+    sh:property [
+        sh:path mava:seriesDescription ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# AnnotationListSeries
+# Every AnnotationListSeries must have a description.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:AnnotationListSeriesShape a sh:NodeShape ;
+    sh:targetClass mava:AnnotationListSeries ;
+    sh:description   "Every AnnotationListSeries must have a description." ;
 
     sh:property [
         sh:path mava:seriesDescription ;
@@ -192,13 +211,13 @@ mava:ObservationPointShape a sh:NodeShape ;
     ] .
 
 # ───────────────────────────────────────────────────────────────────────
-# AnnotationSegment
-# Validates one row from an AnnotationSeries Parquet file
+# Annotation (parent shape)
+# Common constraints for all annotation types.
 # ───────────────────────────────────────────────────────────────────────
 
-mava:AnnotationSegmentShape a sh:NodeShape ;
-    sh:targetClass mava:AnnotationSegment ;
-    sh:description   "Every AnnotationSegment must have start, end, and belong to a series." ;
+mava:AnnotationShape a sh:NodeShape ;
+    sh:targetClass  mava:Annotation ;
+    sh:description  "Every Annotation must have start time and end time." ;
 
     sh:property [
         sh:path         mava:startTime ;
@@ -206,7 +225,7 @@ mava:AnnotationSegmentShape a sh:NodeShape ;
         sh:maxCount     1 ;
         sh:datatype     xsd:decimal ;
         sh:minInclusive 0 ;
-        sh:message    "Exactly one start time, non-negative." ;
+        sh:message      "Exactly one start time, non-negative." ;
     ] ;
 
     sh:property [
@@ -215,12 +234,54 @@ mava:AnnotationSegmentShape a sh:NodeShape ;
         sh:maxCount     1 ;
         sh:datatype     xsd:decimal ;
         sh:minInclusive 0 ;
-        sh:message    "Exactly one end time, non-negative. Must be greater than start time." ;
+        sh:message      "Exactly one end time, non-negative. Must be greater than start time (constraint not enforced by SHACL)." ;
+    ] .
+
+
+# ───────────────────────────────────────────────────────────────────────
+# AnnotationSegment
+# Validates one row from an AnnotationSeries Parquet file.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:AnnotationSegmentShape a sh:NodeShape ;
+    sh:targetClass  mava:AnnotationSegment ;
+    sh:description  "Every AnnotationSegment must belong to an AnnotationSeries and have a string value." ;
+
+    sh:property [
+        sh:path     mava:belongsToAnnotationSeries ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message  "Must belong to exactly one AnnotationSeries." ;
     ] ;
 
     sh:property [
-        sh:path      mava:belongsToAnnotationSeries ;
-        sh:minCount  1 ;
-        sh:maxCount  1 ;
-        sh:message "Must belong to exactly one AnnotationSeries." ;
+        sh:path     mava:stringValue ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message  "Must have exactly one string value." ;
+    ] .
+
+
+# ───────────────────────────────────────────────────────────────────────
+# AnnotationListSegment
+# Validates one row from an AnnotationListSeries Parquet file.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:AnnotationListSegmentShape a sh:NodeShape ;
+    sh:targetClass  mava:AnnotationListSegment ;
+    sh:description  "Every AnnotationListSegment must belong to an AnnotationListSeries and have list values." ;
+
+    sh:property [
+        sh:path     mava:belongsToAnnotationListSeries ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message  "Must belong to exactly one AnnotationListSeries." ;
+    ] ;
+
+    sh:property [
+        sh:path     mava:listValue ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message  "Must have at least one list value (multi-valued property in RDF)." ;
     ] .

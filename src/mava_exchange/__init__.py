@@ -49,18 +49,17 @@ Example — reading:
         df = r.read_track("video_001", "emotions")
 """
 
-from .tracks import DimensionSpec, ObservationSeries, AnnotationSeries, Track
+from .tracks import DimensionSpec, ObservationSeries, AnnotationSeries, AnnotationListSeries, Track
 from .writer import MediaPackageWriter
 from .reader import MediaPackageReader
 
 __version__ = "0.1.0"
 
 __all__ = [
+    "AnnotationListSeries",
     "AnnotationSeries",
-    # Track definitions
     "DimensionSpec",
     "MediaPackageReader",
-    # IO
     "MediaPackageWriter",
     "ObservationSeries",
     "Track",

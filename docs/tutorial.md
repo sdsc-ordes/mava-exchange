@@ -27,7 +27,12 @@ There are two kinds of tracks:
 
 - **AnnotationSeries** — sparse interval annotations. Each row covers a time
   span (`start_seconds` → `end_seconds`) with a string value. Use this for
-  transcripts, shot boundaries, or any labelled segment.
+  transcripts, shot boundaries, or any labeled segment.
+
+- **AnnotationListSeries** — sparse interval annotations with multiple labels
+  per segment. Each row covers a time span with a list of string values. Use
+  this for multi-label classifications, keyword tags, or any annotation where
+  multiple values apply simultaneously.
 
 ---
 
@@ -40,7 +45,7 @@ First describe what your data means using `ObservationSeries` or
 column measures.
 
 ```python
-from mava_exchange import ObservationSeries, AnnotationSeries, DimensionSpec
+from mava_exchange import ObservationSeries, AnnotationSeries, AnnotationListSeries, DimensionSpec
 
 # A time-series track: one numeric value per dimension per timestep
 emotion_track = ObservationSeries(
@@ -58,6 +63,12 @@ emotion_track = ObservationSeries(
 transcript_track = AnnotationSeries(
     name="transcript",
     description="Speech-to-text segments from Whisper",
+)
+
+# A multi-label annotation track: start, end, and a list of labels per row
+scene_tags_track = AnnotationListSeries(
+    name="scene_tags",
+    description="Scene classification tags from Places3 model",
 )
 ```
 
@@ -106,6 +117,21 @@ transcript_df = pd.DataFrame({
         "Welcome to the conference.",
         "Today we discuss video annotation.",
         "Thank you for joining us.",
+    ],
+})
+```
+
+For an **AnnotationListSeries**, the required columns are start_seconds,
+end_seconds, and annotations — but annotations contains lists of strings:
+
+```
+scene_tags_df = pd.DataFrame({
+    "start_seconds": [0.0, 45.2, 78.5],
+    "end_seconds":   [45.2, 78.5, 120.0],
+    "annotations":   [
+        ["outdoor", "natural"],
+        ["indoor"],
+        ["outdoor", "man-made"],
     ],
 })
 ```
@@ -172,7 +198,7 @@ with MediaPackageReader("corpus.mediapkg") as reader:
 
     # What's in this package?
     print(reader.video_ids)       # ["video_001", "video_002"]
-    print(reader.track_names)     # ["emotions", "transcript", "rms_volume"]
+    print(reader.track_names)     # ["emotions", "transcript", "rms_volume", "scene_tags"]
 
     # Which tracks does a specific video have?
     print(reader.tracks_for_video("video_001"))  # ["emotions", "transcript"]

@@ -10,6 +10,7 @@ import pytest
 
 from mava_exchange import (
     AnnotationSeries,
+    AnnotationListSeries,
     DimensionSpec,
     MediaPackageWriter,
     ObservationSeries,
@@ -39,6 +40,14 @@ def transcript_track():
     return AnnotationSeries(
         name="transcript",
         description="Whisper speech-to-text segments",
+    )
+
+
+@pytest.fixture
+def scene_tags_track():
+    return AnnotationListSeries(
+        name="scene_tags",
+        description="Scene classification tags from Places3",
     )
 
 
@@ -80,6 +89,20 @@ def transcript_df():
         "start_seconds": [0.0, 5.2, 11.8],
         "end_seconds": [5.0, 11.5, 20.0],
         "annotations": ["Hello world", "This is a test", "Goodbye"],
+    })
+
+
+@pytest.fixture
+def scene_tags_df():
+    """Synthetic scene tags: 3 segments with multi-label annotations."""
+    return pd.DataFrame({
+        "start_seconds": [0.0, 45.2, 78.5],
+        "end_seconds": [45.2, 78.5, 120.0],
+        "annotations": [
+            ["outdoor", "natural"],
+            ["indoor"],
+            ["outdoor", "man-made"],
+        ],
     })
 
 

@@ -10,6 +10,7 @@ Expects the following layout:
         Angry.tsv  Disgust.tsv  Fear.tsv  Happy.tsv
         Sad.tsv  Surprise.tsv  Neutral.tsv
         Shots.tsv  Face Emotions.tsv  Whisper Transcript.tsv
+        scene_tags.tsv
       video_002/
         Shots.tsv  RMS Volume.tsv  Dominant Color(s).tsv
       output/
@@ -28,6 +29,7 @@ from mava_exchange import (
     MediaPackageWriter,
     ObservationSeries,
     AnnotationSeries,
+    AnnotationListSeries,
     DimensionSpec,
 )
 
@@ -61,6 +63,10 @@ FACE_EMOTIONS_TRACK = AnnotationSeries(
 TRANSCRIPT_TRACK = AnnotationSeries(
     name="transcript",
     description="Speech-to-text segments from Whisper transcription model.",
+)
+SCENE_TAGS_TRACK = AnnotationListSeries(
+    name="scene_tags",
+    description="Scene classification tags from Places3 model (indoor/outdoor + natural/man-made).",
 )
 RMS_VOLUME_TRACK = ObservationSeries(
     name="rms_volume",
@@ -115,6 +121,15 @@ def load_interval(path: Path) -> pd.DataFrame:
     return df[["start_seconds", "end_seconds", "annotations"]]
 
 
+def load_scene_tags(data_dir: Path) -> pd.DataFrame:
+    """Load scene tags and convert comma-separated values to lists."""
+    df = pd.read_csv(data_dir / "scene_tags.tsv", sep="\t", comment="#")
+    df["start_seconds"] = pd.to_numeric(df["start_seconds"])
+    df["end_seconds"] = pd.to_numeric(df["end_seconds"])
+    df["annotations"] = df["tags"].str.split(",")
+    return df[["start_seconds", "end_seconds", "annotations"]]
+
+
 def load_rms_volume(data_dir: Path) -> pd.DataFrame:
     df = pd.read_csv(data_dir / "RMS Volume.tsv", sep="\t")
     df = df.rename(columns={
@@ -165,6 +180,7 @@ def main():
     shots_001_df     = load_interval(dir_001 / "Shots.tsv")
     face_emotions_df = load_interval(dir_001 / "Face Emotions.tsv")
     transcript_df    = load_interval(dir_001 / "Whisper Transcript.tsv")
+    scene_tags_df    = load_scene_tags(dir_001)
 
     print("Loading video_002...")
     shots_002_df = load_interval(dir_002 / "Shots.tsv")
@@ -181,6 +197,7 @@ def main():
         writer.add_track("video_001", SHOTS_TRACK,         shots_001_df)
         writer.add_track("video_001", FACE_EMOTIONS_TRACK, face_emotions_df)
         writer.add_track("video_001", TRANSCRIPT_TRACK,    transcript_df)
+        writer.add_track("video_001", SCENE_TAGS_TRACK,    scene_tags_df)
 
         writer.add_video("video_002", "https://example.org/videos/talk_002.mp4")
         writer.add_track("video_002", SHOTS_TRACK,          shots_002_df)

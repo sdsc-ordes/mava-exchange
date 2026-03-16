@@ -124,5 +124,56 @@ class AnnotationSeries:
         }
 
 
-# Type alias for either kind of track
-Track = ObservationSeries | AnnotationSeries
+@dataclass
+class AnnotationListSeries:
+    """
+    A sparse interval annotation track with list-valued annotations.
+
+    Maps to mava:AnnotationListSeries in the MAVA ontology.
+    Each row contains a list of strings in the annotations column.
+
+    Required Parquet columns:
+      start_seconds  — start of interval (mava:startTime)
+      end_seconds    — end of interval   (mava:endTime)
+      annotations    — list of strings   (Parquet LIST<STRING>)
+
+    Use this for multi-label classifications, keyword tags, or any annotation
+    where multiple values apply simultaneously to a time segment.
+
+    Example:
+        AnnotationListSeries(
+            name="scene_tags",
+            description="Scene classification tags (Places3: indoor/outdoor + natural/man-made)",
+        )
+
+        df = pd.DataFrame({
+            "start_seconds": [0.0, 45.2, 78.5],
+            "end_seconds":   [45.2, 78.5, 120.0],
+            "annotations":   [
+                ["outdoor", "natural"],
+                ["indoor"],
+                ["outdoor", "man-made"],
+            ],
+        })
+    """
+    name:        str
+    description: str
+
+    type: Literal["mava:AnnotationListSeries"] = field(
+        default="mava:AnnotationListSeries", init=False
+    )
+
+    @property
+    def columns(self) -> list[str]:
+        return ["start_seconds", "end_seconds", "annotations"]
+
+    def to_dict(self) -> dict:
+        return {
+            "type":        self.type,
+            "description": self.description,
+            "columns":     self.columns,
+        }
+
+
+# Type alias for any kind of track
+Track = ObservationSeries | AnnotationSeries | AnnotationListSeries
