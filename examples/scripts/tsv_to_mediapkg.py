@@ -124,7 +124,8 @@ def load_interval(path: Path) -> pd.DataFrame:
 def load_scene_tags(data_dir: Path) -> pd.DataFrame:
     """Load scene tags and convert comma-separated values to lists."""
     df = pd.read_csv(data_dir / "scene_tags.tsv", sep="\t", comment="#")
-    # Convert comma-separated tags to Python lists
+    df["start_seconds"] = pd.to_numeric(df["start_seconds"])
+    df["end_seconds"] = pd.to_numeric(df["end_seconds"])
     df["annotations"] = df["tags"].str.split(",")
     return df[["start_seconds", "end_seconds", "annotations"]]
 
