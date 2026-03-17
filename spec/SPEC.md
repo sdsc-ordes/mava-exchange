@@ -146,6 +146,28 @@ For CLARIN-compliant archiving, a `.mediapkg` corpus would be described by a
 CMDI metadata record that references the package as a resource. The MAVA
 ontology provides the semantic vocabulary that bridges the two levels.
 
+### Frictionless Data
+
+[Frictionless Data](https://frictionlessdata.io/) is a framework for describing,
+validating, and packaging tabular data. It supports Parquet files through a
+generic `datapackage.json` metadata file that declares table schemas with column
+types, constraints, and human-readable descriptions.
+
+**The fundamental difference is architectural**: Frictionless is built around
+**domain-agnostic tooling** that works with any tabular data — its value lies in
+generic validation and packaging infrastructure that users adapt to their domain
+by writing schemas. MediaPkg is built around a **domain-specific ontology**
+(MAVA) that defines the semantics of video annotations — tooling is written to
+support this ontology, not the other way around.
+
+| Concept           | Frictionless Data                          | MediaPkg                                                                 |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
+| Domain            | Generic tabular data                       | Video annotations (time-series + intervals)                              |
+| Semantic layer    | None (operational metadata only)           | JSON-LD `@context` → MAVA ontology                                       |
+| Schema            | Table Schema (columns, types, constraints) | Track types (ObservationSeries, AnnotationSeries) with ontology mappings |
+| Multi-file corpus | Flat collection of unrelated tables        | Hierarchical structure (videos → tracks)                                 |
+| Use case          | Data validation and publishing             | Tool interoperability with semantic precision                            |
+
 ### W3C Web Annotation
 
 The W3C Web Annotation model is general-purpose but verbose and does not have
