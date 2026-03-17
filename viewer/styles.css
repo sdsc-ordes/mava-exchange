@@ -218,3 +218,7 @@ h1 {
   color: #666;
   margin-top: 5px;
 }
+
+#chartCanvas {
+  max-height: 400px;
+}

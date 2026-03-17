@@ -266,73 +266,70 @@ function renderObservationSeries(data, trackDef) {
     '<p style="margin-bottom: 15px; color: #666;">' +
     trackDef.description +
     "</p>"
-  html +=
-    '<p style="margin-bottom: 10px; color: #333;"><strong>Dimensions:</strong></p>'
-  html += '<ul style="margin-bottom: 20px; color: #666;">'
 
-  if (trackDef.dimensions) {
-    for (const [dimName, dimInfo] of Object.entries(trackDef.dimensions)) {
-      html +=
-        "<li>" +
-        dimName +
-        ": " +
-        dimInfo.description +
-        " " +
-        (dimInfo.range || "") +
-        "</li>"
-    }
-  }
-  html += "</ul>"
-
-  html += '<p style="margin-bottom: 10px;"><strong>First 10 rows:</strong></p>'
-  html += '<div style="overflow-x: auto;">'
-  html +=
-    '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">'
-
-  // Header
-  const columns = Object.keys(data[0])
-  html += "<thead><tr>"
-  columns.forEach((col) => {
-    html +=
-      '<th style="border: 1px solid #ddd; padding: 8px; background: #f5f5f5; text-align: left;">' +
-      col +
-      "</th>"
-  })
-  html += "</tr></thead>"
-
-  // Rows (first 10)
-  html += "<tbody>"
-  data.slice(0, 10).forEach((row) => {
-    html += "<tr>"
-    columns.forEach((col) => {
-      const val = row[col]
-      const displayVal = typeof val === "number" ? val.toFixed(3) : val
-      html +=
-        '<td style="border: 1px solid #ddd; padding: 8px;">' +
-        displayVal +
-        "</td>"
-    })
-    html += "</tr>"
-  })
-  html += "</tbody></table>"
+  // Add canvas for chart
+  html += '<canvas id="chartCanvas"></canvas>'
   html += "</div>"
 
-  if (data.length > 10) {
-    html +=
-      '<p style="margin-top: 10px; color: #666; font-size: 12px;">... and ' +
-      (data.length - 10) +
-      " more rows</p>"
-  }
-
-  html += "</div>"
   chart.innerHTML = html
+
+  // Generate line chart
+  const ctx = document.getElementById("chartCanvas")
+  const dimensions = Object.keys(trackDef.dimensions || {})
+
+  // Create datasets - one line per dimension
+  const datasets = dimensions.map((dimName, i) => {
+    const hue = (i * 137.5) % 360 // Golden angle for color distribution
+    return {
+      label: dimName,
+      data: data.map((row) => ({ x: row.start_seconds, y: row[dimName] })),
+      borderColor: `hsl(${hue}, 70%, 50%)`,
+      backgroundColor: `hsla(${hue}, 70%, 50%, 0.1)`,
+      borderWidth: 2,
+      pointRadius: 0, // Hide points for cleaner look
+      tension: 0.1,
+    }
+  })
+
+  new Chart(ctx, {
+    type: "line",
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+        },
+      },
+      scales: {
+        x: {
+          type: "linear",
+          title: {
+            display: true,
+            text: "Time (seconds)",
+          },
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Value",
+          },
+        },
+      },
+      interaction: {
+        mode: "nearest",
+        axis: "x",
+        intersect: false,
+      },
+    },
+  })
 }
 
-/**
- * Visualize a track from the package
- * @param {Array<object>} data - Data rows as array of objects
- * @param {object} trackDef - Track definition from manifest
- */
 function renderAnnotationSeries(data, trackDef) {
   const chart = document.getElementById("chart")
 
@@ -345,7 +342,7 @@ function renderAnnotationSeries(data, trackDef) {
   data.forEach((row) => {
     const duration = (row.end_seconds - row.start_seconds).toFixed(1)
     html +=
-      '<div style="background: #e3f2fd; border-left: 4px solid #1976d2; padding: 12px; margin: 8px 0; border-radius: 4px;">'
+      '<div style="background: #fff3e0; border-left: 4px solid #f57c00; padding: 12px; margin: 8px 0; border-radius: 4px;">'
     html += '<div style="font-size: 12px; color: #666; margin-bottom: 4px;">'
     html +=
       row.start_seconds.toFixed(1) +
