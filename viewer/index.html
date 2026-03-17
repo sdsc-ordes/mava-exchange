@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediaPkg Viewer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>MediaPkg Viewer</h1>
+      <p class="subtitle">
+        Load and explore .mediapkg video annotation packages
+      </p>
+
+      <div id="dropZone">
+        <div class="drop-icon">📦</div>
+        <h3>Drop a .mediapkg file here</h3>
+        <p class="drop-hint">or click to browse</p>
+        <input type="file" id="fileInput" accept=".mediapkg" />
+      </div>
+
+      <div id="packageInfo">
+        <h2>Package Information</h2>
+        <div class="info-grid">
+          <span class="info-label">Version:</span>
+          <span class="info-value" id="infoVersion">—</span>
+
+          <span class="info-label">Created:</span>
+          <span class="info-value" id="infoCreated">—</span>
+
+          <span class="info-label">Description:</span>
+          <span class="info-value" id="infoDescription">—</span>
+
+          <span class="info-label">Videos:</span>
+          <span class="info-value" id="infoVideos">—</span>
+
+          <span class="info-label">Tracks:</span>
+          <span class="info-value" id="infoTracks">—</span>
+        </div>
+      </div>
+
+      <div id="videoList"></div>
+
+      <div id="visualization">
+        <div class="viz-header">
+          <div>
+            <div class="viz-title" id="vizTitle"></div>
+            <div class="viz-subtitle" id="vizSubtitle"></div>
+          </div>
+          <button class="close-btn" onclick="closeVisualization()">
+            Close
+          </button>
+        </div>
+        <div id="chart"></div>
+      </div>
+    </div>
+
+    <!-- JSZip library -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- viewer library to view MediaPkg files -->
+    <script type="module" src="viewer.js"></script>
+  </body>
+</html>

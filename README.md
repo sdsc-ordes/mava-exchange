@@ -22,6 +22,13 @@
 A Python library and standard package format for exchanging video annotation
 data between research tools.
 
+## Documentation
+
+- **[Format Specification](spec/SPEC.md)** - Complete technical spec
+- **[Interactive Viewer](https://sdsc-ordes.github.io/mava-exchange/viewer/)** -
+  Try it in your browser
+- **[Tutorial](docs/tutorial.md)** - Getting started guide
+
 ## Project Context
 
 This work is part of the MAVA Project, which aims to improve interoperability
