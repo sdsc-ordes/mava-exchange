@@ -167,19 +167,44 @@ async function visualizeTrack(videoId, trackName, trackPath, trackDef) {
     const parquetData = await parquetFile.async("arraybuffer")
     console.log("Parquet data loaded, size:", parquetData.byteLength)
 
-    // Parse with hyparquet
+    // Parse with hyparquet - collect schema and rows
+    let schema = null
     const rows = []
+
     await parquetRead({
       file: parquetData,
-      onComplete: (data) => {
+      onComplete: (data, schemaDef) => {
         console.log("Parquet parsed, rows:", data.length)
+        if (!schema && schemaDef) {
+          schema = schemaDef
+          console.log("Schema:", schema)
+        }
         rows.push(...data)
       },
     })
 
     console.log("Total rows:", rows.length)
     if (rows.length > 0) {
-      console.log("First row:", rows[0])
+      console.log("First row (raw):", rows[0])
+    }
+
+    // Convert arrays to objects using schema
+    let dataObjects = rows
+    if (rows.length > 0 && Array.isArray(rows[0])) {
+      // hyparquet returns arrays - convert to objects
+      const columnNames =
+        trackDef.columns || Object.keys(trackDef.dimensions || {})
+      console.log("Converting arrays to objects using columns:", columnNames)
+
+      dataObjects = rows.map((row) => {
+        const obj = {}
+        columnNames.forEach((colName, i) => {
+          obj[colName] = row[i]
+        })
+        return obj
+      })
+
+      console.log("First row (converted):", dataObjects[0])
     }
 
     // Show visualization
@@ -189,7 +214,7 @@ async function visualizeTrack(videoId, trackName, trackPath, trackDef) {
       " • " +
       videoId +
       " • " +
-      rows.length +
+      dataObjects.length +
       " rows"
     document.getElementById("visualization").classList.add("visible")
     document
@@ -198,11 +223,11 @@ async function visualizeTrack(videoId, trackName, trackPath, trackDef) {
 
     // Render based on track type
     if (trackDef.type === "mava:ObservationSeries") {
-      renderObservationSeries(rows, trackDef)
+      renderObservationSeries(dataObjects, trackDef)
     } else if (trackDef.type === "mava:AnnotationListSeries") {
-      renderAnnotationListSeries(rows, trackDef)
+      renderAnnotationListSeries(dataObjects, trackDef)
     } else {
-      renderAnnotationSeries(rows, trackDef)
+      renderAnnotationSeries(dataObjects, trackDef)
     }
   } catch (error) {
     showError("Failed to load track: " + error.message)
