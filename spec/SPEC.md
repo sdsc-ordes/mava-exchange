@@ -153,11 +153,12 @@ validating, and packaging tabular data. It supports Parquet files through a
 generic `datapackage.json` metadata file that declares table schemas with column
 types, constraints, and human-readable descriptions.
 
-MediaPkg serves a different purpose. While both formats package tabular data
-with metadata, Frictionless is designed for **generic tabular data interchange**
-(CSVs, spreadsheets, databases) with no domain-specific semantics. MediaPkg is a
-**domain-specific format** for video annotations with an ontology-backed
-semantic layer.
+**The fundamental difference is architectural**: Frictionless is built around
+**domain-agnostic tooling** that works with any tabular data — its value lies in
+generic validation and packaging infrastructure that users adapt to their domain
+by writing schemas. MediaPkg is built around a **domain-specific ontology**
+(MAVA) that defines the semantics of video annotations — tooling is written to
+support this ontology, not the other way around.
 
 | Concept           | Frictionless Data                          | MediaPkg                                                                 |
 | ----------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
