@@ -56,7 +56,10 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("All event listeners attached")
 })
 
-// Load and parse .mediapkg file
+/**
+ * Load and parse a .mediapkg file
+ * @param {File} file - The .mediapkg file from file input or drag-drop
+ */
 async function loadPackage(file) {
   try {
     console.log("Loading package:", file.name)
@@ -81,6 +84,10 @@ async function loadPackage(file) {
   }
 }
 
+/**
+ * Display package information
+ * @param {object} manifest - Manifest object from the package as jsonld
+ */
 function displayPackageInfo(manifest) {
   document.getElementById("infoVersion").textContent = manifest.version
   document.getElementById("infoCreated").textContent = manifest.created || "—"
@@ -94,6 +101,10 @@ function displayPackageInfo(manifest) {
   document.getElementById("packageInfo").classList.add("visible")
 }
 
+/**
+ * Display the list of videos and tracks from the package
+ * @param {object} manifest - Manifest object from the package as jsonld
+ */
 function displayVideoList(manifest) {
   const videoList = document.getElementById("videoList")
   videoList.innerHTML = "<h2>Videos & Tracks</h2>"
@@ -154,6 +165,13 @@ function displayVideoList(manifest) {
   }
 }
 
+/**
+ * Visualize a track from the package
+ * @param {string} videoId - Video identifier
+ * @param {string} trackName - Name of the track
+ * @param {string} trackPath - Path to Parquet file in ZIP
+ * @param {object} trackDef - Track definition from manifest
+ */
 async function visualizeTrack(videoId, trackName, trackPath, trackDef) {
   try {
     console.log("Visualizing track:", trackName)
@@ -235,6 +253,11 @@ async function visualizeTrack(videoId, trackName, trackPath, trackDef) {
   }
 }
 
+/**
+ * Visualize a track from the package
+ * @param {Array<object>} data - Data rows as array of objects
+ * @param {object} trackDef - Track definition from manifest
+ */
 function renderObservationSeries(data, trackDef) {
   const chart = document.getElementById("chart")
 
@@ -305,6 +328,11 @@ function renderObservationSeries(data, trackDef) {
   chart.innerHTML = html
 }
 
+/**
+ * Visualize a track from the package
+ * @param {Array<object>} data - Data rows as array of objects
+ * @param {object} trackDef - Track definition from manifest
+ */
 function renderAnnotationSeries(data, trackDef) {
   const chart = document.getElementById("chart")
 
@@ -338,6 +366,11 @@ function renderAnnotationSeries(data, trackDef) {
   chart.innerHTML = html
 }
 
+/**
+ * Visualize a track from the package
+ * @param {Array<object>} data - Data rows as array of objects
+ * @param {object} trackDef - Track definition from manifest
+ */
 function renderAnnotationListSeries(data, trackDef) {
   const chart = document.getElementById("chart")
 

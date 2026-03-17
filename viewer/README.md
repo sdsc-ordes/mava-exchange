@@ -33,21 +33,13 @@ All processing happens client-side. No data is uploaded to any server.
 ## Technologies
 
 - [JSZip](https://stuk.github.io/jszip/) - Unzip .mediapkg files
-- [parquet-wasm](https://github.com/kylebarron/parquet-wasm) - Read Parquet in
-  browser
+- [hyparquet](https://github.com/hyparam/hyparquet) - Read Parquet in browser
 - [Chart.js](https://www.chartjs.org/) - Render time-series charts
 - Vanilla JavaScript - No framework dependencies
 
 ## Example
 
-Try it with the example corpus:
-
-```bash
-# From the repository root
-python examples/tsv_to_mediapkg.py
-# This creates examples/output/corpus.mediapkg
-# Drag that file into the viewer
-```
+Try it with the [example corpus](../examples/output/corpus.mediapkg)
 
 ## Limitations
 

@@ -208,3 +208,13 @@ h1 {
   border-radius: 6px;
   margin: 20px 0;
 }
+
+.drop-hint {
+  margin-top: 10px;
+  color: #666;
+}
+
+.viz-subtitle {
+  color: #666;
+  margin-top: 5px;
+}
