@@ -30,3 +30,6 @@ __pycache*
 .prettierrc.yaml
 .yamllint.yaml
 .typos.toml
+
+# docs build output
+docs/_build
