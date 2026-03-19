@@ -71,3 +71,4 @@ ignore = [
 "tests/**" = ["INP001", "PLR2004", "PLR0913", "PT012"]
 "examples/*" = ["INP001"]
 "[!t][!e][!s][!t][!s]*/**" = ["PT"]
+"docs/*" = ["INP001"]

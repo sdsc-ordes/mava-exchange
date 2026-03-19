@@ -102,3 +102,18 @@ inspect-jsonld pkg="examples/output/corpus.mediapkg":
 [group('usage')]
 validate pkg="examples/output/corpus.mediapkg" *args:
     mediapkg-validate "{{pkg}}" {{args}}
+
+# Build the HTML documentation
+[group('docs')]
+html:
+    sphinx-build -b html docs .output/docs
+
+# Remove the build directory for a fresh start
+[group('docs')]
+clean:
+    rm -rf docs/build
+
+# Watch for changes and rebuild (requires 'sphinx-autobuild' pip package)
+[group('docs')]
+watch:
+    sphinx-autobuild docs/source docs/build/html

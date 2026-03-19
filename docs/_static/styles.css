@@ -1,0 +1,37 @@
+/* --- WIDE PAGE RESTORATION --- */
+
+/* 1. Reset Furo's internal width variables for the wide-page only */
+body.wide-page {
+  --content-width: 100% !important;
+  --toc-width: 0px !important; /* Reclaim the right sidebar space */
+}
+
+/* 2. Force the main containers to respect the new 100% width */
+body.wide-page .main,
+body.wide-page .content,
+body.wide-page .article-container,
+body.wide-page article[role="main"] {
+  max-width: none !important;
+  width: 100% !important;
+  margin-right: 0 !important;
+}
+
+/* 3. Hide the visual elements of the right sidebar */
+body.wide-page .toc-drawer {
+  display: none !important;
+}
+
+/* 4. Ensure the iframe fills the space */
+.full-width-iframe {
+  width: 100% !important;
+  height: 85vh;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.page .sidebar-drawer {
+  width: unset;
+}
+.page .content {
+  width: 100%;
+}
