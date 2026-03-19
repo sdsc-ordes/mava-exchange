@@ -111,7 +111,7 @@ html:
 # Remove the build directory for a fresh start
 [group('docs')]
 clean:
-    rm -rf docs/build
+    rm -rf .output/docs
 
 # Watch for changes and rebuild (requires 'sphinx-autobuild' pip package)
 [group('docs')]

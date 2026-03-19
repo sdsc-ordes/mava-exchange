@@ -4,8 +4,6 @@
 https://github.com/smaennel/mava-exchange **Ontology:**
 http://example.org/mava/ontology# **License:** Apache 2.0
 
----
-
 ## Status
 
 This is an early draft specification. It is being developed in the context of
@@ -15,24 +13,6 @@ Feedback welcome via GitHub issues.
 The key words MUST, MUST NOT, REQUIRED, SHOULD, SHOULD NOT, RECOMMENDED, MAY,
 and OPTIONAL in this document are to be interpreted as described in
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
-
----
-
-## Table of Contents
-
-1. [Introduction](#1-introduction)
-2. [Motivation](#2-motivation)
-3. [Relation to Existing Standards](#3-relation-to-existing-standards)
-4. [File Format](#4-file-format)
-5. [manifest.json](#5-manifestjson)
-6. [Track Types](#6-track-types)
-7. [Parquet Files](#7-parquet-files)
-8. [Ontology and Semantic Layer](#8-ontology-and-semantic-layer)
-9. [Validation](#9-validation)
-10. [Corpus Packages](#10-corpus-packages)
-11. [Design Decisions](#11-design-decisions)
-
----
 
 ## 1. Introduction
 
@@ -246,15 +226,15 @@ valid JSON and MUST be located at the root of the ZIP archive.
   "ontology": "http://example.org/mava/ontology#",
   "context": {
     "@context": {
-      "xsd":  "http://www.w3.org/2001/XMLSchema#",
+      "xsd": "http://www.w3.org/2001/XMLSchema#",
       "mava": "http://example.org/mava/ontology#",
-      "start_seconds": {"@id": "mava:atTime",      "@type": "xsd:decimal"},
-      "end_seconds":   {"@id": "mava:endTime",     "@type": "xsd:decimal"},
-      "annotations":   {"@id": "mava:stringValue", "@type": "xsd:string"}
+      "start_seconds": { "@id": "mava:atTime", "@type": "xsd:decimal" },
+      "end_seconds": { "@id": "mava:endTime", "@type": "xsd:decimal" },
+      "annotations": { "@id": "mava:stringValue", "@type": "xsd:string" }
     }
   },
-  "tracks": { ... },
-  "videos": [ ... ]
+  "tracks": {},
+  "videos": []
 }
 ```
 

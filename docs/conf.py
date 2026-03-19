@@ -18,13 +18,14 @@ author = 'Sabine Maennel'
 
 extensions = [
     'myst_parser',
+    'sphinx.ext.extlinks',
     'sphinx.ext.autodoc',    # Pull docs from docstrings
     'sphinx.ext.napoleon',   # Support for Google/NumPy style docstrings
     'sphinx.ext.viewcode',   # Add links to highlighted source code
 ]
 
 # Enable Markdown features like tables and task lists
-myst_enable_extensions = ["colon_fence", "html_image"]
+myst_enable_extensions = ["colon_fence", "html_image", "attrs_inline"]
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -50,3 +51,6 @@ html_theme_options = {
 html_css_files = [
     'styles.css',
 ]
+html_additional_pages = {
+    "mava-ontology": "mava.html",
+}

@@ -5,8 +5,8 @@
 maxdepth: 1
 caption: Contents
 ---
+tutorial/getting-started
 spec/specification
 ontology/ontology
-tutorial/getting-started
 tools/viewer
 ```
