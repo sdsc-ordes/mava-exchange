@@ -1,18 +1,28 @@
 """
-Track definitions — the building blocks for describing annotation data.
+Track definitions for annotation data.
 
-A Track describes the structure and meaning of one Parquet file
-in a .mediapkg archive. There are two kinds:
+A track describes one Parquet file in a .mediapkg archive.
 
-  ObservationSeries — dense time-series of numeric values
-                      sampled at regular intervals
-                      e.g. emotion scores, RMS volume, dominant color
+Three types:
 
-  AnnotationSeries  — sparse interval annotations
-                      each row has a start, end, and a string value
-                      e.g. shot boundaries, transcripts, labels
+- **ObservationSeries** - Dense time-series (emotion scores, audio volume)
+- **AnnotationSeries** - Sparse intervals with single labels (transcripts, shots)
+- **AnnotationListSeries** - Sparse intervals with multiple labels (scene tags)
+
+Example::
+
+    from mava_exchange import ObservationSeries, DimensionSpec
+
+    emotions = ObservationSeries(
+        name="emotions",
+        description="Face emotion scores",
+        sampling_interval=0.5,
+        dimensions=[
+            DimensionSpec("happy", "Happiness", "[0,1]"),
+            DimensionSpec("sad", "Sadness", "[0,1]")
+        ]
+    )
 """
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -25,12 +35,23 @@ class DimensionSpec:
     Describes one measured quantity (column) within an ObservationSeries.
 
     The name must match the column name in the Parquet file exactly.
+
+    Example::
+
+        DimensionSpec("angry", "Anger probability", "[0,1]")
+        DimensionSpec("rms", "Audio RMS volume", ">=0")
     """
-    name:        str
+    name: str
+    """Column name in Parquet file."""
+
     description: str = ""
-    range:       str = ""   # e.g. "[0,1]", ">=0", "categorical"
+    """Human-readable description of what this measures."""
+
+    range: str = ""
+    """Value range specification (e.g., "[0,1]", ">=0", "categorical")."""
 
     def to_dict(self) -> dict:
+        """Converts to dictionary for manifest.json."""
         d = {"description": self.description}
         if self.range:
             d["range"] = self.range
@@ -40,31 +61,44 @@ class DimensionSpec:
 @dataclass
 class ObservationSeries:
     """
-    A dense time-series track of numeric observations.
+    Dense time-series of numeric observations sampled at regular intervals.
 
-    Maps to mava:ObservationSeries in the MAVA ontology.
-    Each row in the Parquet file is a mava:ObservationPoint.
+    Use for emotion scores, audio volume, confidence values, or any
+    regularly-sampled numeric measurements.
 
-    Required Parquet columns:
-      start_seconds  — time of observation (mava:atTime)
-      <dim.name>...  — one column per declared dimension (mava:numericValue)
+    Each row in the Parquet file needs: start_seconds + one column per dimension.
 
-    Example:
-        ObservationSeries(
+    Example::
+
+        emotions = ObservationSeries(
             name="emotions",
-            description="Face emotion scores from DeepFace model",
+            description="Face emotion scores from DeepFace",
             sampling_interval=0.5,
             dimensions=[
-                DimensionSpec("angry",   "Anger probability",    "[0,1]"),
-                DimensionSpec("fear",    "Fear probability",     "[0,1]"),
-                DimensionSpec("neutral", "Neutral expression",   "[0,1]"),
+                DimensionSpec("angry", "Anger probability", "[0,1]"),
+                DimensionSpec("fear", "Fear probability", "[0,1]"),
+                DimensionSpec("neutral", "Neutral expression", "[0,1]")
             ]
         )
+
+        df = pd.DataFrame({
+            "start_seconds": [0.0, 0.5, 1.0],
+            "angry": [0.2, 0.1, 0.3],
+            "fear": [0.1, 0.2, 0.1],
+            "neutral": [0.7, 0.7, 0.6]
+        })
     """
-    name:               str
-    description:        str
-    dimensions:         list[DimensionSpec]
-    sampling_interval:  float | None = None   # seconds between samples
+    name: str
+    """Track name (must be unique within package)."""
+
+    description: str
+    """Human-readable description of what this track contains."""
+
+    dimensions: list[DimensionSpec]
+    """Measured quantities (columns in Parquet)."""
+
+    sampling_interval: float | None = None
+    """Seconds between samples for regularly-sampled data."""
 
     type: Literal["mava:ObservationSeries"] = field(
         default="mava:ObservationSeries", init=False
@@ -72,9 +106,11 @@ class ObservationSeries:
 
     @property
     def columns(self) -> list[str]:
+        """Returns column names."""
         return ["start_seconds"] + [d.name for d in self.dimensions]
 
     def to_dict(self) -> dict:
+        """Converts to dictionary for manifest.json."""
         d = {
             "type":        self.type,
             "description": self.description,
@@ -89,24 +125,31 @@ class ObservationSeries:
 @dataclass
 class AnnotationSeries:
     """
-    A sparse interval annotation track.
+    Sparse interval annotations with single-label values.
 
-    Maps to mava:AnnotationSeries in the MAVA ontology.
-    Each row in the Parquet file is a mava:AnnotationSegment.
+    Use for shot boundaries, transcripts, scene labels, or any annotation
+    where each time segment has one string value.
 
-    Required Parquet columns:
-      start_seconds  — start of interval (mava:startTime)
-      end_seconds    — end of interval   (mava:endTime)
-      annotations    — string value      (mava:stringValue)
+    Each row in the Parquet file needs: start_seconds, end_seconds, annotations.
 
-    Example:
-        AnnotationSeries(
+    Example::
+
+        transcript = AnnotationSeries(
             name="transcript",
-            description="Speech-to-text segments from Whisper",
+            description="Speech-to-text from Whisper"
         )
+
+        df = pd.DataFrame({
+            "start_seconds": [0.0, 5.2, 12.1],
+            "end_seconds": [5.0, 12.0, 18.5],
+            "annotations": ["Hello", "Welcome", "Let's begin"]
+        })
     """
-    name:        str
+    name: str
+    """Track name (must be unique within package)."""
+
     description: str
+    """Human-readable description of what this track contains."""
 
     type: Literal["mava:AnnotationSeries"] = field(
         default="mava:AnnotationSeries", init=False
@@ -114,9 +157,11 @@ class AnnotationSeries:
 
     @property
     def columns(self) -> list[str]:
+        """Returns column names."""
         return ["start_seconds", "end_seconds", "annotations"]
 
     def to_dict(self) -> dict:
+        """Converts to dictionary for manifest.json."""
         return {
             "type":        self.type,
             "description": self.description,
@@ -127,37 +172,35 @@ class AnnotationSeries:
 @dataclass
 class AnnotationListSeries:
     """
-    A sparse interval annotation track with list-valued annotations.
+    Sparse interval annotations with multiple labels per segment.
 
-    Maps to mava:AnnotationListSeries in the MAVA ontology.
-    Each row contains a list of strings in the annotations column.
+    Use for multi-label scene tags, keywords, or any annotation where
+    multiple values apply simultaneously to a time segment.
 
-    Required Parquet columns:
-      start_seconds  — start of interval (mava:startTime)
-      end_seconds    — end of interval   (mava:endTime)
-      annotations    — list of strings   (Parquet LIST<STRING>)
+    Each row in the Parquet file needs: start_seconds, end_seconds, annotations (as Python lists).
 
-    Use this for multi-label classifications, keyword tags, or any annotation
-    where multiple values apply simultaneously to a time segment.
+    Example::
 
-    Example:
-        AnnotationListSeries(
+        scene_tags = AnnotationListSeries(
             name="scene_tags",
-            description="Scene classification tags (Places3: indoor/outdoor + natural/man-made)",
+            description="Scene classification (indoor/outdoor + natural/man-made)"
         )
 
         df = pd.DataFrame({
             "start_seconds": [0.0, 45.2, 78.5],
-            "end_seconds":   [45.2, 78.5, 120.0],
-            "annotations":   [
+            "end_seconds": [45.2, 78.5, 120.0],
+            "annotations": [
                 ["outdoor", "natural"],
                 ["indoor"],
-                ["outdoor", "man-made"],
-            ],
+                ["outdoor", "man-made"]
+            ]
         })
     """
-    name:        str
+    name: str
+    """Track name (must be unique within package)."""
+
     description: str
+    """Human-readable description of what this track contains."""
 
     type: Literal["mava:AnnotationListSeries"] = field(
         default="mava:AnnotationListSeries", init=False
@@ -165,9 +208,11 @@ class AnnotationListSeries:
 
     @property
     def columns(self) -> list[str]:
+        """Returns column names."""
         return ["start_seconds", "end_seconds", "annotations"]
 
     def to_dict(self) -> dict:
+        """Converts to dictionary for manifest.json."""
         return {
             "type":        self.type,
             "description": self.description,

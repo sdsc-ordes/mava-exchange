@@ -1,23 +1,4 @@
-"""
-MediaPackageReader — reads a .mediapkg archive.
-
-Usage:
-
-    from mava_exchange.reader import MediaPackageReader
-
-    with MediaPackageReader("corpus.mediapkg") as reader:
-        # Inspect the corpus
-        print(reader.video_ids)
-        print(reader.track_names)
-
-        # Read a specific track into a DataFrame
-        df = reader.read_track("video_001", "emotions")
-
-        # Read all tracks for a video
-        tracks = reader.read_video("video_001")
-        # → {"emotions": df, "transcript": df, ...}
-"""
-
+"""Reader for loading .mediapkg archives."""
 from __future__ import annotations
 
 import io
@@ -38,7 +19,7 @@ if TYPE_CHECKING:
 
 
 def _track_from_dict(name: str, d: dict) -> Track:
-    """Reconstruct a Track object from a manifest dict entry."""
+    """Reconstruct Track object from manifest dict."""
     track_type = d.get("type", "")
     if track_type == "mava:ObservationSeries":
         dims = [
@@ -66,34 +47,38 @@ def _track_from_dict(name: str, d: dict) -> Track:
             description=d.get("description", ""),
         )
     else:
-        raise ValueError(
-            f"Unknown track type '{track_type}' for track '{name}'"
-        )
+        raise ValueError(f"Unknown track type '{track_type}' for track '{name}'")
 
 
 class MediaPackageReader:
     """
-    Reads a .mediapkg archive.
+    Read .mediapkg archive files.
 
-    Use as a context manager (recommended):
+    Use as a context manager or call open()/close() manually.
 
-        with MediaPackageReader("corpus.mediapkg") as reader:
-            df = reader.read_track("video_001", "emotions")
+    Example::
 
-    Or open/close manually:
-
-        reader = MediaPackageReader("corpus.mediapkg")
-        reader.open()
-        df = reader.read_track("video_001", "emotions")
-        reader.close()
+        with MediaPackageReader("corpus.mediapkg") as r:
+            print(r.video_ids)
+            print(r.track_names)
+            df = r.read_track("v001", "emotions")
     """
 
     def __init__(self, path: str | Path):
+        """
+        Initialize reader.
+
+        Parameters
+        ----------
+        path : str or Path
+            Path to .mediapkg file
+        """
         self.path = Path(path)
-        self._zf:       zipfile.ZipFile | None = None
+        self._zf: zipfile.ZipFile | None = None
         self._manifest: dict | None = None
 
     def open(self) -> Self:
+        """Open the package for reading."""
         if not self.path.exists():
             raise FileNotFoundError(f"Package not found: {self.path}")
         if not zipfile.is_zipfile(self.path):
@@ -103,44 +88,60 @@ class MediaPackageReader:
         return self
 
     def close(self):
+        """Close the package file."""
         if self._zf:
             self._zf.close()
             self._zf = None
 
-    # ── Manifest accessors ───────────────────────────────────────────
-
     @property
     def manifest(self) -> dict:
+        """The parsed manifest.json dictionary."""
         self._require_open()
         return self._manifest
 
     @property
     def version(self) -> str:
+        """Format version from manifest."""
         return self.manifest["version"]
 
     @property
     def description(self) -> str:
+        """Package description."""
         return self.manifest.get("description", "")
 
     @property
     def ontology(self) -> str:
+        """Ontology URI."""
         return self.manifest.get("ontology", "")
 
     @property
     def video_ids(self) -> list[str]:
+        """List of video IDs in the package."""
         return [v["id"] for v in self.manifest["videos"]]
 
     @property
     def track_names(self) -> list[str]:
+        """List of all track names across all videos."""
         return list(self.manifest["tracks"].keys())
 
     def video_meta(self, video_id: str) -> dict:
-        """Return the manifest entry for a video (src, title, duration etc.)"""
+        """
+        Get video metadata.
+
+        Returns src, title, duration etc. (excludes file paths).
+        """
         video = self._find_video(video_id)
         return {k: v for k, v in video.items() if k != "files"}
 
     def track_def(self, track_name: str) -> Track:
-        """Return the Track object for a named track."""
+        """
+        Get track definition object.
+
+        Returns
+        -------
+        Track
+            ObservationSeries, AnnotationSeries, or AnnotationListSeries
+        """
         tracks = self.manifest["tracks"]
         if track_name not in tracks:
             raise KeyError(
@@ -150,16 +151,24 @@ class MediaPackageReader:
         return _track_from_dict(track_name, tracks[track_name])
 
     def tracks_for_video(self, video_id: str) -> list[str]:
-        """Return track names available for a specific video."""
+        """List track names available for a video."""
         return list(self._find_video(video_id)["files"].keys())
-
-    # ── Data reading ─────────────────────────────────────────────────
 
     def read_track(self, video_id: str, track_name: str) -> pd.DataFrame:
         """
-        Read a single track for a video into a DataFrame.
+        Read a track's data into a DataFrame.
 
-        Columns will match the track definition's column list.
+        Parameters
+        ----------
+        video_id : str
+            Video identifier
+        track_name : str
+            Track name
+
+        Returns
+        -------
+        pd.DataFrame
+            Track data with columns matching the track definition
         """
         self._require_open()
         video = self._find_video(video_id)
@@ -179,19 +188,26 @@ class MediaPackageReader:
         """
         Read all tracks for a video.
 
-        Returns a dict of track_name → DataFrame.
+        Returns
+        -------
+        dict[str, pd.DataFrame]
+            Mapping of track_name → DataFrame
         """
         return {
             track_name: self.read_track(video_id, track_name)
             for track_name in self.tracks_for_video(video_id)
         }
 
-    # ── File stats (without loading data) ───────────────────────────
-
     def file_stats(self) -> list[dict]:
         """
-        Return size and row count for each Parquet file.
-        Does not load row data — reads Parquet metadata only.
+        Get size and row count for each Parquet file.
+
+        Reads metadata only, does not load data.
+
+        Returns
+        -------
+        list[dict]
+            List of {path, rows, size_bytes, compressed_bytes}
         """
         self._require_open()
         stats = []
@@ -201,30 +217,32 @@ class MediaPackageReader:
             buf = io.BytesIO(self._zf.read(info.filename))
             meta = pq.read_metadata(buf)
             stats.append({
-                "path":           info.filename,
-                "rows":           meta.num_rows,
-                "size_bytes":     info.file_size,
+                "path": info.filename,
+                "rows": meta.num_rows,
+                "size_bytes": info.file_size,
                 "compressed_bytes": info.compress_size,
             })
         return stats
 
-    # ── RDF export ───────────────────────────────────────────────────
-
-    def export_manifest_as_rdf( # noqa: PLR0912
+    def export_manifest_as_rdf(  # noqa: PLR0912
         self, format: str = "turtle", base_uri: str = "http://example.org/data/"
     ) -> str:
         """
-        Export the manifest as RDF in Turtle or JSON-LD format.
+        Export manifest as RDF.
 
-        This exports only the package structure (videos, tracks, dimensions),
-        not the actual Parquet data rows.
+        Exports package structure only, not row data.
 
-        Args:
-            format: "turtle" or "json-ld"
-            base_uri: Base URI for generated resource identifiers
+        Parameters
+        ----------
+        format : str
+            "turtle" or "json-ld"
+        base_uri : str
+            Base URI for generated identifiers
 
-        Returns:
-            RDF serialization as a string
+        Returns
+        -------
+        str
+            RDF serialization
         """
         self._require_open()
 
@@ -238,7 +256,7 @@ class MediaPackageReader:
         g.bind("xsd", XSD)
         g.bind("ex", EX)
 
-        # The package itself
+        # Package
         pkg_uri = EX["package"]
         g.add((pkg_uri, RDF.type, MAVA.MediaPackage))
         if self.description:
@@ -256,16 +274,15 @@ class MediaPackageReader:
             if "src" in video:
                 g.add((video_uri, DCTERMS.source, URIRef(video["src"])))
 
-            # Link to track series
             for track_name in video.get("files", {}).keys():
                 series_uri = EX[f"series_{track_name}"]
                 g.add((video_uri, MAVA.hasAnalysis, series_uri))
 
-        # Tracks (series definitions)
+        # Tracks
         for track_name, track_def in self.manifest["tracks"].items():
             series_uri = EX[f"series_{track_name}"]
-
             track_type = track_def.get("type")
+
             if track_type == "mava:ObservationSeries":
                 g.add((series_uri, RDF.type, MAVA.ObservationSeries))
 
@@ -273,7 +290,6 @@ class MediaPackageReader:
                     g.add((series_uri, MAVA.samplingInterval,
                            Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
 
-                # Dimensions
                 for dim_name, dim_meta in track_def.get("dimensions", {}).items():
                     dim_uri = EX[f"dim_{track_name}_{dim_name}"]
                     g.add((series_uri, MAVA.hasDimension, dim_uri))
@@ -289,6 +305,9 @@ class MediaPackageReader:
             elif track_type == "mava:AnnotationSeries":
                 g.add((series_uri, RDF.type, MAVA.AnnotationSeries))
 
+            elif track_type == "mava:AnnotationListSeries":
+                g.add((series_uri, RDF.type, MAVA.AnnotationListSeries))
+
             if "description" in track_def:
                 g.add((series_uri, MAVA.seriesDescription,
                        Literal(track_def["description"])))
@@ -301,9 +320,8 @@ class MediaPackageReader:
         else:
             raise ValueError(f"Unknown format '{format}'. Use 'turtle' or 'json-ld'.")
 
-    # ── Internal helpers ─────────────────────────────────────────────
-
     def _require_open(self):
+        """Check that package is open."""
         if self._zf is None:
             raise RuntimeError(
                 "Reader is not open. Use 'with MediaPackageReader(...) as r:' "
@@ -311,6 +329,7 @@ class MediaPackageReader:
             )
 
     def _find_video(self, video_id: str) -> dict:
+        """Find video in manifest by ID."""
         for video in self.manifest["videos"]:
             if video["id"] == video_id:
                 return video
@@ -318,8 +337,6 @@ class MediaPackageReader:
             f"Video '{video_id}' not found. "
             f"Available: {', '.join(self.video_ids)}"
         )
-
-    # ── Context manager ──────────────────────────────────────────────
 
     def __enter__(self) -> Self:
         return self.open()

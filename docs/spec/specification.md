@@ -1,3 +1,0 @@
-```{include} ../../spec/SPEC.md
-
-```

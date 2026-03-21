@@ -17,12 +17,25 @@ author = 'Sabine Maennel'
 # -- Configuration
 
 extensions = [
-    'myst_parser',
-    'sphinx.ext.extlinks',
-    'sphinx.ext.autodoc',    # Pull docs from docstrings
-    'sphinx.ext.napoleon',   # Support for Google/NumPy style docstrings
-    'sphinx.ext.viewcode',   # Add links to highlighted source code
+    'sphinx.ext.autodoc',        # Extract docs from docstrings
+    'sphinx.ext.autosummary',    # Generate summary tables
+    'sphinx.ext.napoleon',       # Support NumPy/Google docstrings
+    'sphinx.ext.intersphinx',    # Link to other docs
+    'myst_parser',               # Parse Markdown
 ]
+
+# Autosummary: tells Sphinx to auto-create detailed pages
+autosummary_generate = True
+autosummary_imported_members = False
+
+# Autodoc: what to show by default
+autodoc_default_options = {
+    'members': True,              # Show all members
+    'undoc-members': False,       # Hide undocumented stuff
+    'special-members': False,     # Hide __special__ methods
+    'exclude-members': '__weakref__, __dict__, __module__, __init__',
+    'member-order': 'bysource',
+}
 
 # Enable Markdown features like tables and task lists
 myst_enable_extensions = ["colon_fence", "html_image", "attrs_inline"]
