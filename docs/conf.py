@@ -67,3 +67,4 @@ html_css_files = [
 html_additional_pages = {
     "mava-ontology": "mava.html",
 }
+html_favicon = '_static/assets/favicon.ico'
