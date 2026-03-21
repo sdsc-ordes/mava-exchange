@@ -527,20 +527,10 @@
                 >
               </th>
               <td>
-                <ul>
-                  <li>
-                    <span>
-                      <a href="#hasPackage">has package</a>
-                      <sup class="sup-op" title="OWL Object Property">op</sup>
-                    </span>
-                  </li>
-                  <li>
-                    <span>
-                      <a href="#hasMember">has member</a>
-                      <sup class="sup-op" title="OWL Object Property">op</sup>
-                    </span>
-                  </li>
-                </ul>
+                <span>
+                  <a href="#hasMember">has member</a>
+                  <sup class="sup-op" title="OWL Object Property">op</sup>
+                </span>
               </td>
             </tr>
           </table>
@@ -598,20 +588,10 @@
                 >
               </th>
               <td>
-                <ul>
-                  <li>
-                    <span>
-                      <a href="#hasPackage">has package</a>
-                      <sup class="sup-op" title="OWL Object Property">op</sup>
-                    </span>
-                  </li>
-                  <li>
-                    <span>
-                      <a href="#hasAnalysis">has analysis</a>
-                      <sup class="sup-op" title="OWL Object Property">op</sup>
-                    </span>
-                  </li>
-                </ul>
+                <span>
+                  <a href="#hasAnalysis">has analysis</a>
+                  <sup class="sup-op" title="OWL Object Property">op</sup>
+                </span>
               </td>
             </tr>
             <tr>
@@ -624,10 +604,20 @@
                 >
               </th>
               <td>
-                <span>
-                  <a href="#hasMember">has member</a>
-                  <sup class="sup-op" title="OWL Object Property">op</sup>
-                </span>
+                <ul>
+                  <li>
+                    <span>
+                      <a href="#hasMember">has member</a>
+                      <sup class="sup-op" title="OWL Object Property">op</sup>
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      <a href="#hasVideo">has video</a>
+                      <sup class="sup-op" title="OWL Object Property">op</sup>
+                    </span>
+                  </li>
+                </ul>
               </td>
             </tr>
           </table>
@@ -659,6 +649,22 @@
                   Parquet annotation files for one or more videos. The unit of
                   interchange between tools.
                 </p>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="https://w3id.org/profile/ontdoc/inDomainOf"
+                  title="Inverse of rdfs:domain. Defined in Ontology Documentation Profile"
+                  >In Domain Of</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#hasVideo">has video</a>
+                  <sup class="sup-op" title="OWL Object Property">op</sup>
+                </span>
               </td>
             </tr>
             <tr>
@@ -726,6 +732,22 @@
                 </span>
               </td>
             </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="https://w3id.org/profile/ontdoc/superClassOf"
+                  title="Inverse of RDFS' subClassOf. Defined in Ontology Documentation Profile"
+                  >Super Class Of</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#AnnotationListSeries">Annotation List Series</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
+              </td>
+            </tr>
           </table>
         </div>
         <div class="property entity" id="AnnotationListSeries">
@@ -764,32 +786,30 @@
               <th>
                 <a
                   class="hover_property"
-                  href="https://w3id.org/profile/ontdoc/inRangeOf"
-                  title="Inverse of rdfs:range. Defined in Ontology Documentation Profile"
-                  >In Range Of</a
+                  href="http://www.w3.org/2000/01/rdf-schema#subClassOf"
+                  title="The subject is a subclass of a class. Defined in The RDF Schema vocabulary (RDFS)"
+                  >Sub Class Of</a
                 >
               </th>
               <td>
                 <span>
-                  <a href="#belongsToAnnotationListSeries"
-                    >belongs to annotation list series</a
-                  >
-                  <sup class="sup-op" title="OWL Object Property">op</sup>
+                  <a href="#AnnotationSeries">Annotation Series</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
               </td>
             </tr>
           </table>
         </div>
-        <div class="property entity" id="AnnotationSegment">
+        <div class="property entity" id="Annotation">
           <h3>
-            Annotation Segment
+            Annotation
             <sup class="sup-c" title="OWL/RDFS Class">c</sup>
           </h3>
           <table>
             <tr>
               <th>IRI</th>
               <td>
-                <code>http://example.org/mava/ontology#AnnotationSegment</code>
+                <code>http://example.org/mava/ontology#Annotation</code>
               </td>
             </tr>
             <tr>
@@ -803,8 +823,8 @@
               </th>
               <td>
                 <p>
-                  A single interval annotation: a start time, end time, and a
-                  value. Maps to one row in an interval Parquet file.
+                  A single annotation: a time interval with associated value(s).
+                  Maps to one row in an annotation Parquet file.
                 </p>
               </td>
             </tr>
@@ -839,13 +859,97 @@
                       <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
                     </span>
                   </li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="https://w3id.org/profile/ontdoc/superClassOf"
+                  title="Inverse of RDFS' subClassOf. Defined in Ontology Documentation Profile"
+                  >Super Class Of</a
+                >
+              </th>
+              <td>
+                <ul>
                   <li>
                     <span>
-                      <a href="#stringValue">string value</a>
-                      <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
+                      <a href="#AnnotationSegment">Annotation Segment</a>
+                      <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                    </span>
+                  </li>
+                  <li>
+                    <span>
+                      <a href="#AnnotationListSegment"
+                        >Annotation List Segment</a
+                      >
+                      <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                     </span>
                   </li>
                 </ul>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="property entity" id="AnnotationSegment">
+          <h3>
+            Annotation Segment
+            <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+          </h3>
+          <table>
+            <tr>
+              <th>IRI</th>
+              <td>
+                <code>http://example.org/mava/ontology#AnnotationSegment</code>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="http://purl.org/dc/terms/description"
+                  title="An account of the resource. Defined in DCMI Metadata Terms"
+                  >Description</a
+                >
+              </th>
+              <td>
+                <p>
+                  A single-valued annotation: one time interval with one string
+                  value.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="http://www.w3.org/2000/01/rdf-schema#subClassOf"
+                  title="The subject is a subclass of a class. Defined in The RDF Schema vocabulary (RDFS)"
+                  >Sub Class Of</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#Annotation">Annotation</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="https://w3id.org/profile/ontdoc/inDomainOf"
+                  title="Inverse of rdfs:domain. Defined in Ontology Documentation Profile"
+                  >In Domain Of</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#stringValue">string value</a>
+                  <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
+                </span>
               </td>
             </tr>
           </table>
@@ -875,10 +979,25 @@
               </th>
               <td>
                 <p>
-                  A single interval annotation with multiple labels: a start
-                  time, end time, and a list of values. Maps to one row in an
-                  interval Parquet file with a list column.
+                  A multi-valued annotation: one time interval with multiple
+                  string values.
                 </p>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="http://www.w3.org/2000/01/rdf-schema#subClassOf"
+                  title="The subject is a subclass of a class. Defined in The RDF Schema vocabulary (RDFS)"
+                  >Sub Class Of</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#Annotation">Annotation</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
               </td>
             </tr>
             <tr>
@@ -891,22 +1010,10 @@
                 >
               </th>
               <td>
-                <ul>
-                  <li>
-                    <span>
-                      <a href="#belongsToAnnotationListSeries"
-                        >belongs to annotation list series</a
-                      >
-                      <sup class="sup-op" title="OWL Object Property">op</sup>
-                    </span>
-                  </li>
-                  <li>
-                    <span>
-                      <a href="#listValue">list value</a>
-                      <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
-                    </span>
-                  </li>
-                </ul>
+                <span>
+                  <a href="#listValue">list value</a>
+                  <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
+                </span>
               </td>
             </tr>
           </table>
@@ -1047,12 +1154,6 @@
                       <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
                     </span>
                   </li>
-                  <li>
-                    <span>
-                      <a href="#stringValue">string value</a>
-                      <sup class="sup-dp" title="OWL Datatype Property">dp</sup>
-                    </span>
-                  </li>
                 </ul>
               </td>
             </tr>
@@ -1178,20 +1279,15 @@
                 >
               </th>
               <td>
-                <ul>
-                  <li>
-                    <span>
-                      <a href="#VideoCorpus">Video Corpus</a>
-                      <sup class="sup-c" title="OWL/RDFS Class">c</sup>
-                    </span>
-                  </li>
-                  <li>
-                    <span>
-                      <a href="#Video">Video</a>
-                      <sup class="sup-c" title="OWL/RDFS Class">c</sup>
-                    </span>
-                  </li>
-                </ul>
+                <span>
+                  <a href="#Video">Video</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
+                <span class="cardinality">or</span>
+                <span>
+                  <a href="#VideoCorpus">Video Corpus</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
               </td>
             </tr>
             <tr>
@@ -1330,6 +1426,68 @@
             </tr>
           </table>
         </div>
+        <div class="property entity" id="hasVideo">
+          <h3>
+            has video
+            <sup class="sup-op" title="OWL Object Property">op</sup>
+          </h3>
+          <table>
+            <tr>
+              <th>IRI</th>
+              <td>
+                <code>http://example.org/mava/ontology#hasVideo</code>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="http://purl.org/dc/terms/description"
+                  title="An account of the resource. Defined in DCMI Metadata Terms"
+                  >Description</a
+                >
+              </th>
+              <td>
+                <p>
+                  Relates a MediaPackage to the videos it contains annotations
+                  for.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="http://www.w3.org/2000/01/rdf-schema#domain"
+                  title="A domain of the subject property. Defined in The RDF Schema vocabulary (RDFS)"
+                  >Domain</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#MediaPackage">Media Package</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <a
+                  class="hover_property"
+                  href="http://www.w3.org/2000/01/rdf-schema#range"
+                  title="A range of the subject property. Defined in The RDF Schema vocabulary (RDFS)"
+                  >Range</a
+                >
+              </th>
+              <td>
+                <span>
+                  <a href="#Video">Video</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
         <div class="property entity" id="hasAnalysis">
           <h3>
             has analysis
@@ -1385,12 +1543,12 @@
               </th>
               <td>
                 <span>
-                  <a href="#AnnotationSeries">Annotation Series</a>
+                  <a href="#ObservationSeries">Observation Series</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
                 <span class="cardinality">or</span>
                 <span>
-                  <a href="#ObservationSeries">Observation Series</a>
+                  <a href="#AnnotationSeries">Annotation Series</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
                 <span class="cardinality">or</span>
@@ -1427,8 +1585,7 @@
               </th>
               <td>
                 <p>
-                  Relates an AnnotationSegment back to its parent
-                  AnnotationSeries.
+                  Relates an Annotation back to its parent AnnotationSeries.
                 </p>
               </td>
             </tr>
@@ -1443,7 +1600,7 @@
               </th>
               <td>
                 <span>
-                  <a href="#AnnotationSegment">Annotation Segment</a>
+                  <a href="#Annotation">Annotation</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
               </td>
@@ -1460,70 +1617,6 @@
               <td>
                 <span>
                   <a href="#AnnotationSeries">Annotation Series</a>
-                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
-                </span>
-              </td>
-            </tr>
-          </table>
-        </div>
-        <div class="property entity" id="belongsToAnnotationListSeries">
-          <h3>
-            belongs to annotation list series
-            <sup class="sup-op" title="OWL Object Property">op</sup>
-          </h3>
-          <table>
-            <tr>
-              <th>IRI</th>
-              <td>
-                <code
-                  >http://example.org/mava/ontology#belongsToAnnotationListSeries</code
-                >
-              </td>
-            </tr>
-            <tr>
-              <th>
-                <a
-                  class="hover_property"
-                  href="http://purl.org/dc/terms/description"
-                  title="An account of the resource. Defined in DCMI Metadata Terms"
-                  >Description</a
-                >
-              </th>
-              <td>
-                <p>
-                  Relates an AnnotationListSegment back to its parent
-                  AnnotationListSeries.
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <th>
-                <a
-                  class="hover_property"
-                  href="http://www.w3.org/2000/01/rdf-schema#domain"
-                  title="A domain of the subject property. Defined in The RDF Schema vocabulary (RDFS)"
-                  >Domain</a
-                >
-              </th>
-              <td>
-                <span>
-                  <a href="#AnnotationListSegment">Annotation List Segment</a>
-                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <th>
-                <a
-                  class="hover_property"
-                  href="http://www.w3.org/2000/01/rdf-schema#range"
-                  title="A range of the subject property. Defined in The RDF Schema vocabulary (RDFS)"
-                  >Range</a
-                >
-              </th>
-              <td>
-                <span>
-                  <a href="#AnnotationListSeries">Annotation List Series</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
               </td>
@@ -1816,12 +1909,12 @@
                 </span>
                 <span class="cardinality">or</span>
                 <span>
-                  <a href="#ObservationSeries">Observation Series</a>
+                  <a href="#AnnotationSeries">Annotation Series</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
                 <span class="cardinality">or</span>
                 <span>
-                  <a href="#AnnotationSeries">Annotation Series</a>
+                  <a href="#ObservationSeries">Observation Series</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
               </td>
@@ -2003,7 +2096,7 @@
               </th>
               <td>
                 <span>
-                  <a href="#AnnotationSegment">Annotation Segment</a>
+                  <a href="#Annotation">Annotation</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
               </td>
@@ -2065,7 +2158,7 @@
               </th>
               <td>
                 <span>
-                  <a href="#AnnotationSegment">Annotation Segment</a>
+                  <a href="#Annotation">Annotation</a>
                   <sup class="sup-c" title="OWL/RDFS Class">c</sup>
                 </span>
               </td>
@@ -2188,20 +2281,10 @@
                 >
               </th>
               <td>
-                <ul>
-                  <li>
-                    <span>
-                      <a href="#ObservationPoint">Observation Point</a>
-                      <sup class="sup-c" title="OWL/RDFS Class">c</sup>
-                    </span>
-                  </li>
-                  <li>
-                    <span>
-                      <a href="#AnnotationSegment">Annotation Segment</a>
-                      <sup class="sup-c" title="OWL/RDFS Class">c</sup>
-                    </span>
-                  </li>
-                </ul>
+                <span>
+                  <a href="#AnnotationSegment">Annotation Segment</a>
+                  <sup class="sup-c" title="OWL/RDFS Class">c</sup>
+                </span>
               </td>
             </tr>
             <tr>
@@ -2386,6 +2469,9 @@
               <a href="#AnnotationListSeries">Annotation List Series</a>
             </li>
             <li>
+              <a href="#Annotation">Annotation</a>
+            </li>
+            <li>
               <a href="#AnnotationSegment">Annotation Segment</a>
             </li>
             <li>
@@ -2417,16 +2503,14 @@
               <a href="#hasMember">has member</a>
             </li>
             <li>
+              <a href="#hasVideo">has video</a>
+            </li>
+            <li>
               <a href="#hasAnalysis">has analysis</a>
             </li>
             <li>
               <a href="#belongsToAnnotationSeries"
                 >belongs to annotation series</a
-              >
-            </li>
-            <li>
-              <a href="#belongsToAnnotationListSeries"
-                >belongs to annotation list series</a
               >
             </li>
             <li>

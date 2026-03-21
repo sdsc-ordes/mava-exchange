@@ -58,8 +58,8 @@ notebook *args:
 [group('spec')]
 pylode +args='':
     @echo "Generating pyLODE spec..."
-    @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/spec/html/mava.html" > /dev/null 2>&1
-    @echo "✅ HTML successfully generated at: {{root_dir}}/spec/html/mava.html"
+    @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/docs/_templates/mava.html" > /dev/null 2>&1
+    @echo "✅ HTML successfully generated at: {{root_dir}}/docs/_templates/mava.html"
 
 # Build and then serve the documentation locally
 [group('spec')]
