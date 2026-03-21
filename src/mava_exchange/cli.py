@@ -97,6 +97,26 @@ def _print_track(reader: MediaPackageReader, video_id: str,
 
 
 def inspect_cmd():
+    """
+    Inspect a .mediapkg archive from the command line.
+
+    Shows package metadata, track definitions, video list, and file statistics.
+    Can drill down to show data from a specific track.
+
+    Examples
+    --------
+    Show package overview::
+
+        mediapkg-inspect corpus.mediapkg
+
+    Show specific track data::
+
+        mediapkg-inspect corpus.mediapkg --track emotions --video v001 --head 10
+
+    Export manifest as RDF::
+
+        mediapkg-inspect corpus.mediapkg --format turtle > manifest.ttl
+    """
     parser = argparse.ArgumentParser(
         prog="mediapkg-inspect",
         description="Inspect a .mediapkg archive.",
@@ -143,6 +163,26 @@ def inspect_cmd():
 # ─────────────────────────────────────────────
 
 def validate_cmd():
+    """
+    Validate a .mediapkg archive against the MAVA specification.
+
+    Checks package structure, manifest completeness, and Parquet data integrity.
+    Exits with code 0 if valid, 1 if invalid.
+
+    Examples
+    --------
+    Basic validation::
+
+        mediapkg-validate corpus.mediapkg
+
+    Strict validation (warns about optional fields)::
+
+        mediapkg-validate corpus.mediapkg --strict
+
+    Use in CI/CD pipelines::
+
+        mediapkg-validate corpus.mediapkg || exit 1
+    """
     parser = argparse.ArgumentParser(
         prog="mediapkg-validate",
         description="Validate a .mediapkg archive against the MAVA spec.",

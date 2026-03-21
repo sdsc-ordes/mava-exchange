@@ -46,6 +46,7 @@ tutorial/getting-started
 :caption: Reference Guide
 
 reference-guide/index
+reference-guide/cli
 ```
 
 ```{toctree}
