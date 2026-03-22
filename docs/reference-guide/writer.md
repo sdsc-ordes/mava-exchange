@@ -114,12 +114,9 @@ The manifest contains:
 - Track definitions (type, columns, dimensions)
 - File paths mapping videos to their tracks
 
-## Class Reference
+## Class References
 
-```{eval-rst}
-.. currentmodule:: mava_exchange
+For complete class documentation, see:
 
-.. autoclass:: MediaPackageWriter
-   :members:
-   :exclude-members: __weakref__
-```
+- [MediaPackageWriter](../generated/mava_exchange.writer.MediaPackageWriter.rst) -
+  Package Writer

@@ -86,12 +86,9 @@ with MediaPackageReader("corpus.mediapkg") as r:
 | `video_meta(video_id)`             | Video ID              | Dict with video metadata        |
 | `tracks_for_video(video_id)`       | Video ID              | List of track names             |
 
-## Class Reference
+## Class References
 
-```{eval-rst}
-.. currentmodule:: mava_exchange
+For complete class documentation, see:
 
-.. autoclass:: MediaPackageReader
-   :members:
-   :exclude-members: __weakref__
-```
+- [MediaPackageReader](../generated/mava_exchange.reader.MediaPackageReader.rst) -
+  Package Reader

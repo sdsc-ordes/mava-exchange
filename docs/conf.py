@@ -46,7 +46,11 @@ exclude_patterns = []
 # Tell Sphinx to look for .md files
 source_suffix = {
     '.md': 'markdown',
+    '.rst': 'restructuredtext',
 }
+
+# Don't show module paths in TOC
+toc_object_entries_show_parents = 'hide'
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -59,7 +63,10 @@ html_static_path = ['_static']
 html_theme_options = {
     "light_logo": "assets/mava_logo.svg",
     "dark_logo": "assets/mava_logo.svg",
+    "navigation_with_keys": True,
+    "sidebar_hide_name": False,
 }
+
 # Tell Sphinx to include your custom CSS file in every page
 html_css_files = [
     'styles.css',

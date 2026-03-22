@@ -130,13 +130,11 @@ Errors:
 | `missing columns`                       | DataFrame missing required columns | Add all columns from track definition  |
 | `annotations column must contain lists` | Used strings instead of lists      | Use AnnotationSeries for single labels |
 
-## API Reference
+## Function and Class References
 
-```{eval-rst}
-.. currentmodule:: mava_exchange.validate
+For complete function and class documentation, see:
 
-.. autofunction:: validate_mediapkg
-
-.. autoclass:: ValidationResult
-   :members:
-```
+- [validate_mediapkg()](../generated/mava_exchange.validate.validate_mediapkg) -
+  Validation function
+- [ValidationResult](../generated/mava_exchange.validate.ValidationResult) -
+  Result object

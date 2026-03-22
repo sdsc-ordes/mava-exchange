@@ -26,17 +26,6 @@ class ValidationResult:
     Result of package validation.
 
     Collects errors and warnings during validation.
-
-    Attributes
-    ----------
-    errors : list[str]
-        Validation errors (make package invalid)
-    warnings : list[str]
-        Validation warnings (package still valid)
-    checks : int
-        Total number of validation checks performed
-    valid : bool
-        True if no errors found
     """
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
