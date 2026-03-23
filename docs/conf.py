@@ -4,9 +4,12 @@ Full list of options can be found in the Sphinx documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import os
 import sys
-sys.path.insert(0, os.path.abspath('../src'))
+from pathlib import Path
+
+docs_dir = Path(__file__).parent
+project_root = docs_dir.parent
+sys.path.insert(0, str(project_root / "src"))
 
 # -- Project information
 
@@ -45,15 +48,12 @@ exclude_patterns = []
 
 # Tell Sphinx to look for .md files
 source_suffix = {
-    '.md': 'markdown',
     '.rst': 'restructuredtext',
+    '.md': 'markdown',
 }
 
 # Don't show module paths in TOC
 toc_object_entries_show_parents = 'hide'
-
-templates_path = ['_templates']
-exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
