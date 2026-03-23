@@ -1,57 +1,45 @@
 """
-mava-exchange — read and write .mediapkg archives.
+mava-exchange — Read and write .mediapkg video annotation packages.
 
-Public API:
+Quick example::
 
     from mava_exchange import (
-        # Track definitions
-        ObservationSeries,
-        AnnotationSeries,
-        DimensionSpec,
-
-        # Reading and writing
         MediaPackageWriter,
         MediaPackageReader,
+        ObservationSeries,
+        DimensionSpec,
     )
 
-Example — writing:
-
-    from mava_exchange import (
-        MediaPackageWriter, ObservationSeries, AnnotationSeries, DimensionSpec
-    )
-
+    # Define a track
     emotions = ObservationSeries(
         name="emotions",
-        description="Face emotion scores from DeepFace",
+        description="Face emotions",
         sampling_interval=0.5,
         dimensions=[
-            DimensionSpec("angry",   "Anger probability",  "[0,1]"),
-            DimensionSpec("fear",    "Fear probability",   "[0,1]"),
-            DimensionSpec("neutral", "Neutral expression", "[0,1]"),
+            DimensionSpec("happy", "Happiness", "[0,1]"),
+            DimensionSpec("sad", "Sadness", "[0,1]"),
         ]
     )
-    transcript = AnnotationSeries(
-        name="transcript",
-        description="Whisper speech-to-text segments",
-    )
 
-    with MediaPackageWriter("corpus.mediapkg", description="My corpus") as w:
-        w.add_video("video_001", "https://example.org/talk.mp4")
-        w.add_track("video_001", emotions,   emotions_df)
-        w.add_track("video_001", transcript, transcript_df)
+    # Write package
+    with MediaPackageWriter("output.mediapkg") as w:
+        w.add_video("v001", "video.mp4")
+        w.add_track("v001", emotions, emotions_df)
 
-Example — reading:
-
-    from mava_exchange import MediaPackageReader
-
-    with MediaPackageReader("corpus.mediapkg") as r:
-        print(r.video_ids)
-        df = r.read_track("video_001", "emotions")
+    # Read package
+    with MediaPackageReader("output.mediapkg") as r:
+        df = r.read_track("v001", "emotions")
+        print(df.head())
 """
-
-from .tracks import DimensionSpec, ObservationSeries, AnnotationSeries, AnnotationListSeries, Track
-from .writer import MediaPackageWriter
 from .reader import MediaPackageReader
+from .tracks import (
+    AnnotationListSeries,
+    AnnotationSeries,
+    DimensionSpec,
+    ObservationSeries,
+    Track,
+)
+from .writer import MediaPackageWriter
 
 __version__ = "0.1.0"
 

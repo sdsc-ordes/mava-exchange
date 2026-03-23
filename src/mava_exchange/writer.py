@@ -1,35 +1,12 @@
 """
-MediaPackageWriter — builds and writes a .mediapkg archive.
+Writer for creating .mediapkg archives.
 
-Usage:
-
-    from mava_exchange.writer import MediaPackageWriter
-    from mava_exchange.tracks import ObservationSeries, AnnotationSeries, DimensionSpec
-
-    # Define your tracks
-    emotions = ObservationSeries(
-        name="emotions",
-        description="Face emotion scores",
-        sampling_interval=0.5,
-        dimensions=[
-            DimensionSpec("angry",   "Anger probability",  "[0,1]"),
-            DimensionSpec("fear",    "Fear probability",   "[0,1]"),
-            DimensionSpec("neutral", "Neutral expression", "[0,1]"),
-        ]
-    )
-    transcript = AnnotationSeries(
-        name="transcript",
-        description="Whisper speech-to-text segments",
-    )
-
-    # Write the package
-    with MediaPackageWriter("corpus.mediapkg", description="My corpus") as writer:
-        writer.add_video("video_001", "https://example.org/talk.mp4")
-        writer.add_track("video_001", emotions,    emotions_df)
-        writer.add_track("video_001", transcript,  transcript_df)
+This module provides the MediaPackageWriter class for building .mediapkg files
+incrementally by adding videos and their annotation tracks.
 """
-
 from __future__ import annotations
+
+from typing import Self
 
 import io
 import json
@@ -42,7 +19,6 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from .tracks import Track
-from typing import Self
 
 MAVA        = "http://example.org/mava/ontology#"
 FORMAT_VERSION = "0.1"
@@ -61,15 +37,21 @@ JSONLD_CONTEXT = {
 
 class MediaPackageWriter:
     """
-    Builds a .mediapkg archive incrementally.
+    Write a .mediapkg archive incrementally.
 
     Use as a context manager (recommended) or call .write() manually.
+
+    Example
+    -------
+    ::
 
         with MediaPackageWriter("out.mediapkg") as w:
             w.add_video("v1", "https://example.org/v1.mp4")
             w.add_track("v1", my_track, my_df)
 
     Multiple videos can be added before writing:
+
+    ::
 
         writer = MediaPackageWriter("corpus.mediapkg")
         for video_id, src, tracks_and_dfs in my_videos:
@@ -80,12 +62,26 @@ class MediaPackageWriter:
     """
 
     def __init__(self, path: str | Path, description: str = ""):
+        """
+        Initialize writer.
+
+        Parameters
+        ----------
+        path : str or Path
+            Output path for .mediapkg file
+        description : str, optional
+            Human-readable description of the corpus
+        Examples
+        ________
+            >>> with MediaPackageWriter("output.mediapkg") as w:
+                    # ... add videos and tracks
+                    # ... and write them at the end of the block ...
+        """
         self.path        = Path(path)
         self.description = description
         self._videos: dict[str, dict] = {}     # video_id → {src, title, duration}
         self._tracks: dict[str, Track] = {}    # track_name → Track
-        self._data:   dict[str, dict[str, pd.DataFrame]] = {}
-        # video_id → {track_name → DataFrame}
+        self._data:   dict[str, dict[str, pd.DataFrame]] = {} # video_id → {track_name → DataFrame}
 
     def add_video(
         self,
@@ -97,7 +93,31 @@ class MediaPackageWriter:
         """
         Register a video. Must be called before add_track for this video.
 
-        Returns self for optional method chaining.
+        Parameters
+        ----------
+        video_id : str
+            Unique identifier for this video
+        src : str
+            URI or path to the video file
+        title : str, optional
+            Human-readable title
+        duration_seconds : float, optional
+            Video duration in seconds
+
+        Returns
+        -------
+        MediaPackageWriter
+            Self for method chaining
+
+        Raises
+        ------
+        ValueError
+            If video_id already exists
+
+        Examples
+        ________
+            >>> with MediaPackageWriter("output.mediapkg", "A sample media corpus") as w:
+                    w.add_video("video_001", "https://example.org/video.mp4")
         """
         if video_id in self._videos:
             raise ValueError(f"Video '{video_id}' already added")
@@ -123,7 +143,29 @@ class MediaPackageWriter:
         If the same track name is used across multiple videos, the track
         definition must be identical (checked automatically).
 
-        Returns self for optional method chaining.
+        Parameters
+        ----------
+        video_id : str
+            Video identifier (must be added first with add_video)
+        track : Track
+            Track definition (ObservationSeries, AnnotationSeries, or AnnotationListSeries)
+        df : pd.DataFrame
+            Data with columns matching track.columns
+
+        Returns
+        -------
+        MediaPackageWriter
+            Self for method chaining
+
+        Raises
+        ------
+        ValueError
+            If video_id not found, track definition conflicts, or columns missing
+
+        Examples
+        ________
+            >>> with MediaPackageWriter("output.mediapkg") as w:
+                    w.add_track("video_001", emotions, emotions_df)
         """
         if video_id not in self._videos:
             raise ValueError(
@@ -174,7 +216,20 @@ class MediaPackageWriter:
         }
 
     def write(self):
-        """Write the .mediapkg archive to disk."""
+        """
+        Write the .mediapkg archive to disk.
+
+        Raises
+        ------
+        ValueError
+            If no videos have been added
+
+        Examples
+        ________
+            >>> with MediaPackageWriter("output.mediapkg") as w:
+                    # ... add videos and tracks ...
+                    w.write()
+        """
         if not self._videos:
             raise ValueError("No videos added — nothing to write.")
 

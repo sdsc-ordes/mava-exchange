@@ -1,4 +1,4 @@
-# Getting Started with mava-exchange
+# Getting Started
 
 This tutorial walks through the core workflows for the `mava-exchange` library:
 writing a `.mediapkg` file from DataFrames, reading one back, validating it, and
