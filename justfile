@@ -91,7 +91,7 @@ validate pkg="examples/output/corpus.mediapkg" *args:
 
 # Build the HTML documentation
 [group('docs')]
-build-docs:
+build-docs: pylode
     sphinx-build -b html docs .output/docs
 
 # Remove the build directory for a fresh start
