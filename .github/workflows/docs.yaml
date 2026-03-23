@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [main, fix/docs-deploy]
+    branches: [main]
   workflow_dispatch: # Allow manual trigger
 
 # Sets permissions for GitHub Pages deployment
