@@ -33,3 +33,5 @@ __pycache*
 
 # docs build output
 docs/_build
+docs/generated
+docs/_templates/mava.html

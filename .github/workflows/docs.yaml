@@ -35,6 +35,11 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --extra docs
+          uv pip install pylode
+
+      - name: Generate ontology documentation
+        run: |
+          uv run pylode spec/mava.ttl -o docs/_templates/mava.html
 
       - name: Build documentation
         run: |
