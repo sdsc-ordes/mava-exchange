@@ -17,8 +17,6 @@
 - [Stefan Milosavljevic](mailto:stefan.milosavljevic@sdsc.ethz.ch)
 - [Sabine Maennel](mailto:sabine.maennel@sdsc.ethz.ch)
 
-<!-- start elevator-pitch -->
-
 # mava-exchange
 
 A Python library and standard package format for exchanging video annotation
@@ -42,8 +40,6 @@ capabilities across linguistic, media studies, and audiovisual research.
 This infrastructure will enable shared research workflows and ensure adherence
 to FAIR principles, improving the accessibility and reusability of research
 data.
-
-<!-- end elevator-pitch -->
 
 ## The Challenge
 
