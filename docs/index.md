@@ -42,14 +42,21 @@ tutorial/getting-started
 ```
 
 ```{toctree}
-:maxdepth: 2
-:caption: Tutorials
+:maxdepth: 1
+:caption: User Guide
 
 reference-guide/writer
-reference-guide/tracks
 reference-guide/reader
+reference-guide/tracks
 reference-guide/validate
 reference-guide/cli
+```
+
+```{toctree}
+:maxdepth: 1
+:caption: Reference Guide
+
+reference-guide/index
 ```
 
 ```{toctree}
@@ -58,19 +65,5 @@ reference-guide/cli
 
 specification
 ontology
-```
-
-```{toctree}
-:maxdepth: 1
-:caption: Tools
-
 viewer
-```
-
-```{toctree}
-:maxdepth: 1
-:caption: Reference Guide
-:titlesonly:
-
-reference-guide/index
 ```

@@ -33,3 +33,4 @@ __pycache*
 
 # docs build output
 docs/_build
+docs/generated
