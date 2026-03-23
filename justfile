@@ -49,26 +49,12 @@ test *args:
 run *args:
     uv run cli "$@"
 
-# Run the Jupyter notebook.
-[group('general')]
-notebook *args:
-    uv run python -m notebook "$@"
-
 # Generate pyLODE documentation
 [group('spec')]
 pylode +args='':
     @echo "Generating pyLODE spec..."
     @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/docs/_templates/mava.html" > /dev/null 2>&1
     @echo "✅ HTML successfully generated at: {{root_dir}}/docs/_templates/mava.html"
-
-# Build and then serve the documentation locally
-[group('spec')]
-preview: pylode
-    @echo "Starting private server at http://localhost:8000/mava.html"
-    @echo "Press Ctrl+C to stop."
-    @# Automatically open the browser (works on macOS)
-    @open "http://localhost:8000/mava.html"
-    @python3 -m http.server 8000 --directory "{{root_dir}}/spec/html"
 
 # Build a .mediapkg from the example TSV files.
 [group('usage')]
@@ -105,12 +91,12 @@ validate pkg="examples/output/corpus.mediapkg" *args:
 
 # Build the HTML documentation
 [group('docs')]
-html:
+build-docs:
     sphinx-build -b html docs .output/docs
 
 # Remove the build directory for a fresh start
 [group('docs')]
-clean:
+clean-docs:
     rm -rf .output/docs
 
 # Watch for changes and rebuild (requires 'sphinx-autobuild' pip package)
