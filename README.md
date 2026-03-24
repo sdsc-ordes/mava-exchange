@@ -27,7 +27,7 @@ data between research tools.
 - **[Format Specification](spec/SPEC.md)** - Complete technical spec
 - **[Interactive Viewer](https://sdsc-ordes.github.io/mava-exchange/viewer/)** -
   Try it in your browser
-- **[Tutorial](docs/tutorial.md)** - Getting started guide
+- **[Documentation](docs/tutorial.md)** - Getting started guide
 
 ## Project Context
 

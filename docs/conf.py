@@ -66,8 +66,8 @@ html_theme_options = {
     "navigation_with_keys": True,
     "sidebar_hide_name": False,
 }
+html_extra_path = ['.nojekyll']
 
-# Tell Sphinx to include your custom CSS file in every page
 html_css_files = [
     'styles.css',
 ]
