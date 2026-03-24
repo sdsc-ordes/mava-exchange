@@ -1,9 +1,9 @@
 [project]
 name = "mava-exchange"
 authors = [
-  { name = "Stefan Milosavljevic", email = "stefan.milosavljevic@sdsc.ethz.ch" },
-  { name = "Sabine Maennel", email = "sabine.maennel@sdsc.ethz.ch" },
+  { name = "Swiss Data Science Center", email = "contact@datascience.ch" },
 ]
+
 description = "A lightweight interchange format for video annotations"
 readme = "README.md"
 requires-python = ">=3.13"
