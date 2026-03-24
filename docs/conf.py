@@ -76,3 +76,4 @@ html_additional_pages = {
     "viewer-app": "viewer.html"
 }
 html_favicon = '_static/assets/favicon.ico'
+html_extra_path = ['.nojekyll']
