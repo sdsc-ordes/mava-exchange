@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="./docs/assets/mava_logo.svg" alt="project logo" width="250">
-</p>
-
 <h1 align="center">
   mava-exchange
 </h1>
