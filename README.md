@@ -24,10 +24,19 @@ data between research tools.
 
 ## Documentation
 
-- **[Format Specification](spec/SPEC.md)** - Complete technical spec
-- **[Interactive Viewer](https://sdsc-ordes.github.io/mava-exchange/viewer/)** -
+📚 **[Full Documentation](https://sdsc-ordes.github.io/mava-exchange/)** -
+Complete user guide and API reference
+
+Quick links:
+
+- **[Getting Started](https://sdsc-ordes.github.io/mava-exchange/tutorial/getting-started.html)** -
+  Installation and tutorial
+- **[Format Specification](https://sdsc-ordes.github.io/mava-exchange/specification.html)** -
+  Technical specification
+- **[Interactive Viewer](https://sdsc-ordes.github.io/mava-exchange/viewer-app.html)** -
   Try it in your browser
-- **[Documentation](docs/tutorial.md)** - Getting started guide
+- **[API Reference](https://sdsc-ordes.github.io/mava-exchange/reference-guide/index.html)** -
+  Python class documentation
 
 ## Project Context
 
@@ -100,8 +109,6 @@ Install from PyPI:
 
 ```bash
 pip install mava-exchange
-# or with uv:
-uv add mava-exchange
 ```
 
 Write, read, and validate `.mediapkg` packages:
@@ -122,16 +129,11 @@ emotions = ObservationSeries(
         DimensionSpec("neutral", "Neutral expression", "[0,1]"),
     ]
 )
-transcript = AnnotationSeries(
-    name="transcript",
-    description="Whisper speech-to-text segments",
-)
 
 # Write a package
 with MediaPackageWriter("corpus.mediapkg") as writer:
     writer.add_video("video_001", "https://example.org/talk.mp4")
-    writer.add_track("video_001", emotions,   emotions_df)
-    writer.add_track("video_001", transcript, transcript_df)
+    writer.add_track("video_001", emotions, emotions_df)
 
 # Read it back
 with MediaPackageReader("corpus.mediapkg") as reader:
@@ -145,7 +147,9 @@ mediapkg-inspect  corpus.mediapkg
 mediapkg-validate corpus.mediapkg
 ```
 
-See [`docs/tutorial.md`](docs/tutorial.md) for a complete walkthrough.
+👉
+**[See the full tutorial](https://sdsc-ordes.github.io/mava-exchange/tutorial/getting-started.html)**
+for a complete walkthrough.
 
 ## Development
 
@@ -170,25 +174,32 @@ To run the example that converts real TSV annotation files into a `.mediapkg`
 corpus:
 
 ```bash
-just example # uses the script in examples/scripts to write a mediapkg example from the examples/input
-just inspect   # inspect the resulting corpus.mediapkg
-just inspect-turtle   # inspects the manifest.json as turtle
-just inspect-jsonld   # inspects the manifest.json as jsonld
-just validate  # validate it
+just example           # create example corpus from TSV files
+just inspect           # inspect the resulting corpus.mediapkg
+just inspect-turtle    # view manifest as Turtle RDF
+just validate          # validate the package
 ```
 
 ## Further Reading
 
-- [`spec/SPEC.md`](spec/SPEC.md) — full format specification
-- [`spec/mava.ttl`](spec/mava.ttl) — MAVA ontology
-- [`spec/mava.shacl.ttl`](spec/mava.shacl.ttl) — MAVA shacl shapes
-- [`docs/tutorial.md`](docs/tutorial.md) — step-by-step guide
-- `examples`— complete example converting TSV files to `.mediapkg`
+- [Format Specification](https://sdsc-ordes.github.io/mava-exchange/specification.html) -
+  Complete technical specification
+- [MAVA Ontology](https://sdsc-ordes.github.io/mava-exchange/mava-ontology.html) -
+  Semantic vocabulary (interactive)
+- [User Guide](https://sdsc-ordes.github.io/mava-exchange/reference-guide/writer.html) -
+  Writing and reading packages
+- [CLI Tools](https://sdsc-ordes.github.io/mava-exchange/reference-guide/cli.html) -
+  Command-line reference
+- [Examples](examples/) - Complete example code
 
 For development:
 
-- [Contribution Guidelines](/CONTRIBUTING.md)
-- [Development Guide](docs/development-guide.md)
+- [Contribution Guidelines](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+
+## License
+
+[Apache-2.0](LICENSE.md)
 
 ## Acknowledgements
 
