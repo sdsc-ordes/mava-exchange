@@ -6,7 +6,7 @@
 
 [![PyPI version](https://badge.fury.io/py/mava-exchange.svg)](https://pypi.org/project/mava-exchange/)
 [![Python](https://img.shields.io/pypi/pyversions/mava-exchange.svg)](https://pypi.org/project/mava-exchange/)
-[![License](https://img.shields.io/pypi/l/mava-exchange.svg)](https://github.com/sdsc-ordes/mava-exchange/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache2.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Tests](https://github.com/sdsc-ordes/mava-exchange/actions/workflows/normal.yaml/badge.svg)](https://github.com/sdsc-ordes/mava-exchange/actions/workflows/normal.yaml)
 [![Documentation](https://img.shields.io/badge/docs-sphinx-blue.svg)](https://sdsc-ordes.github.io/mava-exchange/)
 
