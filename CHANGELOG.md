@@ -8,7 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [0.1.0] - 2025-03-23
+## [0.1.1] - 2026-04-15
+
+### Added
+
+- Relax Python version requirement to >=3.12
+
+## [0.1.0] - 2026-03-23
 
 ### Added
 
