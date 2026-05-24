@@ -39,10 +39,20 @@ lint *args:
 build *args:
     uv build --out-dir "{{build_dir}}" "$@"
 
-# Test the project.
+# Test the project (with coverage gate).
 [group('general')]
 test *args:
-   uv run pytest "$@"
+    uv run pytest --cov=mava_exchange --cov-report=term-missing --cov-fail-under=85 "$@"
+
+# Type-check the project.
+[group('general')]
+typecheck *args:
+    uv run mypy src/
+
+# Audit dependencies for known vulnerabilities.
+[group('general')]
+audit *args:
+    uv run pip-audit
 
 # Run an executable.
 [group('general')]
@@ -62,12 +72,11 @@ example:
     uv run examples/scripts/tsv_to_mediapkg.py
 
 # Inspect a .mediapkg archive.
-# Usage: (default example corpus)
-#   just inspect
-#   just inspect path/to/corpus.mediapkg
+# Usage:
+#   just inspect examples/output/corpus.mediapkg
 #   just inspect path/to/corpus.mediapkg --track emotions --video video_001
 [group('usage')]
-inspect pkg="examples/output/corpus.mediapkg" *args:
+inspect pkg *args:
     mediapkg-inspect "{{pkg}}" {{args}}
 
 # Export manifest as Turtle RDF.
@@ -81,12 +90,11 @@ inspect-jsonld pkg="examples/output/corpus.mediapkg":
     mediapkg-inspect "{{pkg}}" --format json-ld
 
 # Validate a .mediapkg archive.
-# Usage: (default example corpus)
-#   just validate
-#   just validate path/to/corpus.mediapkg
+# Usage:
+#   just validate examples/output/corpus.mediapkg
 #   just validate path/to/corpus.mediapkg --strict
 [group('usage')]
-validate pkg="examples/output/corpus.mediapkg" *args:
+validate pkg *args:
     mediapkg-validate "{{pkg}}" {{args}}
 
 # Build the HTML documentation

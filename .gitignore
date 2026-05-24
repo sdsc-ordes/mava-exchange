@@ -25,6 +25,11 @@
 .ruff_cache
 # Python Cache
 __pycache*
+# Hypothesis example database
+.hypothesis
+# pytest coverage data
+.coverage
+.coverage.*
 
 # Config files which are linked.
 .prettierrc.yaml

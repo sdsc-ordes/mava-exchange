@@ -97,6 +97,7 @@ class MediaPackageReader:
     def manifest(self) -> dict:
         """The parsed manifest.json dictionary."""
         self._require_open()
+        assert self._manifest is not None
         return self._manifest
 
     @property
@@ -171,6 +172,7 @@ class MediaPackageReader:
             Track data with columns matching the track definition
         """
         self._require_open()
+        assert self._zf is not None
         video = self._find_video(video_id)
 
         if track_name not in video["files"]:
@@ -210,6 +212,7 @@ class MediaPackageReader:
             List of {path, rows, size_bytes, compressed_bytes}
         """
         self._require_open()
+        assert self._zf is not None
         stats = []
         for info in self._zf.infolist():
             if info.filename == "manifest.json":
