@@ -31,7 +31,8 @@ Quick example::
         df = r.read_track("v001", "emotions")
         print(df.head())
 """
-from .reader import MediaPackageReader
+from .rdf import export_manifest_as_rdf
+from .reader import MediaPackageReader, file_stats
 from .tracks import (
     AnnotationListSeries,
     AnnotationSeries,
@@ -51,4 +52,6 @@ __all__ = [
     "MediaPackageWriter",
     "ObservationSeries",
     "Track",
+    "export_manifest_as_rdf",
+    "file_stats",
 ]
