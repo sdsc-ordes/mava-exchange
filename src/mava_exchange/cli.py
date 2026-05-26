@@ -17,7 +17,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from .reader import MediaPackageReader
+from .rdf import export_manifest_as_rdf
+from .reader import MediaPackageReader, file_stats
 from .validate import validate_mediapkg
 
 
@@ -27,10 +28,10 @@ from .validate import validate_mediapkg
 
 def _print_summary(reader: MediaPackageReader):
     m = reader.manifest
-    print(f"Version:     {reader.version}")
+    print(f"Version:     {m.get('version', '—')}")
     print(f"Created:     {m.get('created', '—')}")
-    print(f"Ontology:    {reader.ontology}")
-    print(f"Description: {reader.description or '—'}")
+    print(f"Ontology:    {m.get('ontology', '—')}")
+    print(f"Description: {m.get('description', '') or '—'}")
     print(f"Videos:      {len(reader.video_ids)}")
 
     print("\nTracks:")
@@ -52,7 +53,7 @@ def _print_summary(reader: MediaPackageReader):
     print(f"  {'-'*45} {'-'*6}  {'-'*10}  {'-'*10}  {'-'*6}")
 
     total_raw = total_comp = 0
-    for s in reader.file_stats():
+    for s in file_stats(reader.path):
         ratio = (1 - s["compressed_bytes"] / max(s["size_bytes"], 1)) * 100
         total_raw  += s["size_bytes"]
         total_comp += s["compressed_bytes"]
@@ -137,7 +138,7 @@ def inspect_cmd():
         # RDF export modes
         if args.format in ("turtle", "json-ld"):
             try:
-                rdf = reader.export_manifest_as_rdf(format=args.format)
+                rdf = export_manifest_as_rdf(reader.manifest, format=args.format)
                 print(rdf)
             except ImportError as e:
                 print(f"Error: {e}", file=sys.stderr)

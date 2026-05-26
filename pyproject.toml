@@ -52,6 +52,10 @@ dev = [
     "notebook>=7.3.2",
     "ruff>=0.15.1",
     "pytest>=8.4.2",
+    "pytest-cov>=6.0",
+    "hypothesis>=6.0",
+    "mypy>=1.0",
+    "pip-audit>=2.0",
     "pylode>=3.2.3",
     "sphinx-autodoc-typehints>=3.9.8",
 ]
@@ -75,7 +79,7 @@ line-length = 88
 [tool.ruff.lint]
 extend-select = [
     "W605",   # pycodestyle: invalid-escape-sequence
-    "S102",   # flake8-bandit: exec-builtin
+    "S",      # flake8-bandit: security checks
     "INP",    # flake8-no-pep420
     "PYI",    # flake8-pyi
     "PT",     # flake8-pytest-style
@@ -90,7 +94,35 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"tests/**" = ["INP001", "PLR2004", "PLR0913", "PT012"]
+"tests/**" = ["INP001", "PLR2004", "PLR0913", "PT012", "S101"]
 "examples/*" = ["INP001"]
 "[!t][!e][!s][!t][!s]*/**" = ["PT"]
 "docs/*" = ["INP001"]
+# assert used only for mypy type-narrowing after guards that already raise
+"src/mava_exchange/reader.py" = ["S101"]
+
+[tool.coverage.run]
+source = ["mava_exchange"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+[tool.mypy]
+packages = ["mava_exchange"]
+python_version = "3.12"
+# pandas and pyarrow ship without py.typed markers; ignore missing stubs for them.
+ignore_missing_imports = true
+# Catch type errors in already-annotated code without requiring 100% annotation coverage.
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+
+[tool.hypothesis]
+suppress_health_check = ["too_slow", "data_too_large"]

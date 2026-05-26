@@ -42,3 +42,25 @@ jobs:
           cachix_auth_token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: test
         run: just ci just test
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-nix
+        with:
+          cachix_cache_name: "${{ secrets.CACHIX_CACHE_NAME }}"
+          cachix_auth_token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      - name: typecheck
+        run: just ci just typecheck
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-nix
+        with:
+          cachix_cache_name: "${{ secrets.CACHIX_CACHE_NAME }}"
+          cachix_auth_token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+      - name: audit
+        run: just ci just audit

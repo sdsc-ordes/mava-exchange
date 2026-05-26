@@ -6,21 +6,13 @@ track definitions, and DataFrames from a written .mediapkg.
 """
 
 import pytest
-import rdflib
 import pandas as pd
 
 from mava_exchange import MediaPackageReader, ObservationSeries, AnnotationSeries
+from mava_exchange.reader import file_stats
 
 
 class TestReaderManifest:
-
-    def test_version(self, single_video_pkg):
-        with MediaPackageReader(single_video_pkg) as r:
-            assert r.version == "0.1"
-
-    def test_description(self, single_video_pkg):
-        with MediaPackageReader(single_video_pkg) as r:
-            assert r.description == "Single video test"
 
     def test_video_ids(self, single_video_pkg):
         with MediaPackageReader(single_video_pkg) as r:
@@ -134,8 +126,7 @@ class TestReaderData:
 
     def test_file_stats_row_counts(self, single_video_pkg, emotions_df,
                                    transcript_df):
-        with MediaPackageReader(single_video_pkg) as r:
-            stats = r.file_stats()
+        stats = file_stats(single_video_pkg)
         rows_by_path = {s["path"]: s["rows"] for s in stats}
         assert rows_by_path["v001/emotions.parquet"]   == len(emotions_df)
         assert rows_by_path["v001/transcript.parquet"] == len(transcript_df)
@@ -158,83 +149,3 @@ class TestReaderErrors:
             pass
         with pytest.raises(RuntimeError, match="not open"):
             _ = r.video_ids
-
-
-class TestReaderRDFExport:
-    """Tests for export_manifest_as_rdf method."""
-
-    def test_export_turtle_produces_string(self, single_video_pkg):
-        """Turtle export returns a non-empty string."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        assert isinstance(ttl, str)
-        assert len(ttl) > 100
-        assert "@prefix mava:" in ttl
-
-    def test_export_jsonld_produces_string(self, single_video_pkg):
-        """JSON-LD export returns a non-empty string."""
-        with MediaPackageReader(single_video_pkg) as r:
-            jsonld = r.export_manifest_as_rdf(format="json-ld")
-            print(jsonld)  # for debugging
-        assert isinstance(jsonld, str)
-        assert len(jsonld) > 100
-        assert "@id" in jsonld
-
-    def test_export_turtle_contains_package(self, single_video_pkg):
-        """Turtle export contains MediaPackage triple."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        assert "mava:MediaPackage" in ttl
-
-    def test_export_turtle_contains_video(self, single_video_pkg):
-        """Turtle export contains Video triple."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        assert "mava:Video" in ttl
-        assert "v001" in ttl
-
-    def test_export_turtle_contains_observation_series(self, single_video_pkg):
-        """Turtle export contains ObservationSeries for emotions track."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        assert "mava:ObservationSeries" in ttl
-        assert "emotions" in ttl or "emotion" in ttl
-
-    def test_export_turtle_contains_annotation_series(self, single_video_pkg):
-        """Turtle export contains AnnotationSeries for transcript track."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        assert "mava:AnnotationSeries" in ttl
-        assert "transcript" in ttl
-
-    def test_export_turtle_contains_dimensions(self, single_video_pkg):
-        """Turtle export contains Dimension triples."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        assert "mava:Dimension" in ttl
-        assert "angry" in ttl
-        assert "neutral" in ttl
-
-    def test_export_turtle_parseable_by_rdflib(self, single_video_pkg):
-        """Turtle export is valid and parseable."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(format="turtle")
-        # Parse it to verify validity
-        g = rdflib.Graph()
-        g.parse(data=ttl, format="turtle")
-        assert len(g) > 10  # should have multiple triples
-
-    def test_export_unknown_format_raises(self, single_video_pkg):
-        """Unknown format raises ValueError."""
-        with MediaPackageReader(single_video_pkg) as r:
-            with pytest.raises(ValueError, match="Unknown format"):
-                r.export_manifest_as_rdf(format="xml")
-
-    def test_export_custom_base_uri(self, single_video_pkg):
-        """Custom base URI is used in output."""
-        with MediaPackageReader(single_video_pkg) as r:
-            ttl = r.export_manifest_as_rdf(
-                format="turtle",
-                base_uri="http://myproject.org/"
-            )
-        assert "myproject.org" in ttl

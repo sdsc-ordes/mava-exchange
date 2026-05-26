@@ -26,7 +26,7 @@ Example::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any, Literal
 
 
 @dataclass
@@ -109,9 +109,9 @@ class ObservationSeries:
         """Returns column names."""
         return ["start_seconds"] + [d.name for d in self.dimensions]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Converts to dictionary for manifest.json."""
-        d = {
+        d: dict[str, Any] = {
             "type":        self.type,
             "description": self.description,
             "columns":     self.columns,
