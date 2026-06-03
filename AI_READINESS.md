@@ -185,6 +185,81 @@ accepted it.
 
 ---
 
+## 4. Architecture at a glance
+
+### Guard layer stack
+
+```mermaid
+flowchart TD
+    AI([AI-generated diff])
+
+    subgraph CI["CI gates — nothing merges that fails these"]
+        lint["Ruff + Bandit\njust lint"]
+        mypy["mypy\njust typecheck"]
+        pytest["pytest + hypothesis\njust test · 85% gate"]
+        audit["pip-audit\njust audit"]
+        lint --> mypy --> pytest --> audit
+    end
+
+    oracle[("validate_mediapkg()\nspec oracle")]
+
+    subgraph CORE["Human core — do not modify without explicit instruction"]
+        direction LR
+        sm["spec/SPEC.md"]
+        tt["spec/mava.ttl"]
+        sh["spec/mava.shacl.ttl"]
+        tp["tracks.py\ntype hierarchy"]
+    end
+
+    subgraph SURF["AI-delegatable surface"]
+        direction LR
+        wr[writer.py]
+        rd[reader.py]
+        rf[rdf.py]
+        cl[cli.py]
+        ts[tests/]
+    end
+
+    AI --> CI
+    pytest <-->|"generated inputs must pass"| oracle
+    oracle -. "implements" .-> sm
+    audit -->|"all gates pass"| SURF
+    SURF -. "guarded by contracts,\nnot human review" .-> CORE
+```
+
+### Module depth and dependencies
+
+Each module exposes a narrow public interface; implementation complexity is
+hidden behind it (Ousterhout's "deep modules").
+
+```mermaid
+graph TD
+    subgraph CORE["Human core"]
+        tracks["tracks.py\nPUBLIC: 4 dataclass types\nHIDES: to_dict · columns · DimensionSpec"]
+        spec["spec/\nSPEC.md · mava.ttl · mava.shacl.ttl"]
+    end
+
+    writer["writer.py\nPUBLIC: add_video · add_track\nHIDES: ZIP · Parquet encoding · manifest JSON · row ordering"]
+    reader["reader.py\nPUBLIC: read_track · read_video · manifest · …\nHIDES: ZIP parsing · pyarrow · Track reconstruction"]
+    rdf["rdf.py\nPUBLIC: export_manifest_as_rdf\nHIDES: rdflib Graph · URI scheme · triple generation"]
+    validate["validate.py\nPUBLIC: validate_mediapkg\nHIDES: ZIP check · manifest schema · Parquet col/type/order/null"]
+    cli["cli.py\nENTRY: mediapkg-inspect · mediapkg-validate"]
+    tests["tests/\nhypothesis strategies\nroundtrip oracle tests"]
+
+    writer --> tracks
+    reader --> tracks
+    cli --> reader
+    cli --> rdf
+    cli --> validate
+    tests -->|"oracle"| validate
+    tests --> writer
+    tests --> reader
+    tests --> rdf
+    validate -. "implements" .-> spec
+```
+
+---
+
 ## Takeaway
 
 The repo had the hardest part already: a machine-readable spec with real
