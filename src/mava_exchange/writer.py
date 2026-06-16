@@ -61,7 +61,12 @@ class MediaPackageWriter:
         writer.write()
     """
 
-    def __init__(self, path: str | Path, description: str = ""):
+    def __init__(
+        self,
+        path:        str | Path,
+        description: str = "",
+        created:     datetime | None = None,
+    ):
         """
         Initialize writer.
 
@@ -71,6 +76,11 @@ class MediaPackageWriter:
             Output path for .mediapkg file
         description : str, optional
             Human-readable description of the corpus
+        created : datetime, optional
+            Creation timestamp recorded in the manifest. When omitted, the
+            current UTC time is used at write time. Pass a fixed value to
+            produce a byte-reproducible archive — it also fixes the ZIP entry
+            timestamps.
         Examples
         ________
             >>> with MediaPackageWriter("output.mediapkg") as w:
@@ -79,6 +89,7 @@ class MediaPackageWriter:
         """
         self.path        = Path(path)
         self.description = description
+        self.created     = created
         self._videos: dict[str, dict] = {}     # video_id → {src, title, duration}
         self._tracks: dict[str, Track] = {}    # track_name → Track
         self._data:   dict[str, dict[str, pd.DataFrame]] = {} # video_id → {track_name → DataFrame}
@@ -195,10 +206,14 @@ class MediaPackageWriter:
         self._data[video_id][track.name] = df[track.columns]
         return self
 
-    def _build_manifest(self, files_map: dict[str, dict[str, str]]) -> dict:
+    def _build_manifest(
+        self,
+        files_map: dict[str, dict[str, str]],
+        created:   datetime,
+    ) -> dict:
         return {
             "version":     FORMAT_VERSION,
-            "created":     datetime.now(timezone.utc).isoformat(),
+            "created":     created.isoformat(),
             "description": self.description,
             "ontology":    MAVA,
             "context":     JSONLD_CONTEXT,
@@ -233,6 +248,18 @@ class MediaPackageWriter:
         if not self._videos:
             raise ValueError("No videos added — nothing to write.")
 
+        created = self.created or datetime.now(timezone.utc)
+        # ZIP date_time supports only years >= 1980; created is always later.
+        zip_date_time = created.timetuple()[:6]
+
+        def _writestr(zf: zipfile.ZipFile, name: str, data: bytes | str) -> None:
+            # Use an explicit ZipInfo so the entry timestamp is deterministic
+            # (driven by `created`) rather than the wall clock at write time.
+            info = zipfile.ZipInfo(name, date_time=zip_date_time)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o600 << 16
+            zf.writestr(info, data)
+
         files_map: dict[str, dict[str, str]] = {}
 
         with zipfile.ZipFile(
@@ -243,11 +270,11 @@ class MediaPackageWriter:
                 files_map[video_id] = {}
                 for track_name, df in tracks.items():
                     entry = f"{video_id}/{track_name}.parquet"
-                    zf.writestr(entry, _df_to_parquet_bytes(df))
+                    _writestr(zf, entry, _df_to_parquet_bytes(df))
                     files_map[video_id][track_name] = entry
 
-            manifest = self._build_manifest(files_map)
-            zf.writestr("manifest.json", json.dumps(manifest, indent=2))
+            manifest = self._build_manifest(files_map, created)
+            _writestr(zf, "manifest.json", json.dumps(manifest, indent=2))
 
     # Context manager support
     def __enter__(self) -> Self:

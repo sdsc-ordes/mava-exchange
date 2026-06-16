@@ -21,6 +21,7 @@ Run:
 """
 
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -91,6 +92,10 @@ DOMINANT_COLOR_TRACK = ObservationSeries(
 # ─────────────────────────────────────────────
 # TSV loaders
 # ─────────────────────────────────────────────
+
+# Fixed creation timestamp so regenerating the example produces a
+# byte-identical corpus.mediapkg (no spurious git diffs).
+FIXED_CREATED = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
 EMOTION_NAMES = ["Angry", "Disgust", "Fear", "Happy", "Sad", "Surprise", "Neutral"]
 
@@ -191,6 +196,7 @@ def main():
     with MediaPackageWriter(
         out_path,
         description="Example corpus: two videos with different annotation tracks",
+        created=FIXED_CREATED,
     ) as writer:
         writer.add_video("video_001", "https://example.org/videos/talk_001.mp4")
         writer.add_track("video_001", EMOTIONS_TRACK,      emotions_df)
