@@ -7,7 +7,7 @@ specification and reports gaps.
 ## When to use
 
 - Before merging any PR that modifies the write/read/validate path
-- After a vibe-coded contribution to the format implementation
+- After an AI-assisted contribution to the format implementation
 - When reviewing whether a proposed change is spec-conformant
 
 ## Steps

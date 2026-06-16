@@ -110,11 +110,11 @@ Strategies generate valid inputs according to the spec's constraints
 `end_seconds > start_seconds`, list-valued annotations). The oracle tells you
 whether the output is valid.
 
-**The consequence:** a viber can rewrite `writer.py` — correct or hallucinated —
-and `just test` will tell them whether they broke the format contract. No human
-reads the diff.
+**The consequence:** a developer using AI assisted coding can rewrite
+`writer.py` — correct or hallucinated — and `just test` will tell them whether
+they broke the format contract. No human reads the diff.
 
-### Phase 4 — Skills (executable Viber's lane)
+### Phase 4 — Skills (the executable lane)
 
 **Files created:** `.claude/commands/add-track-type.md`,
 `.claude/commands/check-spec-compliance.md`
@@ -124,8 +124,9 @@ Two project-specific slash commands:
 **`/project:add-track-type`** encodes the complete safe workflow for adding a
 new track type: read the ontology for patterns → add the dataclass → export it →
 write a hypothesis strategy → run `just test`. The checklist at the end requires
-all guard layers to pass before declaring done. A viber following this skill can
-add a track type without a senior engineer reading the implementation.
+all guard layers to pass before declaring done. This skill can be used for AI
+assisted coding to add a new track and make sure that the work will be completed
+as expected.
 
 **`/project:check-spec-compliance`** generates a structured audit of any PR
 touching `writer.py`, `reader.py`, or `validate.py` against the MUST/SHOULD
