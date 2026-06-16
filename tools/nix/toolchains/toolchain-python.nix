@@ -33,7 +33,6 @@
         # should be built by Nix.
         package = pkgs.python313.withPackages (p: [
           p.numpy
-          p.matplotlib
         ]);
 
         directory = builtins.toString self.lib.fs.repoRoot;
