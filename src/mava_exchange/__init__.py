@@ -38,6 +38,7 @@ from .tracks import (
     AnnotationSeries,
     DimensionSpec,
     ObservationSeries,
+    RegionSeries,
     Track,
 )
 from .writer import MediaPackageWriter
@@ -51,6 +52,7 @@ __all__ = [
     "MediaPackageReader",
     "MediaPackageWriter",
     "ObservationSeries",
+    "RegionSeries",
     "Track",
     "export_manifest_as_rdf",
     "file_stats",

@@ -29,6 +29,18 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 
+def _relations(track: Any) -> dict[str, Any]:
+    """Optional hierarchy / provenance edges, emitted only when present."""
+    d: dict[str, Any] = {}
+    if track.parent is not None:
+        d["parent"] = track.parent
+    if track.derived_from:
+        d["derived_from"] = list(track.derived_from)
+    if track.method is not None:
+        d["method"] = track.method
+    return d
+
+
 @dataclass
 class DimensionSpec:
     """
@@ -100,6 +112,15 @@ class ObservationSeries:
     sampling_interval: float | None = None
     """Seconds between samples for regularly-sampled data."""
 
+    parent: str | None = None
+    """Containment parent track name (None if top-level)."""
+
+    derived_from: list[str] | None = None
+    """Source track names this track is derived from (provenance)."""
+
+    method: str | None = None
+    """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
+
     type: Literal["mava:ObservationSeries"] = field(
         default="mava:ObservationSeries", init=False
     )
@@ -114,6 +135,7 @@ class ObservationSeries:
         d: dict[str, Any] = {
             "type":        self.type,
             "description": self.description,
+            **_relations(self),
             "columns":     self.columns,
             "dimensions":  {dim.name: dim.to_dict() for dim in self.dimensions},
         }
@@ -151,6 +173,15 @@ class AnnotationSeries:
     description: str
     """Human-readable description of what this track contains."""
 
+    parent: str | None = None
+    """Containment parent track name (None if top-level)."""
+
+    derived_from: list[str] | None = None
+    """Source track names this track is derived from (provenance)."""
+
+    method: str | None = None
+    """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
+
     type: Literal["mava:AnnotationSeries"] = field(
         default="mava:AnnotationSeries", init=False
     )
@@ -165,6 +196,7 @@ class AnnotationSeries:
         return {
             "type":        self.type,
             "description": self.description,
+            **_relations(self),
             "columns":     self.columns,
         }
 
@@ -202,6 +234,15 @@ class AnnotationListSeries:
     description: str
     """Human-readable description of what this track contains."""
 
+    parent: str | None = None
+    """Containment parent track name (None if top-level)."""
+
+    derived_from: list[str] | None = None
+    """Source track names this track is derived from (provenance)."""
+
+    method: str | None = None
+    """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
+
     type: Literal["mava:AnnotationListSeries"] = field(
         default="mava:AnnotationListSeries", init=False
     )
@@ -216,9 +257,86 @@ class AnnotationListSeries:
         return {
             "type":        self.type,
             "description": self.description,
+            **_relations(self),
             "columns":     self.columns,
         }
 
 
+@dataclass
+class RegionSeries:
+    """
+    Spatial detections — one row per detection (long format).
+
+    Use for bounding boxes (faces, objects). Geometry is normalized to [0,1] of
+    the frame with a top-left origin (``x``, ``y``, ``w``, ``h``) plus a
+    detection score; each row also carries an identity (``cluster_id``) and an
+    optional human ``label``.
+
+    Each row in the Parquet file needs: start_seconds + one column per dimension
+    (x, y, w, h, det_score) + cluster_id + label.
+
+    Example::
+
+        faces = RegionSeries(
+            name="face_regions",
+            description="Per-frame face bounding boxes",
+            sampling_interval=0.5,
+            dimensions=[
+                DimensionSpec("x", "Box left edge (normalized)", "[0,1]"),
+                DimensionSpec("y", "Box top edge (normalized)", "[0,1]"),
+                DimensionSpec("w", "Box width (normalized)", "[0,1]"),
+                DimensionSpec("h", "Box height (normalized)", "[0,1]"),
+                DimensionSpec("det_score", "Detection confidence", "[0,1]"),
+            ],
+        )
+    """
+    name: str
+    """Track name (must be unique within package)."""
+
+    description: str
+    """Human-readable description of what this track contains."""
+
+    dimensions: list[DimensionSpec]
+    """Geometry + score columns (x, y, w, h, det_score)."""
+
+    sampling_interval: float | None = None
+    """Seconds between samples for regularly-sampled detections."""
+
+    coordinate_space: Literal["normalized", "pixel"] = "normalized"
+    """Coordinate convention for the geometry columns."""
+
+    parent: str | None = None
+    """Containment parent track name (None if top-level)."""
+
+    derived_from: list[str] | None = None
+    """Source track names this track is derived from (provenance)."""
+
+    method: str | None = None
+    """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
+
+    type: Literal["mava:RegionSeries"] = field(
+        default="mava:RegionSeries", init=False
+    )
+
+    @property
+    def columns(self) -> list[str]:
+        """Returns column names."""
+        return ["start_seconds"] + [d.name for d in self.dimensions] + ["cluster_id", "label"]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Converts to dictionary for manifest.json."""
+        d: dict[str, Any] = {
+            "type":             self.type,
+            "description":      self.description,
+            **_relations(self),
+            "coordinate_space": self.coordinate_space,
+            "columns":          self.columns,
+            "dimensions":       {dim.name: dim.to_dict() for dim in self.dimensions},
+        }
+        if self.sampling_interval is not None:
+            d["sampling_interval_seconds"] = self.sampling_interval
+        return d
+
+
 # Type alias for any kind of track
-Track = ObservationSeries | AnnotationSeries | AnnotationListSeries
+Track = ObservationSeries | AnnotationSeries | AnnotationListSeries | RegionSeries

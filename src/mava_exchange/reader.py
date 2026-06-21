@@ -10,7 +10,14 @@ from typing import TYPE_CHECKING
 import pandas as pd
 import pyarrow.parquet as pq
 
-from .tracks import AnnotationSeries, DimensionSpec, ObservationSeries, Track, AnnotationListSeries
+from .tracks import (
+    AnnotationListSeries,
+    AnnotationSeries,
+    DimensionSpec,
+    ObservationSeries,
+    RegionSeries,
+    Track,
+)
 
 if TYPE_CHECKING:
     from typing import Self
@@ -48,33 +55,50 @@ def file_stats(pkg_path: str | Path) -> list[dict]:
     return stats
 
 
+def _dims_from_dict(d: dict) -> list[DimensionSpec]:
+    return [
+        DimensionSpec(
+            name=dim_name,
+            description=dim_meta.get("description", ""),
+            range=dim_meta.get("range", ""),
+        )
+        for dim_name, dim_meta in d.get("dimensions", {}).items()
+    ]
+
+
 def _track_from_dict(name: str, d: dict) -> Track:
     """Reconstruct Track object from manifest dict."""
     track_type = d.get("type", "")
+    # Optional hierarchy / provenance edges, common to every track type.
+    rel = {k: d[k] for k in ("parent", "derived_from", "method") if k in d}
     if track_type == "mava:ObservationSeries":
-        dims = [
-            DimensionSpec(
-                name=dim_name,
-                description=dim_meta.get("description", ""),
-                range=dim_meta.get("range", ""),
-            )
-            for dim_name, dim_meta in d.get("dimensions", {}).items()
-        ]
         return ObservationSeries(
             name=name,
             description=d.get("description", ""),
-            dimensions=dims,
+            dimensions=_dims_from_dict(d),
             sampling_interval=d.get("sampling_interval_seconds"),
+            **rel,
         )
     elif track_type == "mava:AnnotationSeries":
         return AnnotationSeries(
             name=name,
             description=d.get("description", ""),
+            **rel,
         )
     elif track_type == "mava:AnnotationListSeries":
         return AnnotationListSeries(
             name=name,
             description=d.get("description", ""),
+            **rel,
+        )
+    elif track_type == "mava:RegionSeries":
+        return RegionSeries(
+            name=name,
+            description=d.get("description", ""),
+            dimensions=_dims_from_dict(d),
+            sampling_interval=d.get("sampling_interval_seconds"),
+            coordinate_space=d.get("coordinate_space", "normalized"),
+            **rel,
         )
     else:
         raise ValueError(f"Unknown track type '{track_type}' for track '{name}'")

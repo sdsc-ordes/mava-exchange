@@ -96,6 +96,7 @@ ignore = [
 "__init__.py" = ["F401"]
 "tests/**" = ["INP001", "PLR2004", "PLR0913", "PT012", "S101"]
 "examples/*" = ["INP001"]
+"tools/**" = ["INP001"]
 "[!t][!e][!s][!t][!s]*/**" = ["PT"]
 "docs/*" = ["INP001"]
 # assert used only for mypy type-narrowing after guards that already raise

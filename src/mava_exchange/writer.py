@@ -94,12 +94,15 @@ class MediaPackageWriter:
         self._tracks: dict[str, Track] = {}    # track_name → Track
         self._data:   dict[str, dict[str, pd.DataFrame]] = {} # video_id → {track_name → DataFrame}
 
-    def add_video(
+    def add_video(  # noqa: PLR0913
         self,
         video_id:         str,
         src:              str,
         title:            str | None = None,
         duration_seconds: float | None = None,
+        width:            int | None = None,
+        height:           int | None = None,
+        fps:              float | None = None,
     ) -> "MediaPackageWriter":
         """
         Register a video. Must be called before add_track for this video.
@@ -136,6 +139,9 @@ class MediaPackageWriter:
             "id":  video_id,
             "src": src,
             **({"title": title} if title else {}),
+            **({"width": width} if width is not None else {}),
+            **({"height": height} if height is not None else {}),
+            **({"fps": fps} if fps is not None else {}),
             **({"duration_seconds": duration_seconds} if duration_seconds else {}),
         }
         self._data[video_id] = {}
