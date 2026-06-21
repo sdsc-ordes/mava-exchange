@@ -17,8 +17,10 @@ function getBus(videoId) {
   if (!videoBuses[videoId]) {
     videoBuses[videoId] = {
       subs: new Set(),
-      buttons: new Set(),
       driverEl: null,
+      video: null,
+      overlay: null,
+      boxDrawer: null,
     }
   }
   return videoBuses[videoId]
@@ -30,14 +32,14 @@ function subscribeTime(videoId, fn) {
   return () => bus.subs.delete(fn)
 }
 
-// Wire a <video> as the bus driver: publish currentTime each frame.
-function driveVideo(videoEl, videoId, onTime) {
+// Wire a <video> as the bus driver: each frame, redraw the box overlay and
+// notify every time subscriber (chart playhead / segment highlight).
+function driveVideo(videoEl, videoId) {
   const bus = getBus(videoId)
   bus.driverEl = videoEl
-  bus.buttons.forEach((b) => (b.style.display = "none"))
   const tick = () => {
     const t = videoEl.currentTime
-    if (onTime) onTime(t)
+    if (bus.boxDrawer) bus.boxDrawer(t)
     bus.subs.forEach((fn) => fn(t))
     if (videoEl.requestVideoFrameCallback)
       videoEl.requestVideoFrameCallback(tick)
@@ -50,40 +52,73 @@ function driveVideo(videoEl, videoId, onTime) {
   }
 }
 
-// A "Load video" button that embeds a <video> into `host` and drives the bus.
-// Auto-hides once any panel for this video has loaded one. Returns the <video>.
-function makeVideoLoader(videoId, host, onTime) {
+// Open (or focus) the shared video panel for a video id: a stacked panel
+// holding the <video> + a box-overlay canvas. Loading the file drives the bus,
+// so any open RegionSeries overlays its boxes here and charts/annotations sync.
+// The package never embeds the video — it is loaded locally from disk.
+function openVideoPanel(videoId) {
+  const viz = document.getElementById("visualization")
+  const key = videoId + "/__video__"
   const bus = getBus(videoId)
+  const existing = Array.from(viz.children).find((el) => el.dataset.key === key)
+  if (existing) {
+    existing.scrollIntoView({ behavior: "smooth" })
+    if (!bus.driverEl) existing.querySelector(".video-file").click()
+    return
+  }
+
+  const { panel, chart } = makePanel(
+    key,
+    "📹 " + videoId,
+    "source video — loaded locally, never stored in the package",
+  )
+  viz.appendChild(panel)
+  viz.classList.add("visible")
+  panel.scrollIntoView({ behavior: "smooth" })
+
+  const stage = document.createElement("div")
+  stage.style.cssText =
+    "position: relative; display: inline-block; max-width: 100%;"
+  const video = document.createElement("video")
+  video.playsInline = true
+  video.controls = true
+  video.style.cssText = "max-width: 100%; display: block;"
+  const overlay = document.createElement("canvas")
+  overlay.style.cssText =
+    "position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"
   const fileInput = document.createElement("input")
   fileInput.type = "file"
   fileInput.accept = "video/*"
+  fileInput.className = "video-file"
   fileInput.style.display = "none"
-  const button = document.createElement("button")
-  button.className = "close-btn"
-  button.style.background = "#1976d2"
-  button.textContent = "🎬 Load video"
-  const videoEl = document.createElement("video")
-  videoEl.playsInline = true
-  videoEl.controls = true
-  videoEl.style.cssText =
-    "max-width: 100%; display: none; margin-top: 10px; border: 1px solid #ddd;"
+  stage.appendChild(video)
+  stage.appendChild(overlay)
+  chart.appendChild(fileInput)
+  chart.appendChild(stage)
 
-  bus.buttons.add(button)
-  if (bus.driverEl) button.style.display = "none"
+  bus.video = video
+  bus.overlay = overlay
 
-  button.addEventListener("click", () => fileInput.click())
   fileInput.addEventListener("change", () => {
     const file = fileInput.files && fileInput.files[0]
     if (!file) return
-    videoEl.src = URL.createObjectURL(file)
-    videoEl.style.display = "block"
-    driveVideo(videoEl, videoId, onTime)
+    video.src = URL.createObjectURL(file)
+    video.addEventListener("loadedmetadata", () => {
+      overlay.width = video.videoWidth || 16
+      overlay.height = video.videoHeight || 9
+      if (bus.boxDrawer) bus.boxDrawer(video.currentTime)
+    })
+    driveVideo(video, videoId)
   })
 
-  host.appendChild(button)
-  host.appendChild(fileInput)
-  host.appendChild(videoEl)
-  return videoEl
+  panel._cleanup = () => {
+    video.pause()
+    bus.video = null
+    bus.overlay = null
+    bus.driverEl = null
+  }
+
+  fileInput.click()
 }
 
 // Chart.js plugin: draw a vertical playhead line at state.t (in seconds).
@@ -221,6 +256,12 @@ function displayVideoList(manifest) {
       '<span class="video-icon">📹</span><span class="video-title">' +
       video.id +
       "</span>"
+    // Load the source video at the video level; opened tracks then sync to it.
+    const loadBtn = document.createElement("button")
+    loadBtn.className = "video-load-btn"
+    loadBtn.textContent = "🎬 Load video"
+    loadBtn.addEventListener("click", () => openVideoPanel(video.id))
+    header.appendChild(loadBtn)
     videoCard.appendChild(header)
 
     const trackList = document.createElement("div")
@@ -344,12 +385,11 @@ function makePanel(key, title, subtitle) {
   closeBtn.textContent = "Close"
   closeBtn.addEventListener("click", () => {
     if (typeof panel._cleanup === "function") panel._cleanup()
-    // If this panel was driving the video bus, release it so other panels can.
+    // If this panel was driving the video bus, release it.
     const vid = panel.dataset.key.split("/")[0]
     const bus = videoBuses[vid]
     if (bus && bus.driverEl && panel.contains(bus.driverEl)) {
       bus.driverEl = null
-      bus.buttons.forEach((b) => (b.style.display = ""))
     }
     const container = panel.parentElement
     panel.remove()
@@ -493,11 +533,8 @@ function renderObservationSeries(chart, data, trackDef, videoId) {
   const desc = document.createElement("p")
   desc.style.cssText = "margin-bottom: 15px; color: #666;"
   desc.textContent = trackDef.description || ""
-  const controls = document.createElement("div")
-  controls.style.marginBottom = "10px"
   const ctx = document.createElement("canvas")
   wrap.appendChild(desc)
-  wrap.appendChild(controls)
   wrap.appendChild(ctx)
   chart.appendChild(wrap)
 
@@ -563,12 +600,11 @@ function renderObservationSeries(chart, data, trackDef, videoId) {
     plugins: [playheadPlugin(playhead)],
   })
 
-  // Move a red playhead line in step with the loaded video; offer to load one.
+  // Move a red playhead line in step with the video loaded from the header.
   const unsub = subscribeTime(videoId, (t) => {
     playhead.t = t
     chartObj.draw()
   })
-  makeVideoLoader(videoId, controls, null)
 
   const panel = chart.parentElement
   if (panel) {
@@ -609,38 +645,25 @@ function renderRegionSeries(chart, data, trackDef, videoId) {
     '<p style="margin-bottom: 12px; color: #666;">' +
     escapeHtml(trackDef.description || "") +
     "</p>" +
-    '<div style="margin-bottom: 12px;">' +
-    '<button class="region-load" style="font-size: 13px; padding: 6px 10px; cursor: pointer;">🎬 Load video to overlay…</button> ' +
-    '<input type="file" class="region-file" accept="video/*" style="display: none;" />' +
-    '<span class="region-hint" style="font-size: 12px; color: #888; margin-left: 8px;">boxes shown on a blank frame — load the source video to see them in place</span>' +
-    "</div>" +
+    '<p style="margin: 0 0 12px; font-size: 12px; color: #888;">boxes on a blank frame here — use “🎬 Load video” in the video header above to see them on the footage</p>' +
     '<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">' +
     '<input type="range" class="region-slider" min="0" max="' +
     (times.length - 1) +
     '" value="0" style="flex: 1;" />' +
     '<span class="region-time" style="font-variant-numeric: tabular-nums; color: #333; min-width: 170px;"></span>' +
     "</div>" +
-    '<div class="region-stage" style="position: relative; display: inline-block; max-width: 100%;">' +
-    '<video class="region-video" playsinline controls style="display: none; max-width: 100%; border: 1px solid #ddd;"></video>' +
     '<canvas class="region-canvas" width="' +
     defaultW +
     '" height="' +
     defaultH +
     '" style="border: 1px solid #ddd; background: #fafafa; max-width: 100%; height: auto; display: block;"></canvas>' +
-    "</div>" +
     '<div class="region-legend" style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;"></div>' +
     "</div>"
 
   const canvas = chart.querySelector(".region-canvas")
-  const ctx = canvas.getContext("2d")
   const slider = chart.querySelector(".region-slider")
   const timeLabel = chart.querySelector(".region-time")
   const legend = chart.querySelector(".region-legend")
-  const videoEl = chart.querySelector(".region-video")
-  const loadBtn = chart.querySelector(".region-load")
-  const fileInput = chart.querySelector(".region-file")
-  const hint = chart.querySelector(".region-hint")
-  let hasVideo = false
 
   const clusterColor = (cid) => {
     if (cid === null || cid === undefined || cid === "")
@@ -649,17 +672,13 @@ function renderRegionSeries(chart, data, trackDef, videoId) {
     return `hsl(${hue}, 70%, 45%)`
   }
 
-  function draw(idx) {
+  // Draw the boxes for timestamp index `idx` onto any 2D context.
+  function drawBoxes(ctx, cw, ch, idx) {
     const t = times[idx]
     const boxes = data.filter((r) => Number(r.start_seconds) === t)
-    const cw = canvas.width
-    const ch = canvas.height
-
     ctx.clearRect(0, 0, cw, ch)
     const seen = new Map()
-
     boxes.forEach((b) => {
-      // Normalized [0,1] (or pixel) coords, top-left origin -> canvas pixels.
       const px = (pixelSpace ? b.x / frameW : b.x) * cw
       const py = (pixelSpace ? b.y / frameH : b.y) * ch
       const pw = (pixelSpace ? b.w / frameW : b.w) * cw
@@ -683,12 +702,21 @@ function renderRegionSeries(chart, data, trackDef, videoId) {
 
       if (!seen.has(String(cid))) seen.set(String(cid), { color, tag })
     })
+    return { t, count: boxes.length, seen }
+  }
 
+  // Render to this panel's own (blank-frame) canvas + slider label + legend.
+  function show(idx) {
+    const info = drawBoxes(
+      canvas.getContext("2d"),
+      canvas.width,
+      canvas.height,
+      idx,
+    )
     timeLabel.textContent =
-      "t = " + t.toFixed(2) + "s  •  " + boxes.length + " box(es)"
-
+      "t = " + info.t.toFixed(2) + "s  •  " + info.count + " box(es)"
     legend.innerHTML = ""
-    seen.forEach(({ color, tag }) => {
+    info.seen.forEach(({ color, tag }) => {
       const chip = document.createElement("span")
       chip.style.cssText =
         "display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #333;"
@@ -712,59 +740,40 @@ function renderRegionSeries(chart, data, trackDef, videoId) {
 
   slider.addEventListener("input", () => {
     const idx = Number(slider.value)
-    draw(idx)
-    if (hasVideo) videoEl.currentTime = times[idx]
+    show(idx)
+    const bus = getBus(videoId)
+    if (bus.driverEl) bus.driverEl.currentTime = times[idx]
   })
 
-  // Optional: overlay the boxes on the real source video (loaded locally; the
-  // package never embeds it). Times are absolute, so a full video lines up.
-  loadBtn.addEventListener("click", () => fileInput.click())
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files && fileInput.files[0]
-    if (!file) return
-    videoEl.src = URL.createObjectURL(file)
-    videoEl.style.display = "block"
-    // Turn the canvas into a transparent overlay sitting on top of the video.
-    Object.assign(canvas.style, {
-      position: "absolute",
-      left: "0",
-      top: "0",
-      width: "100%",
-      height: "100%",
-      background: "transparent",
-      border: "none",
-    })
-    hint.textContent = "overlay synced to playback — play or scrub"
-    loadBtn.style.display = "none"
-    hasVideo = true
+  // When the video is loaded (from the header), draw the boxes onto its overlay.
+  const bus = getBus(videoId)
+  bus.boxDrawer = (tsec) => {
+    if (!bus.overlay) return
+    drawBoxes(
+      bus.overlay.getContext("2d"),
+      bus.overlay.width,
+      bus.overlay.height,
+      nearestIdx(tsec),
+    )
+  }
+  if (bus.driverEl) bus.boxDrawer(bus.driverEl.currentTime)
 
-    videoEl.addEventListener("loadedmetadata", () => {
-      // Match the overlay resolution to the frame for crisp, aligned boxes.
-      canvas.width = videoEl.videoWidth || canvas.width
-      canvas.height = videoEl.videoHeight || canvas.height
-      videoEl.currentTime = times[0]
-    })
-
-    // Drive the bus: overlay boxes here, and publish time to any other open
-    // panels for this video (charts get a playhead, annotations highlight).
-    driveVideo(videoEl, videoId, (t) => {
-      const idx = nearestIdx(t)
-      slider.value = String(idx)
-      draw(idx)
-    })
+  // Follow playback on our own canvas + slider too.
+  const unsub = subscribeTime(videoId, (tsec) => {
+    const idx = nearestIdx(tsec)
+    slider.value = String(idx)
+    show(idx)
   })
 
-  // React to a video loaded by some other panel (e.g. an ObservationSeries):
-  // move the slider/boxes along even without a video embedded in this panel.
-  const unsub = subscribeTime(videoId, (t) => {
-    if (hasVideo) return
-    draw(nearestIdx(t))
-    slider.value = String(nearestIdx(t))
-  })
   const panel = chart.parentElement
-  if (panel) panel._cleanup = unsub
+  if (panel) {
+    panel._cleanup = () => {
+      unsub()
+      if (videoBuses[videoId]) videoBuses[videoId].boxDrawer = null
+    }
+  }
 
-  draw(0)
+  show(0)
 }
 
 function renderAnnotationSeries(chart, data, trackDef, videoId) {
@@ -779,10 +788,6 @@ function renderAnnotationSeries(chart, data, trackDef, videoId) {
   desc.style.cssText = "margin-bottom: 12px; color: #666;"
   desc.textContent = trackDef.description || ""
   wrap.appendChild(desc)
-
-  const controls = document.createElement("div")
-  controls.style.marginBottom = "12px"
-  wrap.appendChild(controls)
 
   // Segmentation / container tracks (e.g. shots, person_identification) carry no
   // labels of their own — explain that instead of showing blank rows.
@@ -835,7 +840,7 @@ function renderAnnotationSeries(chart, data, trackDef, videoId) {
 
   chart.appendChild(wrap)
 
-  // Highlight the segment under the video playhead; offer to load a video.
+  // Highlight the segment under the video playhead (video loaded from header).
   let active = null
   const unsub = subscribeTime(videoId, (t) => {
     const hit = segs.find((s) => t >= s.start && t < s.end)
@@ -844,7 +849,6 @@ function renderAnnotationSeries(chart, data, trackDef, videoId) {
     active = hit
     if (hit) hit.el.style.boxShadow = "0 0 0 3px #1976d2"
   })
-  makeVideoLoader(videoId, controls, null)
 
   const panel = chart.parentElement
   if (panel) panel._cleanup = unsub

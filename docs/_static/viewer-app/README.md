@@ -9,8 +9,9 @@ A simple web-based viewer for `.mediapkg` video annotation packages.
 - 📝 Display AnnotationSeries as timeline segments
 - 🏷️ Show AnnotationListSeries with multi-label tags
 - 🟦 Render RegionSeries as bounding boxes per timestamp (colored by cluster)
-- 🎬 Optionally load the source video locally to overlay boxes and sync a
-  playhead across all open panels (the package never embeds the video)
+- 🎬 Load the source video from a video's header (local file) to overlay boxes
+  on the footage and sync a playhead/segment-highlight across all its open
+  panels (the package never embeds the video)
 - 🪟 Open multiple tracks at once as stacked, individually closable panels
 - 🌐 Works entirely client-side (no data leaves the browser)
 
