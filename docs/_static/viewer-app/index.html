@@ -4,7 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MediaPkg Viewer</title>
-    <link rel="stylesheet" href="_static/viewer-app/styles.css" />
+    <!--
+      Standalone entry point for running the viewer locally without a Sphinx
+      build. Paths are relative to this folder (styles.css / viewer.js are
+      siblings). The Sphinx docs use ../../_templates/viewer.html instead, whose
+      paths are rewritten at build time. Keep the two in sync.
+
+      Serve over HTTP (the module import is blocked from file://):
+          just viewer            # or: python3 -m http.server -d docs/_static/viewer-app
+    -->
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="container">
@@ -53,6 +62,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- viewer library to view MediaPkg files -->
-    <script type="module" src="_static/viewer-app/viewer.js"></script>
+    <script type="module" src="viewer.js"></script>
   </body>
 </html>

@@ -8,13 +8,25 @@ A simple web-based viewer for `.mediapkg` video annotation packages.
 - 📊 Visualize ObservationSeries as line charts
 - 📝 Display AnnotationSeries as timeline segments
 - 🏷️ Show AnnotationListSeries with multi-label tags
-- 🌐 Works entirely in the browser (no server needed)
+- 🟦 Render RegionSeries as bounding boxes per timestamp (colored by cluster)
+- 🎬 Optionally load the source video locally to overlay boxes and sync a
+  playhead across all open panels (the package never embeds the video)
+- 🪟 Open multiple tracks at once as stacked, individually closable panels
+- 🌐 Works entirely client-side (no data leaves the browser)
 
 ## Usage
 
 ### Local
 
-Just open `index.html` in a web browser. No build step or installation required.
+Serve this folder over HTTP and open it — the module import is blocked from
+`file://`, and the libraries load from a CDN (so you need internet):
+
+```bash
+just viewer          # → http://localhost:8000/
+# or: python3 -m http.server -d docs/_static/viewer-app 8000
+```
+
+Then drop a `.mediapkg` (e.g. `examples/output/corpus.mediapkg`) into the page.
 
 ### Online
 
@@ -25,8 +37,8 @@ Visit: https://sdsc-ordes.github.io/mava-exchange/viewer/
 1. Drop a `.mediapkg` file into the viewer
 2. The viewer unzips it using JSZip
 3. Reads the `manifest.json` to understand the structure
-4. Parses Parquet files using parquet-wasm
-5. Renders visualizations using Chart.js
+4. Parses Parquet files using hyparquet
+5. Renders visualizations using Chart.js (and a canvas for RegionSeries)
 
 All processing happens client-side. No data is uploaded to any server.
 

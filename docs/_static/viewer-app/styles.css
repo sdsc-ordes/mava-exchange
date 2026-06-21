@@ -159,6 +159,11 @@ h1 {
   color: #7b1fa2;
 }
 
+.track-type.region {
+  background: #e0f2f1;
+  color: #00897b;
+}
+
 #visualization {
   margin-top: 30px;
   display: none;
@@ -166,6 +171,30 @@ h1 {
 
 #visualization.visible {
   display: block;
+}
+
+/* One stacked, individually closable panel per opened track. */
+.viz-panel {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 2px solid #eee;
+}
+
+.viz-panel:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.viz-subtitle {
+  font-size: 13px;
+  color: #777;
+  margin-top: 2px;
+}
+
+.chart {
+  margin-top: 20px;
+  min-height: 200px;
 }
 
 .viz-header {
