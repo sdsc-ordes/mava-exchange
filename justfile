@@ -66,10 +66,21 @@ pylode +args='':
     @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/docs/_templates/mava.html" > /dev/null 2>&1
     @echo "✅ HTML successfully generated at: {{root_dir}}/docs/_templates/mava.html"
 
-# Build a .mediapkg from the example TSV files.
+# Build the .mediapkg corpus from the committed example inputs.
 [group('usage')]
 example:
-    uv run examples/scripts/tsv_to_mediapkg.py
+    uv run examples/scripts/build_mediapkg.py
+
+# (maintainers) Regenerate examples/input/ from the raw exports in data/ (gitignored).
+[group('data')]
+extract-examples:
+    uv run tools/scripts/extract_segment.py
+
+# Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
+[group('usage')]
+viewer port="8000":
+    @echo "Viewer → http://localhost:{{port}}/  (drop in examples/output/corpus.mediapkg)"
+    python3 -m http.server -d docs/_static/viewer-app {{port}}
 
 # Inspect a .mediapkg archive.
 # Usage:
