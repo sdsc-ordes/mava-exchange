@@ -23,6 +23,18 @@ joanne:
   derived_from:
     - face_regions
   method: cluster_to_scalar
+paul:
+  type: mava:ObservationSeries
+  description: Paul
+  parent: person_identification
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Paul
+      range: "[0,1]"
+  derived_from:
+    - face_regions
+  method: cluster_to_scalar
 face_regions:
   type: mava:RegionSeries
   description:

@@ -4,7 +4,7 @@ title: Tagesschau (segment)
 width: 1280
 height: 720
 fps: 25.0
-duration_seconds: 916.36
-segment:
+duration_seconds: 90.0
+source_window:
   start: 0.0
   end: 90.0
