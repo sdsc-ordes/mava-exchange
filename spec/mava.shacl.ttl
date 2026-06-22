@@ -72,6 +72,7 @@ mava:VideoShape a sh:NodeShape ;
             [ sh:class mava:ObservationSeries ]
             [ sh:class mava:AnnotationSeries ]
             [ sh:class mava:AnnotationListSeries ]
+            [ sh:class mava:RegionSeries ]
         ) ;
         sh:message "A Video with no analysis series is not useful in this context." ;
     ] .
@@ -130,6 +131,47 @@ mava:ObservationSeriesShape a sh:NodeShape ;
         sh:class     mava:Dimension ;
         sh:minCount  1 ;
         sh:message "Must declare at least one dimension (column)." ;
+    ] ;
+
+    sh:property [
+        sh:path        mava:samplingInterval ;
+        sh:maxCount    1 ;
+        sh:datatype    xsd:decimal ;
+        sh:minExclusive 0 ;
+        sh:message   "Optional. If present, must be a positive number." ;
+    ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# RegionSeries
+# Every RegionSeries must have a description and at least one dimension
+# (the geometry/score columns). It may declare a coordinate space and a
+# sampling interval.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:RegionSeriesShape a sh:NodeShape ;
+    sh:targetClass mava:RegionSeries ;
+    sh:description   "Every RegionSeries must have a description and a dimension." ;
+
+    sh:property [
+        sh:path     mava:seriesDescription ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:hasDimension ;
+        sh:class     mava:Dimension ;
+        sh:minCount  1 ;
+        sh:message "Must declare at least one dimension (geometry/score column)." ;
+    ] ;
+
+    sh:property [
+        sh:path        mava:coordinateSpace ;
+        sh:maxCount    1 ;
+        sh:datatype    xsd:string ;
+        sh:in          ( "normalized" "pixel" ) ;
+        sh:message   "Optional. If present, must be 'normalized' or 'pixel'." ;
     ] ;
 
     sh:property [
@@ -208,6 +250,85 @@ mava:ObservationPointShape a sh:NodeShape ;
         sh:minCount  1 ;
         sh:datatype  xsd:decimal ;
         sh:message "Must have at least one numeric value." ;
+    ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# RegionDetection
+# Validates one row from a RegionSeries Parquet file. Geometry datatypes are
+# checked here; the [0,1] bound for normalized coordinates is enforced by
+# src/mava_exchange/validate.py, which can read the series' coordinate_space.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:RegionDetectionShape a sh:NodeShape ;
+    sh:targetClass mava:RegionDetection ;
+    sh:description   "Every RegionDetection must have a time, belong to a series, and carry box geometry, a score and a cluster id." ;
+
+    sh:property [
+        sh:path         mava:atTime ;
+        sh:minCount     1 ;
+        sh:maxCount     1 ;
+        sh:datatype     xsd:decimal ;
+        sh:minInclusive 0 ;
+        sh:message "Exactly one time value, non-negative." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:belongsToRegionSeries ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:message "Must belong to exactly one RegionSeries." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:x ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:decimal ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:y ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:decimal ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:width ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:decimal ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:height ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:decimal ;
+    ] ;
+
+    sh:property [
+        sh:path         mava:detectionScore ;
+        sh:maxCount     1 ;
+        sh:datatype     xsd:decimal ;
+        sh:minInclusive 0 ;
+        sh:maxInclusive 1 ;
+        sh:message "Detection confidence in [0,1]." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:clusterId ;
+        sh:minCount  1 ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:integer ;
+        sh:message "Exactly one machine cluster id." ;
+    ] ;
+
+    sh:property [
+        sh:path      mava:identityLabel ;
+        sh:maxCount  1 ;
+        sh:datatype  xsd:string ;
+        sh:message "Optional, nullable human label." ;
     ] .
 
 # ───────────────────────────────────────────────────────────────────────

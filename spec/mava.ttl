@@ -20,9 +20,9 @@ mava: a owl:Ontology ;
     dcterms:rightsHolder "ETH Zurich" ;
     dcterms:license      <https://www.apache.org/licenses/LICENSE-2.0> ;
     dcterms:created      "2025-08-12"^^xsd:date ;
-    dcterms:modified     "2025-08-12"^^xsd:date ;
-    owl:versionInfo      "0.1.0" ;
-    adms:versionNotes    "Initial release." ;
+    dcterms:modified     "2026-06-22"^^xsd:date ;
+    owl:versionInfo      "0.2.0" ;
+    adms:versionNotes    "0.2 (additive): adds RegionSeries / RegionDetection for spatial detections, per-row identity (clusterId, identityLabel), and track hierarchy / provenance (hasParent, derivedFrom, derivationMethod)." ;
     doap:repository      <https://github.com/sdsc-ordes/mava-exchange> ;
     rdfs:label           "MAVA Ontology" ;
 .
@@ -173,9 +173,9 @@ mava:hasVideo a owl:ObjectProperty ;
 
 mava:hasAnalysis a owl:ObjectProperty ;
     rdfs:label   "has analysis" ;
-    rdfs:comment "Relates a Video to one of its annotation or observation series." ;
+    rdfs:comment "Relates a Video to one of its annotation, observation, or region series." ;
     rdfs:domain  mava:Video ;
-    rdfs:range   [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries) ] .
+    rdfs:range   [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries mava:RegionSeries) ] .
 
 mava:belongsToAnnotationSeries a owl:ObjectProperty ;
     rdfs:label   "belongs to annotation series" ;
@@ -213,8 +213,8 @@ mava:samplingInterval a owl:DatatypeProperty ;
 
 mava:atTime a owl:DatatypeProperty ;
     rdfs:label   "at time" ;
-    rdfs:comment "Time of an ObservationPoint in seconds from the start of the video. Maps to 'start_seconds' column in time-series Parquet files." ;
-    rdfs:domain  mava:ObservationPoint ;
+    rdfs:comment "Time of an ObservationPoint or RegionDetection in seconds from the start of the video. Maps to the 'start_seconds' column in time-series and region Parquet files." ;
+    rdfs:domain  [ owl:unionOf (mava:ObservationPoint mava:RegionDetection) ] ;
     rdfs:range   xsd:decimal .
 
 mava:startTime a owl:DatatypeProperty ;
@@ -253,4 +253,113 @@ mava:listValue a owl:DatatypeProperty ;
     rdfs:label   "list value" ;
     rdfs:comment "A list of string values for an AnnotationListSegment. Maps to the 'annotations' column (Parquet LIST type) in list annotation files." ;
     rdfs:domain  mava:AnnotationListSegment ;
+    rdfs:range   xsd:string .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 8 — Region series (spatial detections)                     [v0.2]
+#
+#   RegionSeries — a long-format series of spatial detections (one row per
+#                  detection; many rows may share a time), e.g. face or object
+#                  bounding boxes. Rows are RegionDetections.
+#
+# Geometry is x / y / width / height with a detection score. Identity is carried
+# per row by clusterId (machine cluster, stable integer) and identityLabel (a
+# nullable, possibly non-unique human label) — there is no separate entity class.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:RegionSeries a owl:Class ;
+    rdfs:label   "Region Series" ;
+    rdfs:comment "A series of spatial detections over time, in long format (one row per detection). Maps to a region Parquet file in .mediapkg. Sibling of ObservationSeries." .
+
+mava:RegionDetection a owl:Class ;
+    rdfs:label   "Region Detection" ;
+    rdfs:comment "A single spatial detection at a point in time: a bounding box with a detection score and identity. One row in a RegionSeries Parquet file. Sibling of ObservationPoint." .
+
+mava:belongsToRegionSeries a owl:ObjectProperty ;
+    rdfs:label   "belongs to region series" ;
+    rdfs:comment "Relates a RegionDetection back to its parent RegionSeries." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   mava:RegionSeries .
+
+mava:x a owl:DatatypeProperty ;
+    rdfs:label   "x" ;
+    rdfs:comment "Left edge of a detection's bounding box. Normalized to [0,1] of the frame width when the series coordinateSpace is 'normalized'. Maps to the 'x' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:decimal .
+
+mava:y a owl:DatatypeProperty ;
+    rdfs:label   "y" ;
+    rdfs:comment "Top edge of a detection's bounding box (top-left origin). Normalized to [0,1] of the frame height when the series coordinateSpace is 'normalized'. Maps to the 'y' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:decimal .
+
+mava:width a owl:DatatypeProperty ;
+    rdfs:label   "width" ;
+    rdfs:comment "Width of a detection's bounding box. Normalized to [0,1] of the frame width when the series coordinateSpace is 'normalized'. Maps to the 'w' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:decimal .
+
+mava:height a owl:DatatypeProperty ;
+    rdfs:label   "height" ;
+    rdfs:comment "Height of a detection's bounding box. Normalized to [0,1] of the frame height when the series coordinateSpace is 'normalized'. Maps to the 'h' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:decimal .
+
+mava:detectionScore a owl:DatatypeProperty ;
+    rdfs:label   "detection score" ;
+    rdfs:comment "Detection confidence in [0,1]. Maps to the 'det_score' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:decimal .
+
+mava:clusterId a owl:DatatypeProperty ;
+    rdfs:label   "cluster id" ;
+    rdfs:comment "Machine cluster a detection belongs to (a stable integer). Not necessarily 1:1 with identityLabel — several clusters may map to one label. Maps to the 'cluster_id' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:integer .
+
+mava:identityLabel a owl:DatatypeProperty ;
+    rdfs:label   "identity label" ;
+    rdfs:comment "Human-provided identity label for a detection (e.g. a person's name). Nullable and incomplete; not unique and not 1:1 with clusterId. Maps to the 'label' column." ;
+    rdfs:domain  mava:RegionDetection ;
+    rdfs:range   xsd:string .
+
+mava:coordinateSpace a owl:DatatypeProperty ;
+    rdfs:label   "coordinate space" ;
+    rdfs:comment "Coordinate convention for a RegionSeries geometry: 'normalized' ([0,1] of the frame) or 'pixel' (absolute pixels)." ;
+    rdfs:domain  mava:RegionSeries ;
+    rdfs:range   xsd:string .
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SECTION 9 — Track hierarchy and provenance                         [v0.2]
+#
+# Two separate edges between series, never conflated:
+#
+#   hasParent   — containment: the tree a series lives in. At most one parent
+#                 per series; the parent graph is acyclic.
+#   derivedFrom — provenance: the source series a series is computed from
+#                 (1..n). derivationMethod records how (argmax, cluster_to_scalar,
+#                 aggregate_scalar, …) and is required whenever derivedFrom is set.
+#
+# A series may have both at once: e.g. a join lives under "Aggregations"
+# (one hasParent) yet is derivedFrom several source series.
+# ═══════════════════════════════════════════════════════════════════════
+
+mava:hasParent a owl:ObjectProperty ;
+    rdfs:label   "has parent" ;
+    rdfs:comment "Containment parent of a series (the tree it lives in). A series has at most one parent and the parent graph is acyclic." ;
+    rdfs:domain  [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
+    rdfs:range   [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries mava:RegionSeries) ] .
+
+mava:derivedFrom a owl:ObjectProperty ;
+    rdfs:label   "derived from" ;
+    rdfs:comment "Provenance: a source series this series was computed from. May have several (1..n) sources." ;
+    rdfs:domain  [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
+    rdfs:range   [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries mava:RegionSeries) ] .
+
+mava:derivationMethod a owl:DatatypeProperty ;
+    rdfs:label   "derivation method" ;
+    rdfs:comment "How a derived series was computed, e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar'. Required whenever derivedFrom is present." ;
+    rdfs:domain  [ owl:unionOf (mava:ObservationSeries mava:AnnotationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
     rdfs:range   xsd:string .
