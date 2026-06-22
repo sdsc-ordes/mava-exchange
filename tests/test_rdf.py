@@ -5,7 +5,7 @@ Tests for rdf.py — standalone export_manifest_as_rdf function.
 import pytest
 import rdflib
 
-from mava_exchange import MediaPackageReader
+from mava_exchange import MediaPackageReader, MediaPackageWriter
 from mava_exchange.rdf import export_manifest_as_rdf
 
 
@@ -70,3 +70,18 @@ class TestRDFExport:
             base_uri="http://myproject.org/",
         )
         assert "myproject.org" in ttl
+
+    def test_turtle_contains_region_series(self, tmp_path, region_track, region_df):
+        pkg = tmp_path / "regions.mediapkg"
+        with MediaPackageWriter(pkg, description="Regions") as w:
+            w.add_video("v1", "https://example.org/v1.mp4")
+            w.add_track("v1", region_track, region_df)
+        ttl = export_manifest_as_rdf(_manifest(pkg), format="turtle")
+        assert "mava:RegionSeries" in ttl
+        assert "mava:coordinateSpace" in ttl
+        assert "mava:Dimension" in ttl
+        # geometry dimensions are emitted as Dimension nodes
+        assert "det_score" in ttl
+        g = rdflib.Graph()
+        g.parse(data=ttl, format="turtle")
+        assert len(g) > 10

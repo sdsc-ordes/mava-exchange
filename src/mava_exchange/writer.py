@@ -21,7 +21,7 @@ import pyarrow.parquet as pq
 from .tracks import Track
 
 MAVA        = "http://example.org/mava/ontology#"
-FORMAT_VERSION = "0.1"
+FORMAT_VERSION = "0.2"
 
 JSONLD_CONTEXT = {
     "@context": {
@@ -31,6 +31,15 @@ JSONLD_CONTEXT = {
         "end_seconds":   {"@id": "mava:endTime",      "@type": "xsd:decimal"},
         "annotations":   {"@id": "mava:stringValue",  "@type": "xsd:string"},
         "numericValue":  {"@id": "mava:numericValue",  "@type": "xsd:decimal"},
+        # RegionSeries geometry / score (mapped to dedicated ontology terms)
+        "x":          {"@id": "mava:x",              "@type": "xsd:decimal"},
+        "y":          {"@id": "mava:y",              "@type": "xsd:decimal"},
+        "w":          {"@id": "mava:width",          "@type": "xsd:decimal"},
+        "h":          {"@id": "mava:height",         "@type": "xsd:decimal"},
+        "det_score":  {"@id": "mava:detectionScore", "@type": "xsd:decimal"},
+        # RegionSeries identity columns
+        "cluster_id": {"@id": "mava:clusterId",      "@type": "xsd:integer"},
+        "label":      {"@id": "mava:identityLabel",  "@type": "xsd:string"},
     }
 }
 

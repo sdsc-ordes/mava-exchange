@@ -22,6 +22,7 @@ from mava_exchange import (
     MediaPackageReader,
     MediaPackageWriter,
     ObservationSeries,
+    RegionSeries,
 )
 from mava_exchange.validate import validate_mediapkg
 
@@ -34,6 +35,7 @@ _dim_name = st.from_regex(r"[a-z][a-z0-9_]{1,12}", fullmatch=True)
 _nonneg_float = st.floats(min_value=0.0, max_value=1000.0, allow_nan=False, allow_infinity=False)
 _value_float = st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_infinity=False)
 _pos_duration = st.floats(min_value=0.001, max_value=50.0, allow_nan=False, allow_infinity=False)
+_unit_float = st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False)
 
 _DEFAULT_SETTINGS = dict(
     max_examples=40,
@@ -106,6 +108,45 @@ def annotation_list_series_with_data(draw: st.DrawFn) -> tuple[AnnotationListSer
     return track, df
 
 
+@st.composite
+def region_series_with_data(draw: st.DrawFn) -> tuple[RegionSeries, pd.DataFrame]:
+    """Generate a valid RegionSeries (long format) and a conforming DataFrame.
+
+    Geometry/score are normalized to [0,1]; many rows may share a start_seconds
+    (one row per detection); cluster_id is a non-null integer; label is nullable.
+    """
+    name = draw(_track_name)
+    n_rows = draw(st.integers(min_value=1, max_value=30))
+    starts = sorted(draw(st.lists(_nonneg_float, min_size=n_rows, max_size=n_rows)))
+
+    dims = [
+        DimensionSpec("x", "Box left edge (normalized)", "[0,1]"),
+        DimensionSpec("y", "Box top edge (normalized)", "[0,1]"),
+        DimensionSpec("w", "Box width (normalized)", "[0,1]"),
+        DimensionSpec("h", "Box height (normalized)", "[0,1]"),
+        DimensionSpec("det_score", "Detection confidence", "[0,1]"),
+    ]
+    df_dict: dict[str, list] = {"start_seconds": starts}
+    for d in dims:
+        df_dict[d.name] = draw(st.lists(_unit_float, min_size=n_rows, max_size=n_rows))
+
+    cluster_ids = draw(
+        st.lists(st.integers(min_value=0, max_value=200), min_size=n_rows, max_size=n_rows)
+    )
+    labels = draw(
+        st.lists(st.one_of(st.none(), st.text(max_size=20)), min_size=n_rows, max_size=n_rows)
+    )
+
+    track = RegionSeries(
+        name=name, description="Generated region track",
+        sampling_interval=0.5, coordinate_space="normalized", dimensions=dims,
+    )
+    df = pd.DataFrame(df_dict)
+    df["cluster_id"] = pd.array(cluster_ids, dtype="Int64")
+    df["label"] = labels
+    return track, df
+
+
 # ─────────────────────────────────────────────
 # Properties: spec compliance (write → validate)
 # ─────────────────────────────────────────────
@@ -141,6 +182,19 @@ def test_annotation_series_roundtrip_clean(tmp_path, track_and_df):
 @settings(**_DEFAULT_SETTINGS)
 def test_annotation_list_series_roundtrip_clean(tmp_path, track_and_df):
     """Any valid AnnotationListSeries writes to a package that passes the validator."""
+    track, df = track_and_df
+    pkg = tmp_path / "test.mediapkg"
+    with MediaPackageWriter(pkg, description="Roundtrip test") as w:
+        w.add_video("v001", "https://example.org/v001.mp4")
+        w.add_track("v001", track, df)
+    result = validate_mediapkg(pkg)
+    assert result.valid, result.summary()
+
+
+@given(track_and_df=region_series_with_data())
+@settings(**_DEFAULT_SETTINGS)
+def test_region_series_roundtrip_clean(tmp_path, track_and_df):
+    """Any valid RegionSeries writes to a package that passes the validator."""
     track, df = track_and_df
     pkg = tmp_path / "test.mediapkg"
     with MediaPackageWriter(pkg, description="Roundtrip test") as w:
@@ -189,6 +243,28 @@ def test_annotation_series_roundtrip_fidelity(tmp_path, track_and_df):
     )
 
 
+@given(track_and_df=region_series_with_data())
+@settings(**_DEFAULT_SETTINGS)
+def test_region_series_roundtrip_fidelity(tmp_path, track_and_df):
+    """Data read back from .mediapkg matches what was written for RegionSeries.
+
+    check_dtype=False: the nullable Int64 cluster_id reads back as plain int64
+    when no nulls are present — values, not the storage dtype, are what matters.
+    """
+    track, df = track_and_df
+    pkg = tmp_path / "test.mediapkg"
+    with MediaPackageWriter(pkg, description="Fidelity test") as w:
+        w.add_video("v001", "https://example.org/v001.mp4")
+        w.add_track("v001", track, df)
+    with MediaPackageReader(pkg) as r:
+        read_df = r.read_track("v001", track.name)
+    pd.testing.assert_frame_equal(
+        df[track.columns].reset_index(drop=True),
+        read_df[track.columns].reset_index(drop=True),
+        check_dtype=False,
+    )
+
+
 # ─────────────────────────────────────────────
 # Multi-video corpus
 # ─────────────────────────────────────────────
@@ -207,3 +283,125 @@ def test_multi_video_corpus_roundtrip_clean(tmp_path, track_and_df):
         w.add_track("v002", track, df)
     result = validate_mediapkg(pkg)
     assert result.valid, result.summary()
+
+
+# ─────────────────────────────────────────────
+# Relationship validation (parent / derived_from / method)
+# These are example-based: the public writer happily writes whatever edges a
+# Track declares, so they let us exercise the validator's relation checks.
+# ─────────────────────────────────────────────
+
+
+def _interval_df():
+    return pd.DataFrame({
+        "start_seconds": [0.0, 2.0],
+        "end_seconds": [2.0, 4.0],
+        "annotations": ["a", "b"],
+    })
+
+
+def test_valid_relationship_graph_passes(tmp_path):
+    """A well-formed parent + derived_from + method graph validates clean."""
+    shots = AnnotationSeries(name="shots", description="Shot segmentation")
+    close_up = ObservationSeries(
+        name="close_up", description="Close-up score", sampling_interval=0.5,
+        dimensions=[DimensionSpec("score", "Score", "[0,1]")], parent="shots",
+    )
+    shot_sizes = AnnotationSeries(
+        name="shot_sizes", description="Dominant shot size", parent="shots",
+        derived_from=["close_up"], method="argmax",
+    )
+    score_df = pd.DataFrame({"start_seconds": [0.0, 0.5], "score": [0.6, 0.4]})
+    pkg = tmp_path / "ok.mediapkg"
+    with MediaPackageWriter(pkg, description="Relations") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", shots, _interval_df())
+        w.add_track("v1", close_up, score_df)
+        w.add_track("v1", shot_sizes, _interval_df())
+    result = validate_mediapkg(pkg)
+    assert result.valid, result.summary()
+
+
+def test_dangling_parent_is_rejected(tmp_path):
+    track = AnnotationSeries(name="child", description="Orphan", parent="ghost")
+    pkg = tmp_path / "bad.mediapkg"
+    with MediaPackageWriter(pkg, description="Bad parent") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", track, _interval_df())
+    result = validate_mediapkg(pkg)
+    assert not result.valid
+    assert any("parent 'ghost'" in e for e in result.errors)
+
+
+def test_dangling_derived_from_is_rejected(tmp_path):
+    track = AnnotationSeries(
+        name="child", description="Bad provenance",
+        derived_from=["ghost"], method="argmax",
+    )
+    pkg = tmp_path / "bad.mediapkg"
+    with MediaPackageWriter(pkg, description="Bad derived_from") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", track, _interval_df())
+    result = validate_mediapkg(pkg)
+    assert not result.valid
+    assert any("derived_from 'ghost'" in e for e in result.errors)
+
+
+def test_derived_from_without_method_is_rejected(tmp_path):
+    base = AnnotationSeries(name="base", description="Base")
+    track = AnnotationSeries(
+        name="child", description="Missing method", derived_from=["base"],
+    )
+    pkg = tmp_path / "bad.mediapkg"
+    with MediaPackageWriter(pkg, description="No method") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", base, _interval_df())
+        w.add_track("v1", track, _interval_df())
+    result = validate_mediapkg(pkg)
+    assert not result.valid
+    assert any("'method' is required" in e for e in result.errors)
+
+
+def test_parent_cycle_is_rejected(tmp_path):
+    a = AnnotationSeries(name="a", description="A", parent="b")
+    b = AnnotationSeries(name="b", description="B", parent="a")
+    pkg = tmp_path / "cycle.mediapkg"
+    with MediaPackageWriter(pkg, description="Cycle") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", a, _interval_df())
+        w.add_track("v1", b, _interval_df())
+    result = validate_mediapkg(pkg)
+    assert not result.valid
+    assert any("cycle" in e for e in result.errors)
+
+
+def test_out_of_range_geometry_is_rejected(tmp_path):
+    """Normalized RegionSeries with geometry outside [0,1] fails validation."""
+    track = RegionSeries(
+        name="face_regions", description="Boxes", sampling_interval=0.5,
+        coordinate_space="normalized",
+        dimensions=[
+            DimensionSpec("x", "left", "[0,1]"),
+            DimensionSpec("y", "top", "[0,1]"),
+            DimensionSpec("w", "width", "[0,1]"),
+            DimensionSpec("h", "height", "[0,1]"),
+            DimensionSpec("det_score", "score", "[0,1]"),
+        ],
+    )
+    df = pd.DataFrame({
+        "start_seconds": [0.0, 0.0],
+        "x": [0.1, 1.5],          # 1.5 is out of range
+        "y": [0.2, 0.2],
+        "w": [0.1, 0.1],
+        "h": [0.1, 0.1],
+        "det_score": [0.9, 0.8],
+        "cluster_id": pd.array([0, 1], dtype="Int64"),
+        "label": ["Alice", None],
+    })
+    pkg = tmp_path / "oob.mediapkg"
+    with MediaPackageWriter(pkg, description="Out of range") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", track, df)
+    result = validate_mediapkg(pkg)
+    assert not result.valid
+    assert any("'x' has values outside [0,1]" in e for e in result.errors)

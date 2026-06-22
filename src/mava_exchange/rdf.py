@@ -5,6 +5,19 @@ from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, XSD
 
 
+def _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX) -> None:  # noqa: PLR0913
+    """Emit mava:Dimension nodes for an Observation- or RegionSeries."""
+    for dim_name, dim_meta in track_def.get("dimensions", {}).items():
+        dim_uri = EX[f"dim_{track_name}_{dim_name}"]
+        g.add((series_uri, MAVA.hasDimension, dim_uri))
+        g.add((dim_uri, RDF.type, MAVA.Dimension))
+        g.add((dim_uri, MAVA.dimensionName, Literal(dim_name)))
+        if "description" in dim_meta:
+            g.add((dim_uri, MAVA.dimensionDescription, Literal(dim_meta["description"])))
+        if "range" in dim_meta:
+            g.add((dim_uri, MAVA.valueRange, Literal(dim_meta["range"])))
+
+
 def export_manifest_as_rdf(  # noqa: PLR0912
     manifest: dict,
     format: str = "turtle",
@@ -70,17 +83,19 @@ def export_manifest_as_rdf(  # noqa: PLR0912
                 g.add((series_uri, MAVA.samplingInterval,
                        Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
 
-            for dim_name, dim_meta in track_def.get("dimensions", {}).items():
-                dim_uri = EX[f"dim_{track_name}_{dim_name}"]
-                g.add((series_uri, MAVA.hasDimension, dim_uri))
-                g.add((dim_uri, RDF.type, MAVA.Dimension))
-                g.add((dim_uri, MAVA.dimensionName, Literal(dim_name)))
+            _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
 
-                if "description" in dim_meta:
-                    g.add((dim_uri, MAVA.dimensionDescription,
-                           Literal(dim_meta["description"])))
-                if "range" in dim_meta:
-                    g.add((dim_uri, MAVA.valueRange, Literal(dim_meta["range"])))
+        elif track_type == "mava:RegionSeries":
+            g.add((series_uri, RDF.type, MAVA.RegionSeries))
+
+            if "sampling_interval_seconds" in track_def:
+                g.add((series_uri, MAVA.samplingInterval,
+                       Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
+            if "coordinate_space" in track_def:
+                g.add((series_uri, MAVA.coordinateSpace,
+                       Literal(track_def["coordinate_space"])))
+
+            _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
 
         elif track_type == "mava:AnnotationSeries":
             g.add((series_uri, RDF.type, MAVA.AnnotationSeries))
