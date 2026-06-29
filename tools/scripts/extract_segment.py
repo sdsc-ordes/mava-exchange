@@ -31,6 +31,7 @@ Run:
 from __future__ import annotations
 
 import csv
+import io
 import itertools
 import re
 import zipfile
@@ -129,12 +130,15 @@ def read_tsv(path: Path) -> tuple[list[str], list[dict]]:
 
 
 def write_tsv(path: Path, fieldnames: list[str], rows: list[dict]) -> None:
-    with path.open("w", newline="") as f:
-        w = csv.DictWriter(
-            f, fieldnames=fieldnames, delimiter="\t", lineterminator="\n"
-        )
-        w.writeheader()
-        w.writerows(rows)
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=fieldnames, delimiter="\t", lineterminator="\n")
+    w.writeheader()
+    w.writerows(rows)
+    # An empty trailing column (e.g. a blank `label` / `annotations`) leaves the
+    # line ending in a tab; strip per-line trailing whitespace so the output is
+    # already clean and the trailing-whitespace pre-commit hook is a no-op.
+    cleaned = "".join(line.rstrip() + "\n" for line in buf.getvalue().splitlines())
+    path.write_text(cleaned)
 
 
 def unzip_yaml(zip_path: Path, member: str) -> dict:

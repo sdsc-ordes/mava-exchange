@@ -75,6 +75,7 @@ example:
 [group('data')]
 extract-examples:
     uv run tools/scripts/extract_segment.py
+    just format examples/input
 
 # Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
 [group('usage')]
