@@ -1,77 +1,17 @@
 [
   {
-    "@id": "http://example.org/data/dim_emotions_fear",
+    "@id": "http://example.org/data/dim_face_regions_y",
     "@type": [
       "http://example.org/mava/ontology#Dimension"
     ],
     "http://example.org/mava/ontology#dimensionDescription": [
       {
-        "@value": "Fear probability"
+        "@value": "Box top edge (normalized)"
       }
     ],
     "http://example.org/mava/ontology#dimensionName": [
       {
-        "@value": "fear"
-      }
-    ],
-    "http://example.org/mava/ontology#valueRange": [
-      {
-        "@value": "[0,1]"
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/series_shots",
-    "@type": [
-      "http://example.org/mava/ontology#AnnotationSeries"
-    ],
-    "http://example.org/mava/ontology#seriesDescription": [
-      {
-        "@value": "Shot boundary intervals detected by scene detection model."
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/series_dominant_color",
-    "@type": [
-      "http://example.org/mava/ontology#ObservationSeries"
-    ],
-    "http://example.org/mava/ontology#hasDimension": [
-      {
-        "@id": "http://example.org/data/dim_dominant_color_r"
-      },
-      {
-        "@id": "http://example.org/data/dim_dominant_color_g"
-      },
-      {
-        "@id": "http://example.org/data/dim_dominant_color_b"
-      }
-    ],
-    "http://example.org/mava/ontology#samplingInterval": [
-      {
-        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
-        "@value": "0.5"
-      }
-    ],
-    "http://example.org/mava/ontology#seriesDescription": [
-      {
-        "@value": "Dominant RGB color sampled every 0.5s. Each channel is a float in [0,1]."
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/dim_dominant_color_g",
-    "@type": [
-      "http://example.org/mava/ontology#Dimension"
-    ],
-    "http://example.org/mava/ontology#dimensionDescription": [
-      {
-        "@value": "Green channel of dominant color"
-      }
-    ],
-    "http://example.org/mava/ontology#dimensionName": [
-      {
-        "@value": "g"
+        "@value": "y"
       }
     ],
     "http://example.org/mava/ontology#valueRange": [
@@ -87,23 +27,23 @@
     ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "Dominant face emotion label per detected interval."
+        "@value": "Face Emotions"
       }
     ]
   },
   {
-    "@id": "http://example.org/data/dim_emotions_disgust",
+    "@id": "http://example.org/data/dim_anchor_daubner_score",
     "@type": [
       "http://example.org/mava/ontology#Dimension"
     ],
     "http://example.org/mava/ontology#dimensionDescription": [
       {
-        "@value": "Disgust probability"
+        "@value": "Anchor: Daubner"
       }
     ],
     "http://example.org/mava/ontology#dimensionName": [
       {
-        "@value": "disgust"
+        "@value": "score"
       }
     ],
     "http://example.org/mava/ontology#valueRange": [
@@ -113,77 +53,30 @@
     ]
   },
   {
-    "@id": "http://example.org/data/package",
+    "@id": "http://example.org/data/series_face_regions",
     "@type": [
-      "http://example.org/mava/ontology#MediaPackage"
+      "http://example.org/mava/ontology#RegionSeries"
     ],
-    "http://example.org/mava/ontology#hasVideo": [
+    "http://example.org/mava/ontology#coordinateSpace": [
       {
-        "@id": "http://example.org/data/video_video_001"
-      },
-      {
-        "@id": "http://example.org/data/video_video_002"
+        "@value": "normalized"
       }
-    ],
-    "http://purl.org/dc/terms/created": [
-      {
-        "@type": "http://www.w3.org/2001/XMLSchema#dateTime",
-        "@value": "2026-02-23T08:22:21.506352+00:00"
-      }
-    ],
-    "http://purl.org/dc/terms/description": [
-      {
-        "@value": "Example corpus: two videos with different annotation tracks"
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/dim_emotions_angry",
-    "@type": [
-      "http://example.org/mava/ontology#Dimension"
-    ],
-    "http://example.org/mava/ontology#dimensionDescription": [
-      {
-        "@value": "Anger probability"
-      }
-    ],
-    "http://example.org/mava/ontology#dimensionName": [
-      {
-        "@value": "angry"
-      }
-    ],
-    "http://example.org/mava/ontology#valueRange": [
-      {
-        "@value": "[0,1]"
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/series_emotions",
-    "@type": [
-      "http://example.org/mava/ontology#ObservationSeries"
     ],
     "http://example.org/mava/ontology#hasDimension": [
       {
-        "@id": "http://example.org/data/dim_emotions_angry"
+        "@id": "http://example.org/data/dim_face_regions_x"
       },
       {
-        "@id": "http://example.org/data/dim_emotions_disgust"
+        "@id": "http://example.org/data/dim_face_regions_y"
       },
       {
-        "@id": "http://example.org/data/dim_emotions_fear"
+        "@id": "http://example.org/data/dim_face_regions_w"
       },
       {
-        "@id": "http://example.org/data/dim_emotions_happy"
+        "@id": "http://example.org/data/dim_face_regions_h"
       },
       {
-        "@id": "http://example.org/data/dim_emotions_sad"
-      },
-      {
-        "@id": "http://example.org/data/dim_emotions_surprise"
-      },
-      {
-        "@id": "http://example.org/data/dim_emotions_neutral"
+        "@id": "http://example.org/data/dim_face_regions_det_score"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -194,23 +87,23 @@
     ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "Per-frame probability scores from face analysis model, sampled every 0.5s."
+        "@value": "Per-frame face bounding boxes, normalized to [0,1] of the frame, top-left origin. One row per detection."
       }
     ]
   },
   {
-    "@id": "http://example.org/data/dim_emotions_surprise",
+    "@id": "http://example.org/data/dim_extreme_close_up_score",
     "@type": [
       "http://example.org/mava/ontology#Dimension"
     ],
     "http://example.org/mava/ontology#dimensionDescription": [
       {
-        "@value": "Surprise probability"
+        "@value": "Extreme Close-Up"
       }
     ],
     "http://example.org/mava/ontology#dimensionName": [
       {
-        "@value": "surprise"
+        "@value": "score"
       }
     ],
     "http://example.org/mava/ontology#valueRange": [
@@ -220,81 +113,62 @@
     ]
   },
   {
-    "@id": "http://example.org/data/dim_dominant_color_b",
+    "@id": "http://example.org/data/series_full_shot",
     "@type": [
-      "http://example.org/mava/ontology#Dimension"
+      "http://example.org/mava/ontology#ObservationSeries"
     ],
-    "http://example.org/mava/ontology#dimensionDescription": [
+    "http://example.org/mava/ontology#hasDimension": [
       {
-        "@value": "Blue channel of dominant color"
+        "@id": "http://example.org/data/dim_full_shot_score"
       }
     ],
-    "http://example.org/mava/ontology#dimensionName": [
+    "http://example.org/mava/ontology#samplingInterval": [
       {
-        "@value": "b"
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.2"
       }
     ],
-    "http://example.org/mava/ontology#valueRange": [
+    "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "[0,1]"
+        "@value": "Full Shot"
       }
     ]
   },
   {
-    "@id": "http://example.org/data/dim_emotions_happy",
+    "@id": "http://example.org/data/series_neutral",
     "@type": [
-      "http://example.org/mava/ontology#Dimension"
+      "http://example.org/mava/ontology#ObservationSeries"
     ],
-    "http://example.org/mava/ontology#dimensionDescription": [
+    "http://example.org/mava/ontology#hasDimension": [
       {
-        "@value": "Happiness probability"
+        "@id": "http://example.org/data/dim_neutral_score"
       }
     ],
-    "http://example.org/mava/ontology#dimensionName": [
+    "http://example.org/mava/ontology#samplingInterval": [
       {
-        "@value": "happy"
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
       }
     ],
-    "http://example.org/mava/ontology#valueRange": [
+    "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "[0,1]"
+        "@value": "Neutral"
       }
     ]
   },
   {
-    "@id": "http://example.org/data/dim_emotions_neutral",
+    "@id": "http://example.org/data/dim_long_shot_score",
     "@type": [
       "http://example.org/mava/ontology#Dimension"
     ],
     "http://example.org/mava/ontology#dimensionDescription": [
       {
-        "@value": "Neutral expression"
+        "@value": "Long Shot"
       }
     ],
     "http://example.org/mava/ontology#dimensionName": [
       {
-        "@value": "neutral"
-      }
-    ],
-    "http://example.org/mava/ontology#valueRange": [
-      {
-        "@value": "[0,1]"
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/dim_dominant_color_r",
-    "@type": [
-      "http://example.org/mava/ontology#Dimension"
-    ],
-    "http://example.org/mava/ontology#dimensionDescription": [
-      {
-        "@value": "Red channel of dominant color"
-      }
-    ],
-    "http://example.org/mava/ontology#dimensionName": [
-      {
-        "@value": "r"
+        "@value": "score"
       }
     ],
     "http://example.org/mava/ontology#valueRange": [
@@ -321,43 +195,971 @@
     ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "RMS audio volume sampled at ~0.064s intervals."
+        "@value": "RMS Volume"
       }
     ]
   },
   {
-    "@id": "http://example.org/data/series_transcript",
+    "@id": "http://example.org/data/series_fear",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_fear_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Fear"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_video_brightness_brightness",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Video Brightness"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "brightness"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_neutral_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Neutral"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_sad_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Sad"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_dominant_colors_g",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Component g"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "g"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_surprise",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_surprise_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Surprise"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_medium_shot",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_medium_shot_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.2"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Medium Shot"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_long_shot",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_long_shot_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.2"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Long Shot"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/package",
+    "@type": [
+      "http://example.org/mava/ontology#MediaPackage"
+    ],
+    "http://example.org/mava/ontology#hasVideo": [
+      {
+        "@id": "http://example.org/data/video_silent_child"
+      },
+      {
+        "@id": "http://example.org/data/video_tagesschau"
+      }
+    ],
+    "http://purl.org/dc/terms/created": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+        "@value": "2025-01-01T00:00:00+00:00"
+      }
+    ],
+    "http://purl.org/dc/terms/description": [
+      {
+        "@value": "Example corpus: real segments (tagesschau hierarchy, silent_child face regions)."
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_whisper_transcript",
     "@type": [
       "http://example.org/mava/ontology#AnnotationSeries"
     ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "Speech-to-text segments from Whisper transcription model."
+        "@value": "Whisper Transcript"
       }
     ]
   },
   {
-    "@id": "http://example.org/data/video_video_001",
+    "@id": "http://example.org/data/dim_shot_density_density",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Shot Density"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "density"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_face_regions_h",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Box height (normalized)"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "h"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_medium_shot_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Medium Shot"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_angry_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Angry"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_paul_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Paul"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_disgust_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Disgust"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_full_shot_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Full Shot"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_shots",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Shots"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_anchor_daubner",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_anchor_daubner_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Anchor: Daubner"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/video_silent_child",
     "@type": [
       "http://example.org/mava/ontology#Video"
     ],
     "http://example.org/mava/ontology#hasAnalysis": [
       {
-        "@id": "http://example.org/data/series_emotions"
+        "@id": "http://example.org/data/series_shots"
       },
       {
+        "@id": "http://example.org/data/series_person_identification"
+      },
+      {
+        "@id": "http://example.org/data/series_joanne"
+      },
+      {
+        "@id": "http://example.org/data/series_paul"
+      },
+      {
+        "@id": "http://example.org/data/series_face_regions"
+      }
+    ],
+    "http://purl.org/dc/terms/source": [
+      {
+        "@id": "silent_child.mp4"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_joanne",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_joanne_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Joanne"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_face_regions_w",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Box width (normalized)"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "w"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/video_tagesschau",
+    "@type": [
+      "http://example.org/mava/ontology#Video"
+    ],
+    "http://example.org/mava/ontology#hasAnalysis": [
+      {
         "@id": "http://example.org/data/series_shots"
+      },
+      {
+        "@id": "http://example.org/data/series_shot_density"
+      },
+      {
+        "@id": "http://example.org/data/series_video_brightness"
+      },
+      {
+        "@id": "http://example.org/data/series_dominant_colors"
+      },
+      {
+        "@id": "http://example.org/data/series_shot_sizes"
+      },
+      {
+        "@id": "http://example.org/data/series_extreme_close_up"
+      },
+      {
+        "@id": "http://example.org/data/series_close_up"
+      },
+      {
+        "@id": "http://example.org/data/series_medium_shot"
+      },
+      {
+        "@id": "http://example.org/data/series_full_shot"
+      },
+      {
+        "@id": "http://example.org/data/series_long_shot"
+      },
+      {
+        "@id": "http://example.org/data/series_whisper_transcript"
+      },
+      {
+        "@id": "http://example.org/data/series_rms_volume"
       },
       {
         "@id": "http://example.org/data/series_face_emotions"
       },
       {
-        "@id": "http://example.org/data/series_transcript"
+        "@id": "http://example.org/data/series_angry"
+      },
+      {
+        "@id": "http://example.org/data/series_disgust"
+      },
+      {
+        "@id": "http://example.org/data/series_fear"
+      },
+      {
+        "@id": "http://example.org/data/series_happy"
+      },
+      {
+        "@id": "http://example.org/data/series_sad"
+      },
+      {
+        "@id": "http://example.org/data/series_surprise"
+      },
+      {
+        "@id": "http://example.org/data/series_neutral"
+      },
+      {
+        "@id": "http://example.org/data/series_anchor_daubner"
+      },
+      {
+        "@id": "http://example.org/data/series_shots_modified"
       }
     ],
     "http://purl.org/dc/terms/source": [
       {
-        "@id": "https://example.org/videos/talk_001.mp4"
+        "@id": "tagesschau.mp4"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_fear_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Fear"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_happy_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Happy"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_angry",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_angry_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Angry"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_dominant_colors",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_dominant_colors_r"
+      },
+      {
+        "@id": "http://example.org/data/dim_dominant_colors_g"
+      },
+      {
+        "@id": "http://example.org/data/dim_dominant_colors_b"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Dominant Color(s)"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_disgust",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_disgust_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Disgust"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_shots_modified",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Shots-modified"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_face_regions_x",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Box left edge (normalized)"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "x"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_person_identification",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Person Identification"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_shot_sizes",
+    "@type": [
+      "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Shot Sizes"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_shot_density",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_shot_density_density"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.1"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Shot Density"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_sad",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_sad_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Sad"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_extreme_close_up",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_extreme_close_up_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.2"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Extreme Close-Up"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_dominant_colors_b",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Component b"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "b"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_happy",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_happy_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Happy"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_close_up_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Close-Up"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_dominant_colors_r",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Component r"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "r"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_surprise_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Surprise"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_face_regions_det_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Detection confidence"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "det_score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_video_brightness",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_video_brightness_brightness"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Video Brightness"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/series_paul",
+    "@type": [
+      "http://example.org/mava/ontology#ObservationSeries"
+    ],
+    "http://example.org/mava/ontology#hasDimension": [
+      {
+        "@id": "http://example.org/data/dim_paul_score"
+      }
+    ],
+    "http://example.org/mava/ontology#samplingInterval": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.5"
+      }
+    ],
+    "http://example.org/mava/ontology#seriesDescription": [
+      {
+        "@value": "Paul"
+      }
+    ]
+  },
+  {
+    "@id": "http://example.org/data/dim_joanne_score",
+    "@type": [
+      "http://example.org/mava/ontology#Dimension"
+    ],
+    "http://example.org/mava/ontology#dimensionDescription": [
+      {
+        "@value": "Joanne"
+      }
+    ],
+    "http://example.org/mava/ontology#dimensionName": [
+      {
+        "@value": "score"
+      }
+    ],
+    "http://example.org/mava/ontology#valueRange": [
+      {
+        "@value": "[0,1]"
       }
     ]
   },
@@ -368,7 +1170,7 @@
     ],
     "http://example.org/mava/ontology#dimensionDescription": [
       {
-        "@value": "Root mean square audio volume"
+        "@value": "RMS Volume"
       }
     ],
     "http://example.org/mava/ontology#dimensionName": [
@@ -383,45 +1185,24 @@
     ]
   },
   {
-    "@id": "http://example.org/data/video_video_002",
+    "@id": "http://example.org/data/series_close_up",
     "@type": [
-      "http://example.org/mava/ontology#Video"
+      "http://example.org/mava/ontology#ObservationSeries"
     ],
-    "http://example.org/mava/ontology#hasAnalysis": [
+    "http://example.org/mava/ontology#hasDimension": [
       {
-        "@id": "http://example.org/data/series_shots"
-      },
-      {
-        "@id": "http://example.org/data/series_rms_volume"
-      },
-      {
-        "@id": "http://example.org/data/series_dominant_color"
+        "@id": "http://example.org/data/dim_close_up_score"
       }
     ],
-    "http://purl.org/dc/terms/source": [
+    "http://example.org/mava/ontology#samplingInterval": [
       {
-        "@id": "https://example.org/videos/talk_002.mp4"
-      }
-    ]
-  },
-  {
-    "@id": "http://example.org/data/dim_emotions_sad",
-    "@type": [
-      "http://example.org/mava/ontology#Dimension"
-    ],
-    "http://example.org/mava/ontology#dimensionDescription": [
-      {
-        "@value": "Sadness probability"
+        "@type": "http://www.w3.org/2001/XMLSchema#decimal",
+        "@value": "0.2"
       }
     ],
-    "http://example.org/mava/ontology#dimensionName": [
+    "http://example.org/mava/ontology#seriesDescription": [
       {
-        "@value": "sad"
-      }
-    ],
-    "http://example.org/mava/ontology#valueRange": [
-      {
-        "@value": "[0,1]"
+        "@value": "Close-Up"
       }
     ]
   }

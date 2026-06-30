@@ -77,6 +77,12 @@ extract-examples:
     uv run tools/scripts/extract_segment.py
     just format examples/input
 
+# (maintainers) Regenerate the committed inspect RDF snapshots from the corpus.
+[group('data')]
+inspect-examples pkg="examples/output/corpus.mediapkg":
+    uv run mediapkg-inspect "{{pkg}}" --format turtle  > examples/output/inspect/corpus.mediapkg.ttl
+    uv run mediapkg-inspect "{{pkg}}" --format json-ld > examples/output/inspect/corpus.mediapkg.jsonld
+
 # Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
 [group('usage')]
 viewer port="8000":

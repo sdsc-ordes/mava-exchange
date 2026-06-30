@@ -4,107 +4,295 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 ex:package a mava:MediaPackage ;
-    mava:hasVideo ex:video_video_001,
-        ex:video_video_002 ;
-    dcterms:created "2026-02-23T08:22:21.506352+00:00"^^xsd:dateTime ;
-    dcterms:description "Example corpus: two videos with different annotation tracks" .
+    mava:hasVideo ex:video_silent_child,
+        ex:video_tagesschau ;
+    dcterms:created "2025-01-01T00:00:00+00:00"^^xsd:dateTime ;
+    dcterms:description "Example corpus: real segments (tagesschau hierarchy, silent_child face regions)." .
 
-ex:dim_dominant_color_b a mava:Dimension ;
-    mava:dimensionDescription "Blue channel of dominant color" ;
+ex:dim_anchor_daubner_score a mava:Dimension ;
+    mava:dimensionDescription "Anchor: Daubner" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_angry_score a mava:Dimension ;
+    mava:dimensionDescription "Angry" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_close_up_score a mava:Dimension ;
+    mava:dimensionDescription "Close-Up" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_disgust_score a mava:Dimension ;
+    mava:dimensionDescription "Disgust" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_dominant_colors_b a mava:Dimension ;
+    mava:dimensionDescription "Component b" ;
     mava:dimensionName "b" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_dominant_color_g a mava:Dimension ;
-    mava:dimensionDescription "Green channel of dominant color" ;
+ex:dim_dominant_colors_g a mava:Dimension ;
+    mava:dimensionDescription "Component g" ;
     mava:dimensionName "g" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_dominant_color_r a mava:Dimension ;
-    mava:dimensionDescription "Red channel of dominant color" ;
+ex:dim_dominant_colors_r a mava:Dimension ;
+    mava:dimensionDescription "Component r" ;
     mava:dimensionName "r" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_angry a mava:Dimension ;
-    mava:dimensionDescription "Anger probability" ;
-    mava:dimensionName "angry" ;
+ex:dim_extreme_close_up_score a mava:Dimension ;
+    mava:dimensionDescription "Extreme Close-Up" ;
+    mava:dimensionName "score" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_disgust a mava:Dimension ;
-    mava:dimensionDescription "Disgust probability" ;
-    mava:dimensionName "disgust" ;
+ex:dim_face_regions_det_score a mava:Dimension ;
+    mava:dimensionDescription "Detection confidence" ;
+    mava:dimensionName "det_score" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_fear a mava:Dimension ;
-    mava:dimensionDescription "Fear probability" ;
-    mava:dimensionName "fear" ;
+ex:dim_face_regions_h a mava:Dimension ;
+    mava:dimensionDescription "Box height (normalized)" ;
+    mava:dimensionName "h" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_happy a mava:Dimension ;
-    mava:dimensionDescription "Happiness probability" ;
-    mava:dimensionName "happy" ;
+ex:dim_face_regions_w a mava:Dimension ;
+    mava:dimensionDescription "Box width (normalized)" ;
+    mava:dimensionName "w" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_neutral a mava:Dimension ;
-    mava:dimensionDescription "Neutral expression" ;
-    mava:dimensionName "neutral" ;
+ex:dim_face_regions_x a mava:Dimension ;
+    mava:dimensionDescription "Box left edge (normalized)" ;
+    mava:dimensionName "x" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_sad a mava:Dimension ;
-    mava:dimensionDescription "Sadness probability" ;
-    mava:dimensionName "sad" ;
+ex:dim_face_regions_y a mava:Dimension ;
+    mava:dimensionDescription "Box top edge (normalized)" ;
+    mava:dimensionName "y" ;
     mava:valueRange "[0,1]" .
 
-ex:dim_emotions_surprise a mava:Dimension ;
-    mava:dimensionDescription "Surprise probability" ;
-    mava:dimensionName "surprise" ;
+ex:dim_fear_score a mava:Dimension ;
+    mava:dimensionDescription "Fear" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_full_shot_score a mava:Dimension ;
+    mava:dimensionDescription "Full Shot" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_happy_score a mava:Dimension ;
+    mava:dimensionDescription "Happy" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_joanne_score a mava:Dimension ;
+    mava:dimensionDescription "Joanne" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_long_shot_score a mava:Dimension ;
+    mava:dimensionDescription "Long Shot" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_medium_shot_score a mava:Dimension ;
+    mava:dimensionDescription "Medium Shot" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_neutral_score a mava:Dimension ;
+    mava:dimensionDescription "Neutral" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_paul_score a mava:Dimension ;
+    mava:dimensionDescription "Paul" ;
+    mava:dimensionName "score" ;
     mava:valueRange "[0,1]" .
 
 ex:dim_rms_volume_rms a mava:Dimension ;
-    mava:dimensionDescription "Root mean square audio volume" ;
+    mava:dimensionDescription "RMS Volume" ;
     mava:dimensionName "rms" ;
     mava:valueRange ">=0" .
 
-ex:series_dominant_color a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_dominant_color_b,
-        ex:dim_dominant_color_g,
-        ex:dim_dominant_color_r ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Dominant RGB color sampled every 0.5s. Each channel is a float in [0,1]." .
+ex:dim_sad_score a mava:Dimension ;
+    mava:dimensionDescription "Sad" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
 
-ex:series_emotions a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_emotions_angry,
-        ex:dim_emotions_disgust,
-        ex:dim_emotions_fear,
-        ex:dim_emotions_happy,
-        ex:dim_emotions_neutral,
-        ex:dim_emotions_sad,
-        ex:dim_emotions_surprise ;
+ex:dim_shot_density_density a mava:Dimension ;
+    mava:dimensionDescription "Shot Density" ;
+    mava:dimensionName "density" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_surprise_score a mava:Dimension ;
+    mava:dimensionDescription "Surprise" ;
+    mava:dimensionName "score" ;
+    mava:valueRange "[0,1]" .
+
+ex:dim_video_brightness_brightness a mava:Dimension ;
+    mava:dimensionDescription "Video Brightness" ;
+    mava:dimensionName "brightness" ;
+    mava:valueRange "[0,1]" .
+
+ex:series_anchor_daubner a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_anchor_daubner_score ;
     mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Per-frame probability scores from face analysis model, sampled every 0.5s." .
+    mava:seriesDescription "Anchor: Daubner" .
+
+ex:series_angry a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_angry_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Angry" .
+
+ex:series_close_up a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_close_up_score ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Close-Up" .
+
+ex:series_disgust a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_disgust_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Disgust" .
+
+ex:series_dominant_colors a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_dominant_colors_b,
+        ex:dim_dominant_colors_g,
+        ex:dim_dominant_colors_r ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Dominant Color(s)" .
+
+ex:series_extreme_close_up a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_extreme_close_up_score ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Extreme Close-Up" .
 
 ex:series_face_emotions a mava:AnnotationSeries ;
-    mava:seriesDescription "Dominant face emotion label per detected interval." .
+    mava:seriesDescription "Face Emotions" .
+
+ex:series_face_regions a mava:RegionSeries ;
+    mava:coordinateSpace "normalized" ;
+    mava:hasDimension ex:dim_face_regions_det_score,
+        ex:dim_face_regions_h,
+        ex:dim_face_regions_w,
+        ex:dim_face_regions_x,
+        ex:dim_face_regions_y ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Per-frame face bounding boxes, normalized to [0,1] of the frame, top-left origin. One row per detection." .
+
+ex:series_fear a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_fear_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Fear" .
+
+ex:series_full_shot a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_full_shot_score ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Full Shot" .
+
+ex:series_happy a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_happy_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Happy" .
+
+ex:series_joanne a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_joanne_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Joanne" .
+
+ex:series_long_shot a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_long_shot_score ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Long Shot" .
+
+ex:series_medium_shot a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_medium_shot_score ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Medium Shot" .
+
+ex:series_neutral a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_neutral_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Neutral" .
+
+ex:series_paul a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_paul_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Paul" .
+
+ex:series_person_identification a mava:AnnotationSeries ;
+    mava:seriesDescription "Person Identification" .
 
 ex:series_rms_volume a mava:ObservationSeries ;
     mava:hasDimension ex:dim_rms_volume_rms ;
     mava:samplingInterval 0.064 ;
-    mava:seriesDescription "RMS audio volume sampled at ~0.064s intervals." .
+    mava:seriesDescription "RMS Volume" .
 
-ex:series_transcript a mava:AnnotationSeries ;
-    mava:seriesDescription "Speech-to-text segments from Whisper transcription model." .
+ex:series_sad a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_sad_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Sad" .
 
-ex:video_video_001 a mava:Video ;
-    mava:hasAnalysis ex:series_emotions,
-        ex:series_face_emotions,
-        ex:series_shots,
-        ex:series_transcript ;
-    dcterms:source <https://example.org/videos/talk_001.mp4> .
+ex:series_shot_density a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_shot_density_density ;
+    mava:samplingInterval 0.1 ;
+    mava:seriesDescription "Shot Density" .
 
-ex:video_video_002 a mava:Video ;
-    mava:hasAnalysis ex:series_dominant_color,
-        ex:series_rms_volume,
+ex:series_shot_sizes a mava:AnnotationSeries ;
+    mava:seriesDescription "Shot Sizes" .
+
+ex:series_shots_modified a mava:AnnotationSeries ;
+    mava:seriesDescription "Shots-modified" .
+
+ex:series_surprise a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_surprise_score ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Surprise" .
+
+ex:series_video_brightness a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_video_brightness_brightness ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Video Brightness" .
+
+ex:series_whisper_transcript a mava:AnnotationSeries ;
+    mava:seriesDescription "Whisper Transcript" .
+
+ex:video_silent_child a mava:Video ;
+    mava:hasAnalysis ex:series_face_regions,
+        ex:series_joanne,
+        ex:series_paul,
+        ex:series_person_identification,
         ex:series_shots ;
-    dcterms:source <https://example.org/videos/talk_002.mp4> .
+    dcterms:source <silent_child.mp4> .
+
+ex:video_tagesschau a mava:Video ;
+    mava:hasAnalysis ex:series_anchor_daubner,
+        ex:series_angry,
+        ex:series_close_up,
+        ex:series_disgust,
+        ex:series_dominant_colors,
+        ex:series_extreme_close_up,
+        ex:series_face_emotions,
+        ex:series_fear,
+        ex:series_full_shot,
+        ex:series_happy,
+        ex:series_long_shot,
+        ex:series_medium_shot,
+        ex:series_neutral,
+        ex:series_rms_volume,
+        ex:series_sad,
+        ex:series_shot_density,
+        ex:series_shot_sizes,
+        ex:series_shots,
+        ex:series_shots_modified,
+        ex:series_surprise,
+        ex:series_video_brightness,
+        ex:series_whisper_transcript ;
+    dcterms:source <tagesschau.mp4> .
 
 ex:series_shots a mava:AnnotationSeries ;
-    mava:seriesDescription "Shot boundary intervals detected by scene detection model." .
+    mava:seriesDescription "Shots" .
