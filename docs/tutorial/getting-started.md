@@ -189,6 +189,95 @@ with MediaPackageWriter("corpus.mediapkg", description="Two-video corpus") as wr
     writer.add_track("video_002", transcript_track, transcript_df)
 ```
 
+### 1.5 Spatial detections — `RegionSeries`
+
+A `RegionSeries` stores bounding boxes in **long format**: one row per
+detection, so several rows can share the same `start_seconds`. The geometry
+columns (`x`, `y`, `w`, `h`) and `det_score` are declared as dimensions, just
+like an `ObservationSeries`; `cluster_id` (machine cluster) and a nullable
+`label` (human identity) are added automatically.
+
+```python
+from mava_exchange import RegionSeries, DimensionSpec
+
+faces = RegionSeries(
+    name="face_regions",
+    description="Per-frame face bounding boxes, normalized to [0,1] of the frame.",
+    sampling_interval=0.5,
+    coordinate_space="normalized",   # or "pixel"
+    dimensions=[
+        DimensionSpec("x",         "Box left edge (normalized)", "[0,1]"),
+        DimensionSpec("y",         "Box top edge (normalized)",  "[0,1]"),
+        DimensionSpec("w",         "Box width (normalized)",     "[0,1]"),
+        DimensionSpec("h",         "Box height (normalized)",    "[0,1]"),
+        DimensionSpec("det_score", "Detection confidence",       "[0,1]"),
+    ],
+)
+
+# One row per detection. cluster_id is an integer; label may be None.
+faces_df = pd.DataFrame({
+    "start_seconds": [0.0,  0.0,  0.5],   # two detections at t=0.0
+    "x":          [0.10, 0.60, 0.11],
+    "y":          [0.20, 0.18, 0.21],
+    "w":          [0.15, 0.14, 0.15],
+    "h":          [0.30, 0.28, 0.30],
+    "det_score":  [0.95, 0.88, 0.93],
+    "cluster_id": pd.array([0, 1, 0], dtype="Int64"),
+    "label":      ["Alice", None, "Alice"],
+})
+
+with MediaPackageWriter("faces.mediapkg") as writer:
+    writer.add_video("video_001", "https://example.org/videos/talk.mp4",
+                     width=3840, height=2160, fps=25.0)
+    writer.add_track("video_001", faces, faces_df)
+```
+
+When `coordinate_space="normalized"`, `x`/`y`/`w`/`h` must lie in `[0,1]`
+(pixels are recoverable from the video's `width`/`height`). `label` is nullable
+and need not be unique — several clusters may share one label.
+
+### 1.6 Declaring relationships between tracks
+
+Every track type accepts two independent, optional edges:
+
+- **`parent`** — containment: the track this one lives _under_ (a single track
+  name; the parent graph must be acyclic).
+- **`derived_from`** + **`method`** — provenance: the source tracks this one is
+  _computed from_ (a list), and how (`method` is required when `derived_from` is
+  set, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`).
+
+A track may have both at once — e.g. an aggregation that _lives under_
+`aggregations` yet is _computed from_ several sources:
+
+```python
+shots = AnnotationSeries(name="shots", description="Shot segmentation")
+
+# Contained in `shots`, and derived (argmax) from the five shot-size scores:
+shot_sizes = AnnotationSeries(
+    name="shot_sizes",
+    description="Dominant shot size per shot",
+    parent="shots",
+    derived_from=["extreme_close_up", "close_up", "medium", "full", "long"],
+    method="argmax",
+)
+
+# A per-person presence score, derived from the face detections:
+person_alice = ObservationSeries(
+    name="person_alice",
+    description="Alice presence score",
+    sampling_interval=0.5,
+    dimensions=[DimensionSpec("presence", "Presence score", "[0,1]")],
+    parent="person_identification",
+    derived_from=["face_regions"],
+    method="cluster_to_scalar",
+)
+```
+
+These edges are written into `manifest.json` (and exported to RDF as
+`mava:hasParent` / `mava:derivedFrom` / `mava:derivationMethod`). The validator
+checks that every referenced track exists, that `method` is present whenever
+`derived_from` is, and that the `parent` graph is acyclic.
+
 ---
 
 ## 2. Reading a `.mediapkg`
