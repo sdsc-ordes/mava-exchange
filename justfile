@@ -105,7 +105,16 @@ build-docs: pylode
 clean-docs:
     rm -rf .output/docs
 
-# Watch for changes and rebuild (requires 'sphinx-autobuild' pip package)
+# Build the docs (in the dev shell) and serve them locally at the given port.
 [group('docs')]
-watch:
-    sphinx-autobuild docs/source docs/build/html
+serve-docs port="8000":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if python3 -c "import socket,sys; s=socket.socket(); r=s.connect_ex(('127.0.0.1',{{port}})); s.close(); sys.exit(0 if r==0 else 1)"; then
+        echo "⚠  Port {{port}} is already in use — a server may already be running there."
+        echo "   Use another port, e.g.:  just serve-docs $(({{port}}+1))"
+        exit 1
+    fi
+    just develop just build-docs
+    echo "Docs → http://localhost:{{port}}/"
+    python3 -m http.server -d .output/docs "{{port}}"
