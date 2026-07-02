@@ -11,6 +11,10 @@ here without a human reading the diff.
 """
 from __future__ import annotations
 
+import json
+import zipfile
+from pathlib import Path
+
 import pandas as pd
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
@@ -402,6 +406,58 @@ def test_out_of_range_geometry_is_rejected(tmp_path):
     with MediaPackageWriter(pkg, description="Out of range") as w:
         w.add_video("v1", "https://example.org/v1.mp4")
         w.add_track("v1", track, df)
+    result = validate_mediapkg(pkg)
+    assert not result.valid
+    assert any("'x' has values outside [0,1]" in e for e in result.errors)
+
+
+def _strip_coordinate_space(pkg: Path, track_name: str) -> None:
+    """Rewrite a .mediapkg in place, dropping coordinate_space from a track def.
+
+    The writer always emits coordinate_space, so this is the only way to build
+    a manifest that omits it (hand-authored or older packages).
+    """
+    with zipfile.ZipFile(pkg, "r") as zf:
+        entries = {name: zf.read(name) for name in zf.namelist()}
+    manifest = json.loads(entries["manifest.json"])
+    manifest["tracks"][track_name].pop("coordinate_space", None)
+    entries["manifest.json"] = json.dumps(manifest, indent=2).encode()
+    with zipfile.ZipFile(pkg, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name, data in entries.items():
+            zf.writestr(name, data)
+
+
+def test_out_of_range_geometry_rejected_when_coordinate_space_absent(tmp_path):
+    """A RegionSeries manifest omitting coordinate_space defaults to 'normalized'
+    (matching the reader), so out-of-[0,1] geometry is still rejected."""
+    track = RegionSeries(
+        name="face_regions", description="Boxes", sampling_interval=0.5,
+        coordinate_space="normalized",
+        dimensions=[
+            DimensionSpec("x", "left", "[0,1]"),
+            DimensionSpec("y", "top", "[0,1]"),
+            DimensionSpec("w", "width", "[0,1]"),
+            DimensionSpec("h", "height", "[0,1]"),
+            DimensionSpec("det_score", "score", "[0,1]"),
+        ],
+    )
+    df = pd.DataFrame({
+        "start_seconds": [0.0, 0.0],
+        "x": [0.1, 1.5],          # 1.5 is out of range
+        "y": [0.2, 0.2],
+        "w": [0.1, 0.1],
+        "h": [0.1, 0.1],
+        "det_score": [0.9, 0.8],
+        "cluster_id": pd.array([0, 1], dtype="Int64"),
+        "label": ["Alice", None],
+    })
+    pkg = tmp_path / "oob_no_coord_space.mediapkg"
+    with MediaPackageWriter(pkg, description="Out of range") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", track, df)
+
+    _strip_coordinate_space(pkg, "face_regions")
+
     result = validate_mediapkg(pkg)
     assert not result.valid
     assert any("'x' has values outside [0,1]" in e for e in result.errors)

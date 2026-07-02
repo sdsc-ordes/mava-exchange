@@ -416,7 +416,9 @@ def _check_region_series(path: str, df: pd.DataFrame, track_def: dict, result: V
     Geometry columns (x, y, w, h) must lie in [0,1] when the series declares
     coordinate_space == "normalized"; det_score is always a confidence in [0,1].
     """
-    normalized = track_def.get("coordinate_space") == "normalized"
+    # An absent coordinate_space defaults to "normalized" — matching the reader
+    # (reader._track_from_dict) — so the geometry range check still applies.
+    normalized = track_def.get("coordinate_space", "normalized") == "normalized"
     for dim_name in track_def.get("dimensions", {}):
         if dim_name not in df.columns:
             continue
