@@ -159,6 +159,12 @@ def load_track_df(track, tsv: Path) -> pd.DataFrame:
         return out
 
     # AnnotationSeries / AnnotationListSeries — interval rows
+    if "duration in seconds" not in raw.columns:
+        raise ValueError(
+            f"Track {track.name!r} ({tsv.name}) is an interval track "
+            f"({type(track).__name__}) but its TSV has no 'duration in seconds' "
+            f"column. Columns found: {list(raw.columns)}"
+        )
     end = start + pd.to_numeric(raw["duration in seconds"])
     annotations = raw.get("annotations", pd.Series([""] * len(raw)))
     conv = (
