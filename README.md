@@ -172,10 +172,10 @@ To run the example that converts real TSV annotation files into a `.mediapkg`
 corpus:
 
 ```bash
-just example           # create example corpus from TSV files
-just inspect           # inspect the resulting corpus.mediapkg
-just inspect-turtle    # view manifest as Turtle RDF
-just validate          # validate the package
+just example                                                 # create example corpus from TSV files
+just inspect  examples/output/corpus.mediapkg                # inspect the resulting corpus.mediapkg
+just inspect  examples/output/corpus.mediapkg --format turtle # view manifest as Turtle RDF
+just validate examples/output/corpus.mediapkg                # validate the package
 ```
 
 ## Further Reading

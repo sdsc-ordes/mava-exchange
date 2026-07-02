@@ -7,6 +7,7 @@ build_dir := output_dir / "build"
 
 mod nix "./tools/just/nix.just"
 mod changelog "./tools/just/changelog.just"
+mod examples "./tools/just/examples.just"
 
 # Default target if you do not specify a target.
 default:
@@ -71,40 +72,6 @@ pylode +args='':
 example:
     uv run examples/scripts/build_mediapkg.py
 
-# (maintainers) Regenerate examples/input/ from the raw exports in data/ (gitignored).
-[group('data')]
-extract-examples:
-    uv run tools/scripts/extract_segment.py
-    just format examples/input
-
-# (maintainers) Regenerate the committed inspect RDF snapshots from the corpus.
-[group('data')]
-inspect-examples pkg="examples/output/corpus.mediapkg":
-    uv run mediapkg-inspect "{{pkg}}" --format turtle  > examples/output/inspect/corpus.mediapkg.ttl
-    uv run mediapkg-inspect "{{pkg}}" --format json-ld > examples/output/inspect/corpus.mediapkg.jsonld
-
-# (maintainers) Cut the short demo clips (examples/videos/) from raw sources in data/.
-[group('data')]
-cut-clips:
-    uv run tools/scripts/cut_clips.py
-
-# (maintainers) Remove generated example OUTPUTS (corpus, inspect RDF, clips).
-# Safe only when data/ holds the raw sources to rebuild them (it does).
-[group('data')]
-clean-examples:
-    rm -f examples/output/corpus.mediapkg
-    rm -f examples/output/inspect/corpus.mediapkg.ttl examples/output/inspect/corpus.mediapkg.jsonld
-    rm -f examples/videos/*.mp4
-
-# (maintainers) Full rebuild from raw data: input -> clips -> corpus -> inspect RDF.
-# Idempotent: each step overwrites in place, so re-running is the safe "retry".
-[group('data')]
-regenerate-examples:
-    just extract-examples
-    just cut-clips
-    just example
-    just inspect-examples
-
 # Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
 [group('usage')]
 viewer port="8000":
@@ -115,19 +82,10 @@ viewer port="8000":
 # Usage:
 #   just inspect examples/output/corpus.mediapkg
 #   just inspect path/to/corpus.mediapkg --track emotions --video video_001
+#   just inspect examples/output/corpus.mediapkg --format turtle   # or json-ld
 [group('usage')]
 inspect pkg *args:
     mediapkg-inspect "{{pkg}}" {{args}}
-
-# Export manifest as Turtle RDF.
-[group('usage')]
-inspect-turtle pkg="examples/output/corpus.mediapkg":
-    mediapkg-inspect "{{pkg}}" --format turtle
-
-# Export manifest as JSON-LD.
-[group('usage')]
-inspect-jsonld pkg="examples/output/corpus.mediapkg":
-    mediapkg-inspect "{{pkg}}" --format json-ld
 
 # Validate a .mediapkg archive.
 # Usage:

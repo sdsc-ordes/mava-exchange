@@ -46,7 +46,7 @@ data/<src>/  ──(1) extract──▶  examples/input/<src>/  ──(2) build�
         └────────────(3) cut────▶  examples/videos/<src>.mp4  (committed)
 ```
 
-### (1) Raw → `examples/input/` — `just extract-examples`
+### (1) Raw → `examples/input/` — `just examples::extract`
 
 [`tools/scripts/extract_segment.py`](../tools/scripts/extract_segment.py) reads
 the raw platform exports under `data/<src>/` (gitignored — see
@@ -80,7 +80,7 @@ per-video or per-track code — add a video by adding an `input/<src>/` folder.
 The creation timestamp is fixed, so regenerating the corpus is
 byte-reproducible.
 
-### (3) Raw video → `examples/videos/<src>.mp4` — `just cut-clips`
+### (3) Raw video → `examples/videos/<src>.mp4` — `just examples::cut-clips`
 
 [`tools/scripts/cut_clips.py`](../tools/scripts/cut_clips.py) cuts each short
 demo clip from the raw source video using the `source_window` recorded in
@@ -96,32 +96,32 @@ under `data/<src>/raw_data/`; sources whose raw video is absent are skipped.
 One command does the whole import — input, clips, corpus, and inspect RDF:
 
 ```bash
-just regenerate-examples   # extract-examples -> cut-clips -> example -> inspect-examples
+just examples::regenerate   # extract -> cut-clips -> example -> snapshots
 ```
 
 Or run the stages individually:
 
 ```bash
-just extract-examples   # (1) raw  -> examples/input/     (needs data/)
-just cut-clips          # (3) raw  -> examples/videos/     (needs data/ + ffmpeg)
-just example            # (2) input -> corpus.mediapkg
-just inspect-examples   # refresh output/inspect/*.ttl,*.jsonld from the corpus
+just examples::extract     # (1) raw  -> examples/input/     (needs data/)
+just examples::cut-clips   # (3) raw  -> examples/videos/     (needs data/ + ffmpeg)
+just example               # (2) input -> corpus.mediapkg
+just examples::snapshots   # refresh output/inspect/*.ttl,*.jsonld from the corpus
 ```
 
-Only `example` runs without the raw data — `extract-examples` and `cut-clips`
-are maintainer steps that need the gitignored `data/`.
+Only `example` runs without the raw data — `examples::extract` and
+`examples::cut-clips` are maintainer steps that need the gitignored `data/`.
 
 ### Clean rebuild
 
 Every stage overwrites in place (the extractor even prunes stale per-source
-files), so re-running `just regenerate-examples` is the normal, safe "retry" —
+files), so re-running `just examples::regenerate` is the normal, safe "retry" —
 no clean needed.
 
 For a from-scratch rebuild you can also wipe the generated outputs first:
 
 ```bash
-just clean-examples        # remove corpus, inspect RDF, and clips
-just regenerate-examples   # rebuild them all from data/
+just examples::clean        # remove corpus, inspect RDF, and clips
+just examples::regenerate   # rebuild them all from data/
 ```
 
 This is safe as long as `data/` holds the raw sources for every example (it
