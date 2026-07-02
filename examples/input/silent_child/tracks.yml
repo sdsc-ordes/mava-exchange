@@ -1,0 +1,61 @@
+# Track metadata for silent_child — segment 85.0-105.2s.
+# Built from the export's timelines.yml (parent <- parent_id, type <- node
+# type) plus a derivation overlay. Relationships are track-level metadata,
+# NOT columns in the TSV row data. Each track's rows live in <track>.tsv.
+
+shots:
+  type: mava:AnnotationSeries
+  description: Shots
+  parent: null
+person_identification:
+  type: mava:AnnotationSeries
+  description: Person Identification
+  parent: null
+joanne:
+  type: mava:ObservationSeries
+  description: Joanne
+  parent: person_identification
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Joanne
+      range: "[0,1]"
+  derived_from:
+    - face_regions
+  method: cluster_to_scalar
+paul:
+  type: mava:ObservationSeries
+  description: Paul
+  parent: person_identification
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Paul
+      range: "[0,1]"
+  derived_from:
+    - face_regions
+  method: cluster_to_scalar
+face_regions:
+  type: mava:RegionSeries
+  description:
+    Per-frame face bounding boxes, normalized to [0,1] of the frame, top-left
+    origin. One row per detection.
+  parent: null
+  coordinate_space: normalized
+  sampling_interval_seconds: 0.5
+  dimensions:
+    x:
+      description: Box left edge (normalized)
+      range: "[0,1]"
+    y:
+      description: Box top edge (normalized)
+      range: "[0,1]"
+    w:
+      description: Box width (normalized)
+      range: "[0,1]"
+    h:
+      description: Box height (normalized)
+      range: "[0,1]"
+    det_score:
+      description: Detection confidence
+      range: "[0,1]"

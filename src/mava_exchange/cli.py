@@ -139,7 +139,8 @@ def inspect_cmd():
         if args.format in ("turtle", "json-ld"):
             try:
                 rdf = export_manifest_as_rdf(reader.manifest, format=args.format)
-                print(rdf)
+                # rdf already ends with a single newline; don't add another.
+                print(rdf, end="")
             except ImportError as e:
                 print(f"Error: {e}", file=sys.stderr)
                 sys.exit(1)

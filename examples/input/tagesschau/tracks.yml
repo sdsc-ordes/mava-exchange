@@ -1,0 +1,203 @@
+# Track metadata for tagesschau — segment 0.0-90.0s.
+# Built from the export's timelines.yml (parent <- parent_id, type <- node
+# type) plus a derivation overlay. Relationships are track-level metadata,
+# NOT columns in the TSV row data. Each track's rows live in <track>.tsv.
+
+shots:
+  type: mava:AnnotationSeries
+  description: Shots
+  parent: null
+shot_density:
+  type: mava:ObservationSeries
+  description: Shot Density
+  parent: shots
+  sampling_interval_seconds: 0.1
+  dimensions:
+    density:
+      description: Shot Density
+      range: "[0,1]"
+video_brightness:
+  type: mava:ObservationSeries
+  description: Video Brightness
+  parent: shots
+  sampling_interval_seconds: 0.5
+  dimensions:
+    brightness:
+      description: Video Brightness
+      range: "[0,1]"
+dominant_colors:
+  type: mava:ObservationSeries
+  description: Dominant Color(s)
+  parent: shots
+  sampling_interval_seconds: 0.5
+  dimensions:
+    r:
+      description: Component r
+      range: "[0,1]"
+    g:
+      description: Component g
+      range: "[0,1]"
+    b:
+      description: Component b
+      range: "[0,1]"
+shot_sizes:
+  type: mava:AnnotationSeries
+  description: Shot Sizes
+  parent: shots
+  derived_from:
+    - extreme_close_up
+    - close_up
+    - medium_shot
+    - full_shot
+    - long_shot
+  method: argmax
+extreme_close_up:
+  type: mava:ObservationSeries
+  description: Extreme Close-Up
+  parent: shot_sizes
+  sampling_interval_seconds: 0.2
+  dimensions:
+    score:
+      description: Extreme Close-Up
+      range: "[0,1]"
+close_up:
+  type: mava:ObservationSeries
+  description: Close-Up
+  parent: shot_sizes
+  sampling_interval_seconds: 0.2
+  dimensions:
+    score:
+      description: Close-Up
+      range: "[0,1]"
+medium_shot:
+  type: mava:ObservationSeries
+  description: Medium Shot
+  parent: shot_sizes
+  sampling_interval_seconds: 0.2
+  dimensions:
+    score:
+      description: Medium Shot
+      range: "[0,1]"
+full_shot:
+  type: mava:ObservationSeries
+  description: Full Shot
+  parent: shot_sizes
+  sampling_interval_seconds: 0.2
+  dimensions:
+    score:
+      description: Full Shot
+      range: "[0,1]"
+long_shot:
+  type: mava:ObservationSeries
+  description: Long Shot
+  parent: shot_sizes
+  sampling_interval_seconds: 0.2
+  dimensions:
+    score:
+      description: Long Shot
+      range: "[0,1]"
+whisper_transcript:
+  type: mava:AnnotationSeries
+  description: Whisper Transcript
+  parent: null
+rms_volume:
+  type: mava:ObservationSeries
+  description: RMS Volume
+  parent: whisper_transcript
+  sampling_interval_seconds: 0.064
+  dimensions:
+    rms:
+      description: RMS Volume
+      range: ">=0"
+face_emotions:
+  type: mava:AnnotationSeries
+  description: Face Emotions
+  parent: null
+  derived_from:
+    - angry
+    - disgust
+    - fear
+    - happy
+    - sad
+    - surprise
+    - neutral
+  method: argmax
+angry:
+  type: mava:ObservationSeries
+  description: Angry
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Angry
+      range: "[0,1]"
+disgust:
+  type: mava:ObservationSeries
+  description: Disgust
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Disgust
+      range: "[0,1]"
+fear:
+  type: mava:ObservationSeries
+  description: Fear
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Fear
+      range: "[0,1]"
+happy:
+  type: mava:ObservationSeries
+  description: Happy
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Happy
+      range: "[0,1]"
+sad:
+  type: mava:ObservationSeries
+  description: Sad
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Sad
+      range: "[0,1]"
+surprise:
+  type: mava:ObservationSeries
+  description: Surprise
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Surprise
+      range: "[0,1]"
+neutral:
+  type: mava:ObservationSeries
+  description: Neutral
+  parent: face_emotions
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: Neutral
+      range: "[0,1]"
+anchor_daubner:
+  type: mava:ObservationSeries
+  description: "Anchor: Daubner"
+  parent: null
+  sampling_interval_seconds: 0.5
+  dimensions:
+    score:
+      description: "Anchor: Daubner"
+      range: "[0,1]"
+shots_modified:
+  type: mava:AnnotationSeries
+  description: Shots-modified
+  parent: null
+  derived_from:
+    - shots
+  method: manual

@@ -1,6 +1,6 @@
 # MediaPkg Format Specification
 
-**Version:** 0.1 (Draft) **Repository:**
+**Version:** 0.2 (Draft) **Repository:**
 https://github.com/smaennel/mava-exchange **Ontology:**
 http://example.org/mava/ontology# **License:** Apache 2.0
 
@@ -208,7 +208,7 @@ valid JSON and MUST be located at the root of the ZIP archive.
 
 | Field         | Type         | Required | Description                                               |
 | ------------- | ------------ | -------- | --------------------------------------------------------- |
-| `version`     | string       | MUST     | Format version. Currently `"0.1"`.                        |
+| `version`     | string       | MUST     | Format version. Currently `"0.2"`.                        |
 | `created`     | string       | MUST     | ISO 8601 datetime of package creation.                    |
 | `ontology`    | string (URI) | MUST     | URI of the MAVA ontology.                                 |
 | `context`     | object       | MUST     | JSON-LD `@context` mapping column names to ontology URIs. |
@@ -220,7 +220,7 @@ valid JSON and MUST be located at the root of the ZIP archive.
 
 ```json
 {
-  "version": "0.1",
+  "version": "0.2",
   "created": "2025-08-12T10:00:00+00:00",
   "description": "Emotion and transcript annotations for talk recordings",
   "ontology": "http://example.org/mava/ontology#",
@@ -256,13 +256,25 @@ with no spaces (use underscores).
 
 Each track entry MUST contain:
 
-| Field                       | Type             | Required                     | Description                                                                                       |
-| --------------------------- | ---------------- | ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| `type`                      | string           | MUST                         | Either `"mava:ObservationSeries"` or `"mava:AnnotationSeries"`, or `"mava:AnnotationListSeries"`. |
-| `description`               | string           | MUST                         | Human-readable description of the track.                                                          |
-| `columns`                   | array of strings | MUST                         | Ordered list of column names in the Parquet file.                                                 |
-| `dimensions`                | object           | MUST for `ObservationSeries` | Maps each value column name to its description and value range.                                   |
-| `sampling_interval_seconds` | number           | OPTIONAL                     | For `ObservationSeries`: the sampling interval in seconds.                                        |
+| Field                       | Type             | Required                                    | Description                                                                                                            |
+| --------------------------- | ---------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `type`                      | string           | MUST                                        | One of `"mava:ObservationSeries"`, `"mava:AnnotationSeries"`, `"mava:AnnotationListSeries"`, or `"mava:RegionSeries"`. |
+| `description`               | string           | MUST                                        | Human-readable description of the track.                                                                               |
+| `columns`                   | array of strings | MUST                                        | Ordered list of column names in the Parquet file.                                                                      |
+| `dimensions`                | object           | MUST for `ObservationSeries`/`RegionSeries` | Maps each value column name to its description and value range.                                                        |
+| `sampling_interval_seconds` | number           | OPTIONAL                                    | For `ObservationSeries` / `RegionSeries`: the sampling interval in seconds.                                            |
+| `coordinate_space`          | string           | OPTIONAL                                    | For `RegionSeries`: `"normalized"` (geometry in `[0,1]` of the frame) or `"pixel"`. Defaults to `"normalized"`.        |
+| `parent`                    | string           | OPTIONAL                                    | Containment parent: the name of the track this one lives under. At most one; the parent graph MUST be acyclic.         |
+| `derived_from`              | array of strings | OPTIONAL                                    | Provenance: names of the tracks this track is computed from (1..n).                                                    |
+| `method`                    | string           | MUST when `derived_from` present            | How the track was derived, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`.                               |
+
+**Track relationships.** `parent` and `derived_from` are two distinct edges and
+MUST NOT be conflated. `parent` is single-valued containment (where a track
+lives in the tree); `derived_from` is multi-valued provenance (what a track was
+computed from). A track MAY have both at once — e.g. a join that lives under an
+"aggregations" container (`parent`) yet is computed from several source tracks
+(`derived_from`). Every name referenced by `parent` or `derived_from` MUST be a
+track defined in `tracks`, and the `parent` graph MUST be acyclic.
 
 #### Track example — ObservationSeries
 
@@ -309,13 +321,16 @@ Each track entry MUST contain:
 The `videos` field MUST be an array with at least one entry. Each entry
 describes one video in the corpus.
 
-| Field              | Type         | Required | Description                                                               |
-| ------------------ | ------------ | -------- | ------------------------------------------------------------------------- |
-| `id`               | string       | MUST     | Unique identifier for this video. Used as the folder name inside the ZIP. |
-| `src`              | string (URI) | MUST     | URI or filename of the original video file.                               |
-| `files`            | object       | MUST     | Maps track name → path of the Parquet file inside the ZIP.                |
-| `title`            | string       | OPTIONAL | Human-readable title.                                                     |
-| `duration_seconds` | number       | OPTIONAL | Total duration of the video in seconds.                                   |
+| Field              | Type         | Required | Description                                                                         |
+| ------------------ | ------------ | -------- | ----------------------------------------------------------------------------------- |
+| `id`               | string       | MUST     | Unique identifier for this video. Used as the folder name inside the ZIP.           |
+| `src`              | string (URI) | MUST     | URI or filename of the original video file.                                         |
+| `files`            | object       | MUST     | Maps track name → path of the Parquet file inside the ZIP.                          |
+| `title`            | string       | OPTIONAL | Human-readable title.                                                               |
+| `duration_seconds` | number       | OPTIONAL | Total duration of the video in seconds.                                             |
+| `width`            | integer      | OPTIONAL | Frame width in pixels. Recoverable absolute geometry for normalized `RegionSeries`. |
+| `height`           | integer      | OPTIONAL | Frame height in pixels.                                                             |
+| `fps`              | number       | OPTIONAL | Frame rate in frames per second.                                                    |
 
 #### Video entry example
 
@@ -338,8 +353,10 @@ describes one video in the corpus.
 
 ## 6. Track Types
 
-MediaPkg defines two track types, reflecting the fundamental distinction in the
-MAVA ontology between dense time-series data and sparse interval annotations.
+MediaPkg defines four track types. The core distinction in the MAVA ontology is
+between dense time-series data (`ObservationSeries`) and sparse interval
+annotations (`AnnotationSeries`, `AnnotationListSeries`); `RegionSeries` (added
+in 0.2) extends the model to spatial detections such as bounding boxes.
 
 ### 6.1 ObservationSeries
 
@@ -372,7 +389,7 @@ An `AnnotationSeries` is a sparse set of interval annotations. Each row is a
 | `end_seconds`   | `mava:endTime`     | `DOUBLE`     | End of the interval in seconds. MUST be greater than `start_seconds`. |
 | `annotations`   | `mava:stringValue` | `STRING`     | The annotation value for this segment.                                |
 
-### 6.2 AnnotationListSeries
+### 6.3 AnnotationListSeries
 
 An `AnnotationListSeries` is a sparse set of interval annotations where each
 segment has multiple simultaneous values. Each row is a
@@ -398,6 +415,65 @@ information. Tools that need to display timecodes MUST compute them from
 **Examples of AnnotationSeries tracks:** shot boundaries, speech-to-text
 transcripts, face emotion labels, scene labels.
 
+### 6.4 RegionSeries
+
+A `RegionSeries` is a series of spatial detections over time, in **long
+format**: one row per detection, so many rows MAY share the same
+`start_seconds`. Each row is a `mava:RegionDetection` — a bounding box with a
+detection score and an identity. It was added in 0.2 for face/object detections.
+
+**Required columns:**
+
+| Column          | Maps to               | Parquet type | Description                                                               |
+| --------------- | --------------------- | ------------ | ------------------------------------------------------------------------- |
+| `start_seconds` | `mava:atTime`         | `DOUBLE`     | Time of the detection in seconds from video start. MUST be non-negative.  |
+| `x`             | `mava:x`              | `DOUBLE`     | Box left edge. In `[0,1]` when `coordinate_space` is `"normalized"`.      |
+| `y`             | `mava:y`              | `DOUBLE`     | Box top edge (top-left origin). In `[0,1]` when normalized.               |
+| `w`             | `mava:width`          | `DOUBLE`     | Box width. In `[0,1]` when normalized.                                    |
+| `h`             | `mava:height`         | `DOUBLE`     | Box height. In `[0,1]` when normalized.                                   |
+| `det_score`     | `mava:detectionScore` | `DOUBLE`     | Detection confidence. MUST be in `[0,1]`.                                 |
+| `cluster_id`    | `mava:clusterId`      | `INT64`      | Machine cluster the detection belongs to. MUST be present.                |
+| `label`         | `mava:identityLabel`  | `STRING`     | Human identity label. Nullable; not unique and not 1:1 with `cluster_id`. |
+
+`x`, `y`, `w`, `h`, and `det_score` are **dimension columns** declared in the
+track's `dimensions` object, exactly as for `ObservationSeries`. `cluster_id`
+and `label` are **fixed columns** present in every `RegionSeries`.
+
+**Coordinate space.** The optional `coordinate_space` field on the track is
+`"normalized"` (default — geometry in `[0,1]` of the frame) or `"pixel"`
+(absolute pixels). When the space is `"normalized"`, `x`, `y`, `w`, `h` MUST lie
+in `[0,1]`. Absolute pixel geometry is recoverable from normalized values via
+the video's `width` / `height`.
+
+**Identity model.** Identity lives on the timed rows, not in a sidecar.
+`cluster_id` is the unsupervised machine cluster (stable, always present).
+`label` is a human-applied name that MAY be missing, and several clusters MAY
+share one label (e.g. a person split across clusters). Consumers MUST NOT assume
+`cluster_id` ↔ `label` is one-to-one, and MUST NOT require label completeness
+or uniqueness.
+
+#### Track example — RegionSeries
+
+```json
+"face_regions": {
+  "type": "mava:RegionSeries",
+  "description": "Per-frame face bounding boxes, sampled every 0.5s. Coordinates normalized to [0,1] of the frame, top-left origin.",
+  "sampling_interval_seconds": 0.5,
+  "coordinate_space": "normalized",
+  "columns": ["start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"],
+  "dimensions": {
+    "x":         {"description": "Box left edge, normalized",  "range": "[0,1]"},
+    "y":         {"description": "Box top edge, normalized",   "range": "[0,1]"},
+    "w":         {"description": "Box width, normalized",      "range": "[0,1]"},
+    "h":         {"description": "Box height, normalized",     "range": "[0,1]"},
+    "det_score": {"description": "Detection confidence",       "range": "[0,1]"}
+  }
+}
+```
+
+**Examples of RegionSeries tracks:** face bounding boxes, object detections, any
+localized per-frame spatial annotation.
+
 ---
 
 ## 7. Parquet Files
@@ -414,20 +490,23 @@ manifest exactly, in the declared order.
 
 There are two kinds of columns:
 
-**Fixed columns** have the same name in every track: `start_seconds`,
-`end_seconds`, and `annotations`. Their Parquet type is always the same.
+**Fixed columns** have the same name in every track that uses them:
+`start_seconds`, `end_seconds`, `annotations`, and (for `RegionSeries`)
+`cluster_id` and `label`. Their Parquet type is always the same.
 
 **Dimension columns** have variable names — whatever was declared in the track's
 `dimensions` object in the manifest. Their Parquet type is always `DOUBLE`
 regardless of the name.
 
-| Column               | Parquet type                       | Notes                                  |
-| -------------------- | ---------------------------------- | -------------------------------------- |
-| `start_seconds`      | `DOUBLE`                           | Fixed name, always present             |
-| `end_seconds`        | `DOUBLE`                           | Fixed name, AnnotationSeries only      |
-| Dimension columns    | `DOUBLE`                           | Variable names, ObservationSeries only |
-| `annotations`        | `BYTE_ARRAY` (UTF-8 string)        | Fixed name, AnnotationSeries only      |
-| `annotations` (list) | `LIST<BYTE_ARRAY>` (UTF-8 strings) | Fixed name, AnnotationListSeries only  |
+| Column               | Parquet type                       | Notes                                            |
+| -------------------- | ---------------------------------- | ------------------------------------------------ |
+| `start_seconds`      | `DOUBLE`                           | Fixed name, always present                       |
+| `end_seconds`        | `DOUBLE`                           | Fixed name, AnnotationSeries only                |
+| Dimension columns    | `DOUBLE`                           | Variable names, ObservationSeries / RegionSeries |
+| `annotations`        | `BYTE_ARRAY` (UTF-8 string)        | Fixed name, AnnotationSeries only                |
+| `annotations` (list) | `LIST<BYTE_ARRAY>` (UTF-8 strings) | Fixed name, AnnotationListSeries only            |
+| `cluster_id`         | `INT64`                            | Fixed name, RegionSeries only                    |
+| `label`              | `BYTE_ARRAY` (UTF-8 string)        | Fixed name, RegionSeries only; nullable          |
 
 #### Example — ObservationSeries (emotions track)
 
@@ -496,6 +575,24 @@ scene_tags.parquet
 
 ```
 
+#### Example — RegionSeries (face_regions track)
+
+Long format: one row per detection, so several rows share a `start_seconds`.
+Dimension columns `x`, `y`, `w`, `h`, `det_score` plus the fixed `cluster_id`
+and `label`. `label` is nullable (cluster known, name not yet assigned).
+
+```
+face_regions.parquet
+┌───────────────┬────────┬────────┬────────┬────────┬───────────┬────────────┬────────┐
+│ start_seconds │   x    │   y    │   w    │   h    │ det_score │ cluster_id │ label  │
+│    DOUBLE     │ DOUBLE │ DOUBLE │ DOUBLE │ DOUBLE │  DOUBLE   │   INT64    │ STRING │
+├───────────────┼────────┼────────┼────────┼────────┼───────────┼────────────┼────────┤
+│    65.500     │ 0.4557 │ 0.1019 │ 0.1966 │ 0.4037 │  0.8237   │     7      │ Joanne │
+│    66.000     │ 0.5141 │ 0.2361 │ 0.2073 │ 0.4486 │  0.7944   │     7      │ Joanne │
+│    66.000     │ 0.1204 │ 0.3017 │ 0.1500 │ 0.4727 │  0.8125   │    19      │  null  │
+└───────────────┴────────┴────────┴────────┴────────┴───────────┴────────────┴────────┘
+```
+
 ### Compression
 
 Parquet files SHOULD use Snappy or ZSTD compression for row groups. The ZIP
@@ -508,6 +605,10 @@ ascending.
 
 Rows in an `AnnotationSeries` file SHOULD be ordered by `start_seconds`
 ascending.
+
+Rows in a `RegionSeries` file MUST be ordered by `start_seconds` non-strictly
+ascending — equal values are expected, since the long format puts multiple
+detections at the same time on consecutive rows.
 
 ---
 
@@ -528,9 +629,17 @@ The ontology defines:
   analysis
 - `mava:AnnotationSeries` / `mava:AnnotationSegment` /
   `mava:AnnotationListSegment` — sparse interval annotations
-- `mava:Dimension` — a single measured quantity within an ObservationSeries
+- `mava:RegionSeries` / `mava:RegionDetection` — spatial detections (bounding
+  boxes), long format
+- `mava:Dimension` — a single measured quantity within an ObservationSeries or
+  RegionSeries
 - Time properties: `mava:atTime`, `mava:startTime`, `mava:endTime`
-- Value properties: `mava:numericValue`, `mava:stringValue`, `mava:ListValue`
+- Value properties: `mava:numericValue`, `mava:stringValue`, `mava:listValue`
+- Region geometry / identity: `mava:x`, `mava:y`, `mava:width`, `mava:height`,
+  `mava:detectionScore`, `mava:coordinateSpace`, `mava:clusterId`,
+  `mava:identityLabel`
+- Track relationships: `mava:hasParent` (containment), `mava:derivedFrom` +
+  `mava:derivationMethod` (provenance)
 
 ### JSON-LD Context
 
@@ -567,6 +676,9 @@ SHACL shapes for validating RDF data exported from a `.mediapkg` are included in
   `mava:endTime` (both non-negative) and belongs to an `AnnotationSeries`
 - Every `ObservationSeries` has a description and at least one declared
   dimension
+- Every `RegionDetection` has exactly one `mava:atTime` (non-negative), belongs
+  to a `RegionSeries`, and carries box geometry, a cluster id, and (optionally)
+  a label
 - Every `Dimension` has exactly one name matching a Parquet column
 
 ### Package validation
@@ -578,6 +690,12 @@ Implementations SHOULD verify that:
   the manifest
 - `end_seconds > start_seconds` for all rows in `AnnotationSeries` files
 - `start_seconds >= 0` for all rows
+- For `RegionSeries`: `cluster_id` and `label` columns are declared; geometry
+  and `det_score` columns are numeric; `det_score` is in `[0,1]`; and when
+  `coordinate_space` is `"normalized"`, `x` / `y` / `w` / `h` are in `[0,1]`
+- For track relationships: every `parent` and `derived_from` names an existing
+  track, `method` is present whenever `derived_from` is, and the `parent` graph
+  is acyclic
 
 ---
 
@@ -663,4 +781,4 @@ is more interoperable.
 
 ---
 
-_MediaPkg v0.1 Draft — ETH Zurich / Swiss Data Science Center_
+_MediaPkg v0.2 Draft — ETH Zurich / Swiss Data Science Center_

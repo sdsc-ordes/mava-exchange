@@ -1,8 +1,69 @@
 """Export .mediapkg manifest as RDF (Turtle or JSON-LD)."""
 from __future__ import annotations
 
+import json
+
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, XSD
+
+
+def _value_key(x: object) -> str:
+    """Stable sort key for a JSON-LD property value."""
+    if isinstance(x, dict):
+        return x.get("@id") or x.get("@value") or json.dumps(x, sort_keys=True)
+    return str(x)
+
+
+def _sort_node(node: dict) -> dict:
+    """Sort a node's list-valued properties in place, recursing into objects."""
+    for k, v in node.items():
+        if isinstance(v, list):
+            node[k] = sorted(
+                (_sort_node(x) if isinstance(x, dict) else x for x in v),
+                key=_value_key,
+            )
+    return node
+
+
+def _canonical_jsonld(data: str) -> str:
+    """Deterministically order rdflib's JSON-LD so regeneration is byte-stable.
+
+    rdflib emits nodes (and their value lists) in an unstable order; sort the
+    node list by @id, sort every value list, and sort keys on dump.
+    """
+    obj = json.loads(data)
+    if isinstance(obj, list):
+        obj = sorted((_sort_node(n) for n in obj), key=lambda n: n.get("@id", ""))
+    elif isinstance(obj, dict) and isinstance(obj.get("@graph"), list):
+        obj["@graph"] = sorted(
+            (_sort_node(n) for n in obj["@graph"]), key=lambda n: n.get("@id", "")
+        )
+    elif isinstance(obj, dict):
+        _sort_node(obj)
+    return json.dumps(obj, indent=2, sort_keys=True) + "\n"
+
+
+def _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX) -> None:  # noqa: PLR0913
+    """Emit mava:Dimension nodes for an Observation- or RegionSeries."""
+    for dim_name, dim_meta in track_def.get("dimensions", {}).items():
+        dim_uri = EX[f"dim_{track_name}_{dim_name}"]
+        g.add((series_uri, MAVA.hasDimension, dim_uri))
+        g.add((dim_uri, RDF.type, MAVA.Dimension))
+        g.add((dim_uri, MAVA.dimensionName, Literal(dim_name)))
+        if "description" in dim_meta:
+            g.add((dim_uri, MAVA.dimensionDescription, Literal(dim_meta["description"])))
+        if "range" in dim_meta:
+            g.add((dim_uri, MAVA.valueRange, Literal(dim_meta["range"])))
+
+
+def _add_relations(g, series_uri, track_def, MAVA, EX) -> None:
+    """Emit hierarchy/provenance edges: hasParent, derivedFrom, derivationMethod."""
+    if track_def.get("parent") is not None:
+        g.add((series_uri, MAVA.hasParent, EX[f"series_{track_def['parent']}"]))
+    for src in track_def.get("derived_from") or []:
+        g.add((series_uri, MAVA.derivedFrom, EX[f"series_{src}"]))
+    if track_def.get("method") is not None:
+        g.add((series_uri, MAVA.derivationMethod, Literal(track_def["method"])))
 
 
 def export_manifest_as_rdf(  # noqa: PLR0912
@@ -53,7 +114,12 @@ def export_manifest_as_rdf(  # noqa: PLR0912
         g.add((video_uri, RDF.type, MAVA.Video))
 
         if "src" in video:
-            g.add((video_uri, DCTERMS.source, URIRef(video["src"])))
+            # Absolute URI -> use as-is; a bare filename -> resolve against the
+            # stable example base. Passing a relative ref to URIRef would let the
+            # serializer resolve it against the cwd, leaking a local file:// path.
+            src = video["src"]
+            src_uri = URIRef(src) if "://" in src else EX[src]
+            g.add((video_uri, DCTERMS.source, src_uri))
 
         for track_name in video.get("files", {}).keys():
             series_uri = EX[f"series_{track_name}"]
@@ -70,17 +136,19 @@ def export_manifest_as_rdf(  # noqa: PLR0912
                 g.add((series_uri, MAVA.samplingInterval,
                        Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
 
-            for dim_name, dim_meta in track_def.get("dimensions", {}).items():
-                dim_uri = EX[f"dim_{track_name}_{dim_name}"]
-                g.add((series_uri, MAVA.hasDimension, dim_uri))
-                g.add((dim_uri, RDF.type, MAVA.Dimension))
-                g.add((dim_uri, MAVA.dimensionName, Literal(dim_name)))
+            _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
 
-                if "description" in dim_meta:
-                    g.add((dim_uri, MAVA.dimensionDescription,
-                           Literal(dim_meta["description"])))
-                if "range" in dim_meta:
-                    g.add((dim_uri, MAVA.valueRange, Literal(dim_meta["range"])))
+        elif track_type == "mava:RegionSeries":
+            g.add((series_uri, RDF.type, MAVA.RegionSeries))
+
+            if "sampling_interval_seconds" in track_def:
+                g.add((series_uri, MAVA.samplingInterval,
+                       Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
+            if "coordinate_space" in track_def:
+                g.add((series_uri, MAVA.coordinateSpace,
+                       Literal(track_def["coordinate_space"])))
+
+            _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
 
         elif track_type == "mava:AnnotationSeries":
             g.add((series_uri, RDF.type, MAVA.AnnotationSeries))
@@ -92,9 +160,13 @@ def export_manifest_as_rdf(  # noqa: PLR0912
             g.add((series_uri, MAVA.seriesDescription,
                    Literal(track_def["description"])))
 
+        _add_relations(g, series_uri, track_def, MAVA, EX)
+
     if format == "turtle":
-        return g.serialize(format="turtle")
+        # Collapse rdflib's trailing blank lines to a single newline so the
+        # output matches the pre-commit end-of-file hook (no regenerate churn).
+        return g.serialize(format="turtle").rstrip() + "\n"
     elif format == "json-ld":
-        return g.serialize(format="json-ld", indent=2)
+        return _canonical_jsonld(g.serialize(format="json-ld"))
     else:
         raise ValueError(f"Unknown format '{format}'. Use 'turtle' or 'json-ld'.")

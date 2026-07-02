@@ -7,6 +7,7 @@ build_dir := output_dir / "build"
 
 mod nix "./tools/just/nix.just"
 mod changelog "./tools/just/changelog.just"
+mod examples "./tools/just/examples.just"
 
 # Default target if you do not specify a target.
 default:
@@ -66,28 +67,42 @@ pylode +args='':
     @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/docs/_templates/mava.html" > /dev/null 2>&1
     @echo "✅ HTML successfully generated at: {{root_dir}}/docs/_templates/mava.html"
 
-# Build a .mediapkg from the example TSV files.
+# Build the .mediapkg corpus from the committed example inputs.
 [group('usage')]
 example:
-    uv run examples/scripts/tsv_to_mediapkg.py
+    uv run examples/scripts/build_mediapkg.py
 
-# Inspect a .mediapkg archive.
-# Usage:
-#   just inspect examples/output/corpus.mediapkg
-#   just inspect path/to/corpus.mediapkg --track emotions --video video_001
+# Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
 [group('usage')]
-inspect pkg *args:
-    mediapkg-inspect "{{pkg}}" {{args}}
+viewer port="8000":
+    @echo "Viewer → http://localhost:{{port}}/  (drop in examples/output/corpus.mediapkg)"
+    python3 -m http.server -d docs/_static/viewer-app {{port}}
 
-# Export manifest as Turtle RDF.
+# Unpack a .mediapkg (ZIP) into a dir; optional 3rd arg (turtle|json-ld) also renders the manifest as RDF.
 [group('usage')]
-inspect-turtle pkg="examples/output/corpus.mediapkg":
-    mediapkg-inspect "{{pkg}}" --format turtle
+unpack pkg dir format="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p "{{dir}}"
+    unzip -o -q "{{pkg}}" -d "{{dir}}"
+    echo "Unpacked {{pkg}} → {{dir}}/"
+    if [ -n "{{format}}" ]; then
+        ext="ttl"; [ "{{format}}" = "json-ld" ] && ext="jsonld"
+        uv run mediapkg-inspect "{{pkg}}" --format "{{format}}" > "{{dir}}/manifest.$ext"
+        echo "Rendered {{dir}}/manifest.$ext"
+    fi
 
-# Export manifest as JSON-LD.
+# Pack a directory (manifest.json at its root) into a .mediapkg and validate it.
 [group('usage')]
-inspect-jsonld pkg="examples/output/corpus.mediapkg":
-    mediapkg-inspect "{{pkg}}" --format json-ld
+pack dir pkg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -f "{{dir}}/manifest.json" || { echo "✗ {{dir}}/manifest.json not found (it must sit at the archive root)"; exit 1; }
+    out="$(cd "$(dirname "{{pkg}}")" && pwd)/$(basename "{{pkg}}")"
+    rm -f "$out"
+    ( cd "{{dir}}" && zip -q -r -X "$out" . -x '*.ttl' '*.jsonld' '*.DS_Store' )
+    echo "Packed {{dir}}/ → {{pkg}}"
+    uv run mediapkg-validate "{{pkg}}"
 
 # Validate a .mediapkg archive.
 # Usage:
@@ -107,7 +122,16 @@ build-docs: pylode
 clean-docs:
     rm -rf .output/docs
 
-# Watch for changes and rebuild (requires 'sphinx-autobuild' pip package)
+# Build the docs (in the dev shell) and serve them locally at the given port.
 [group('docs')]
-watch:
-    sphinx-autobuild docs/source docs/build/html
+serve-docs port="8000":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if python3 -c "import socket,sys; s=socket.socket(); r=s.connect_ex(('127.0.0.1',{{port}})); s.close(); sys.exit(0 if r==0 else 1)"; then
+        echo "⚠  Port {{port}} is already in use — a server may already be running there."
+        echo "   Use another port, e.g.:  just serve-docs $(({{port}}+1))"
+        exit 1
+    fi
+    just develop just build-docs
+    echo "Docs → http://localhost:{{port}}/"
+    python3 -m http.server -d .output/docs "{{port}}"

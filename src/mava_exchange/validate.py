@@ -16,8 +16,17 @@ import numpy as np
 import pyarrow.parquet as pq
 
 
-KNOWN_VERSIONS = {"0.1"}
-KNOWN_TRACK_TYPES = {"mava:ObservationSeries", "mava:AnnotationSeries", "mava:AnnotationListSeries"}
+KNOWN_VERSIONS = {"0.1", "0.2"}
+KNOWN_TRACK_TYPES = {
+    "mava:ObservationSeries",
+    "mava:AnnotationSeries",
+    "mava:AnnotationListSeries",
+    "mava:RegionSeries",
+}
+
+# Fixed geometry columns of a RegionSeries (normalized to [0,1] when
+# coordinate_space == "normalized"). det_score is always [0,1].
+REGION_GEOMETRY_COLS = ("x", "y", "w", "h")
 
 
 @dataclass
@@ -128,6 +137,33 @@ def _check_observation_series_track(
         result.warning(f"ObservationSeries '{track_name}': no 'sampling_interval_seconds' declared")
 
 
+def _check_region_series_track(
+    track_name: str, track: dict, result: ValidationResult, strict: bool
+) -> None:
+    """Check RegionSeries declares dimensions and the cluster_id/label columns."""
+    dims = track.get("dimensions", {})
+    if not dims:
+        result.error(f"RegionSeries '{track_name}': must declare at least one dimension")
+    else:
+        result.ok()
+
+    declared_cols = set(track.get("columns", []))
+    for dim_name in dims:
+        if dim_name not in declared_cols:
+            result.error(f"Dimension '{dim_name}' in track '{track_name}' not listed in 'columns'")
+        else:
+            result.ok()
+
+    for col in ("cluster_id", "label"):
+        if col not in declared_cols:
+            result.error(f"RegionSeries '{track_name}': missing required '{col}' column")
+        else:
+            result.ok()
+
+    if strict and "sampling_interval_seconds" not in track:
+        result.warning(f"RegionSeries '{track_name}': no 'sampling_interval_seconds' declared")
+
+
 def _check_track(track_name: str, track: dict, result: ValidationResult, strict: bool) -> None:
     """Check a single track definition is valid."""
     if track.get("type") not in KNOWN_TRACK_TYPES:
@@ -148,11 +184,62 @@ def _check_track(track_name: str, track: dict, result: ValidationResult, strict:
     if track.get("type") == "mava:ObservationSeries":
         _check_observation_series_track(track_name, track, result, strict)
 
+    if track.get("type") == "mava:RegionSeries":
+        _check_region_series_track(track_name, track, result, strict)
+
 
 def _check_tracks(manifest: dict, result: ValidationResult, strict: bool) -> None:
     """Check all track definitions in the manifest."""
     for track_name, track in manifest.get("tracks", {}).items():
         _check_track(track_name, track, result, strict)
+
+
+def _check_acyclic_parents(tracks: dict, result: ValidationResult) -> None:
+    """Detect cycles in the parent containment graph (one check per track)."""
+    for start in tracks:
+        seen: set[str] = set()
+        node: str | None = start
+        cyclic = False
+        while node is not None and node in tracks:
+            if node in seen:
+                cyclic = True
+                break
+            seen.add(node)
+            node = tracks[node].get("parent")
+        if cyclic:
+            result.error(f"Track '{start}': parent chain contains a cycle")
+        else:
+            result.ok()
+
+
+def _check_relations(manifest: dict, result: ValidationResult) -> None:
+    """Check parent / derived_from / method edges between tracks."""
+    tracks = manifest.get("tracks", {})
+    names = set(tracks)
+
+    for track_name, track in tracks.items():
+        parent = track.get("parent")
+        if parent is not None:
+            if parent not in names:
+                result.error(f"Track '{track_name}': parent '{parent}' is not a defined track")
+            else:
+                result.ok()
+
+        derived = track.get("derived_from")
+        if derived is not None:
+            for src in derived:
+                if src not in names:
+                    result.error(
+                        f"Track '{track_name}': derived_from '{src}' is not a defined track"
+                    )
+                else:
+                    result.ok()
+            if not track.get("method"):
+                result.error(f"Track '{track_name}': 'method' is required when 'derived_from' is set")
+            else:
+                result.ok()
+
+    _check_acyclic_parents(tracks, result)
 
 
 def _check_video(video: dict, zip_names: set[str], manifest: dict, result: ValidationResult) -> None:
@@ -201,6 +288,8 @@ def _validate_manifest(manifest: dict, zip_names: set[str], result: ValidationRe
     _check_top_level_fields(manifest, result)
     print("  Tracks...")
     _check_tracks(manifest, result, strict)
+    print("  Relations...")
+    _check_relations(manifest, result)
     print("  Videos...")
     _check_videos(manifest, zip_names, result)
 
@@ -312,6 +401,37 @@ def _check_observation_series(path: str, df: pd.DataFrame, track_def: dict, resu
             result.ok()
 
 
+def _check_unit_range(path: str, name: str, col: pd.Series, result: ValidationResult) -> None:
+    """Check a numeric column's non-null values lie within [0,1]."""
+    valid = col.dropna()
+    if ((valid < 0) | (valid > 1)).any():
+        result.error(f"{path}: '{name}' has values outside [0,1]")
+    else:
+        result.ok()
+
+
+def _check_region_series(path: str, df: pd.DataFrame, track_def: dict, result: ValidationResult) -> None:
+    """Check RegionSeries geometry/score dimensions are numeric and in range.
+
+    Geometry columns (x, y, w, h) must lie in [0,1] when the series declares
+    coordinate_space == "normalized"; det_score is always a confidence in [0,1].
+    """
+    normalized = track_def.get("coordinate_space") == "normalized"
+    for dim_name in track_def.get("dimensions", {}):
+        if dim_name not in df.columns:
+            continue
+        col = df[dim_name]
+        if not pd.api.types.is_numeric_dtype(col):
+            result.error(f"{path}: dimension '{dim_name}' is not numeric (dtype: {col.dtype})")
+            continue
+        result.ok()
+
+        if dim_name == "det_score":
+            _check_unit_range(path, dim_name, col, result)
+        elif dim_name in REGION_GEOMETRY_COLS and normalized:
+            _check_unit_range(path, dim_name, col, result)
+
+
 def _validate_parquet(zf: zipfile.ZipFile, path: str, track_def: dict, result: ValidationResult) -> None:
     """Validate a Parquet file against its track definition."""
     print(f"  {path}...")
@@ -339,6 +459,9 @@ def _validate_parquet(zf: zipfile.ZipFile, path: str, track_def: dict, result: V
 
     if track_type == "mava:ObservationSeries":
         _check_observation_series(path, df, track_def, result)
+
+    if track_type == "mava:RegionSeries":
+        _check_region_series(path, df, track_def, result)
 
 
 # ─────────────────────────────────────────────

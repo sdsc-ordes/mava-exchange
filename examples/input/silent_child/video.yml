@@ -1,0 +1,10 @@
+id: silent_child
+src: silent_child.mp4
+title: The Silent Child (segment)
+width: 3840
+height: 2160
+fps: 25.0
+duration_seconds: 20.2
+source_window:
+  start: 85.0
+  end: 105.2

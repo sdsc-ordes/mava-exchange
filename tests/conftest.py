@@ -14,6 +14,7 @@ from mava_exchange import (
     DimensionSpec,
     MediaPackageWriter,
     ObservationSeries,
+    RegionSeries,
 )
 
 
@@ -59,6 +60,23 @@ def rms_track():
         sampling_interval=0.064,
         dimensions=[
             DimensionSpec("rms", "Root mean square volume", ">=0"),
+        ],
+    )
+
+
+@pytest.fixture
+def region_track():
+    return RegionSeries(
+        name="face_regions",
+        description="Per-frame face bounding boxes",
+        sampling_interval=0.5,
+        coordinate_space="normalized",
+        dimensions=[
+            DimensionSpec("x", "Box left edge (normalized)", "[0,1]"),
+            DimensionSpec("y", "Box top edge (normalized)", "[0,1]"),
+            DimensionSpec("w", "Box width (normalized)", "[0,1]"),
+            DimensionSpec("h", "Box height (normalized)", "[0,1]"),
+            DimensionSpec("det_score", "Detection confidence", "[0,1]"),
         ],
     )
 
@@ -114,6 +132,22 @@ def rms_df():
     return pd.DataFrame({
         "start_seconds": np.arange(n) * 0.064,
         "rms": np.abs(rng.normal(0.1, 0.05, n)),
+    })
+
+
+@pytest.fixture
+def region_df():
+    """Synthetic face boxes: long format (multiple detections per timestamp),
+    with one detection whose label is null (cluster known, name unknown)."""
+    return pd.DataFrame({
+        "start_seconds": [0.0, 0.0, 0.5, 0.5, 1.0],
+        "x":  [0.10, 0.60, 0.11, 0.61, 0.40],
+        "y":  [0.20, 0.18, 0.21, 0.19, 0.50],
+        "w":  [0.15, 0.14, 0.15, 0.14, 0.12],
+        "h":  [0.30, 0.28, 0.30, 0.28, 0.20],
+        "det_score": [0.95, 0.88, 0.93, 0.85, 0.70],
+        "cluster_id": pd.array([0, 1, 0, 1, 2], dtype="Int64"),
+        "label": ["Alice", "Bob", "Alice", "Bob", None],
     })
 
 

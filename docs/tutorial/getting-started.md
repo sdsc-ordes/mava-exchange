@@ -18,7 +18,7 @@ A `.mediapkg` file is a ZIP archive containing annotation data for one or more
 videos. Each video has one or more **tracks** — Parquet files containing the
 actual data.
 
-There are two kinds of tracks:
+There are four kinds of tracks:
 
 - **ObservationSeries** — a dense time-series of numeric values sampled at
   regular intervals. Each row is one point in time with one or more numeric
@@ -33,6 +33,11 @@ There are two kinds of tracks:
   per segment. Each row covers a time span with a list of string values. Use
   this for multi-label classifications, keyword tags, or any annotation where
   multiple values apply simultaneously.
+
+- **RegionSeries** — spatial detections in long format (one row per detection,
+  so many rows may share a `start_seconds`). Each row is a bounding box (`x`,
+  `y`, `w`, `h`) with a detection score and an identity (`cluster_id` + optional
+  `label`). Use this for face or object boxes. (Added in format 0.2.)
 
 ---
 
@@ -298,7 +303,7 @@ mediapkg-inspect corpus.mediapkg
   corpus.mediapkg
 ════════════════════════════════════════════════════════════
 
-Version:     0.1
+Version:     0.2
 Created:     2025-08-12T10:00:00+00:00
 Ontology:    http://example.org/mava/ontology#
 Description: Two-video corpus
@@ -377,7 +382,7 @@ context mapping column names to the MAVA ontology, and the file inventory. See
 
 ## Next steps
 
-- See `examples/tsv_to_mediapkg.py` for a complete example converting real TSV
-  annotation files from two different tools into a corpus package.
+- See `examples/README.md` for the real-data example corpus and the pipeline
+  that builds it (`examples/scripts/build_mediapkg.py`).
 - See `spec/SPEC.md` for the full format specification.
 - See `spec/mava.ttl` for the MAVA ontology and SHACL validation shapes.

@@ -31,7 +31,7 @@ class TestWriterBasic:
     def test_manifest_version(self, single_video_pkg):
         with zipfile.ZipFile(single_video_pkg) as zf:
             manifest = json.loads(zf.read("manifest.json"))
-        assert manifest["version"] == "0.1"
+        assert manifest["version"] == "0.2"
 
     def test_manifest_has_context(self, single_video_pkg):
         with zipfile.ZipFile(single_video_pkg) as zf:
