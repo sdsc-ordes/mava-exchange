@@ -83,6 +83,28 @@ inspect-examples pkg="examples/output/corpus.mediapkg":
     uv run mediapkg-inspect "{{pkg}}" --format turtle  > examples/output/inspect/corpus.mediapkg.ttl
     uv run mediapkg-inspect "{{pkg}}" --format json-ld > examples/output/inspect/corpus.mediapkg.jsonld
 
+# (maintainers) Cut the short demo clips (examples/videos/) from raw sources in data/.
+[group('data')]
+cut-clips:
+    uv run tools/scripts/cut_clips.py
+
+# (maintainers) Remove generated example OUTPUTS (corpus, inspect RDF, clips).
+# Safe only when data/ holds the raw sources to rebuild them (it does).
+[group('data')]
+clean-examples:
+    rm -f examples/output/corpus.mediapkg
+    rm -f examples/output/inspect/corpus.mediapkg.ttl examples/output/inspect/corpus.mediapkg.jsonld
+    rm -f examples/videos/*.mp4
+
+# (maintainers) Full rebuild from raw data: input -> clips -> corpus -> inspect RDF.
+# Idempotent: each step overwrites in place, so re-running is the safe "retry".
+[group('data')]
+regenerate-examples:
+    just extract-examples
+    just cut-clips
+    just example
+    just inspect-examples
+
 # Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
 [group('usage')]
 viewer port="8000":

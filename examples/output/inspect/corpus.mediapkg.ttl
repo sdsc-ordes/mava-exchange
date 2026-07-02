@@ -267,7 +267,7 @@ ex:video_silent_child a mava:Video ;
         ex:series_paul,
         ex:series_person_identification,
         ex:series_shots ;
-    dcterms:source <silent_child.mp4> .
+    dcterms:source ex:silent_child.mp4 .
 
 ex:video_tagesschau a mava:Video ;
     mava:hasAnalysis ex:series_anchor_daubner,
@@ -292,7 +292,7 @@ ex:video_tagesschau a mava:Video ;
         ex:series_surprise,
         ex:series_video_brightness,
         ex:series_whisper_transcript ;
-    dcterms:source <tagesschau.mp4> .
+    dcterms:source ex:tagesschau.mp4 .
 
 ex:series_shots a mava:AnnotationSeries ;
     mava:seriesDescription "Shots" .

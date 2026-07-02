@@ -1,8 +1,46 @@
 """Export .mediapkg manifest as RDF (Turtle or JSON-LD)."""
 from __future__ import annotations
 
+import json
+
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, XSD
+
+
+def _value_key(x: object) -> str:
+    """Stable sort key for a JSON-LD property value."""
+    if isinstance(x, dict):
+        return x.get("@id") or x.get("@value") or json.dumps(x, sort_keys=True)
+    return str(x)
+
+
+def _sort_node(node: dict) -> dict:
+    """Sort a node's list-valued properties in place, recursing into objects."""
+    for k, v in node.items():
+        if isinstance(v, list):
+            node[k] = sorted(
+                (_sort_node(x) if isinstance(x, dict) else x for x in v),
+                key=_value_key,
+            )
+    return node
+
+
+def _canonical_jsonld(data: str) -> str:
+    """Deterministically order rdflib's JSON-LD so regeneration is byte-stable.
+
+    rdflib emits nodes (and their value lists) in an unstable order; sort the
+    node list by @id, sort every value list, and sort keys on dump.
+    """
+    obj = json.loads(data)
+    if isinstance(obj, list):
+        obj = sorted((_sort_node(n) for n in obj), key=lambda n: n.get("@id", ""))
+    elif isinstance(obj, dict) and isinstance(obj.get("@graph"), list):
+        obj["@graph"] = sorted(
+            (_sort_node(n) for n in obj["@graph"]), key=lambda n: n.get("@id", "")
+        )
+    elif isinstance(obj, dict):
+        _sort_node(obj)
+    return json.dumps(obj, indent=2, sort_keys=True)
 
 
 def _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX) -> None:  # noqa: PLR0913
@@ -66,7 +104,12 @@ def export_manifest_as_rdf(  # noqa: PLR0912
         g.add((video_uri, RDF.type, MAVA.Video))
 
         if "src" in video:
-            g.add((video_uri, DCTERMS.source, URIRef(video["src"])))
+            # Absolute URI -> use as-is; a bare filename -> resolve against the
+            # stable example base. Passing a relative ref to URIRef would let the
+            # serializer resolve it against the cwd, leaking a local file:// path.
+            src = video["src"]
+            src_uri = URIRef(src) if "://" in src else EX[src]
+            g.add((video_uri, DCTERMS.source, src_uri))
 
         for track_name in video.get("files", {}).keys():
             series_uri = EX[f"series_{track_name}"]
@@ -110,6 +153,6 @@ def export_manifest_as_rdf(  # noqa: PLR0912
     if format == "turtle":
         return g.serialize(format="turtle")
     elif format == "json-ld":
-        return g.serialize(format="json-ld", indent=2)
+        return _canonical_jsonld(g.serialize(format="json-ld"))
     else:
         raise ValueError(f"Unknown format '{format}'. Use 'turtle' or 'json-ld'.")
