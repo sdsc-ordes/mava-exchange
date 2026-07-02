@@ -602,6 +602,11 @@
         "@id": "http://example.org/data/dim_angry_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -624,6 +629,11 @@
         "@id": "http://example.org/data/dim_close_up_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shot_sizes"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -644,6 +654,11 @@
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_disgust_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -674,6 +689,11 @@
         "@id": "http://example.org/data/dim_dominant_colors_r"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shots"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -696,6 +716,11 @@
         "@id": "http://example.org/data/dim_extreme_close_up_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shot_sizes"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -712,6 +737,34 @@
     "@id": "http://example.org/data/series_face_emotions",
     "@type": [
       "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#derivationMethod": [
+      {
+        "@value": "argmax"
+      }
+    ],
+    "http://example.org/mava/ontology#derivedFrom": [
+      {
+        "@id": "http://example.org/data/series_angry"
+      },
+      {
+        "@id": "http://example.org/data/series_disgust"
+      },
+      {
+        "@id": "http://example.org/data/series_fear"
+      },
+      {
+        "@id": "http://example.org/data/series_happy"
+      },
+      {
+        "@id": "http://example.org/data/series_neutral"
+      },
+      {
+        "@id": "http://example.org/data/series_sad"
+      },
+      {
+        "@id": "http://example.org/data/series_surprise"
+      }
     ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
@@ -768,6 +821,11 @@
         "@id": "http://example.org/data/dim_fear_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -788,6 +846,11 @@
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_full_shot_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shot_sizes"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -812,6 +875,11 @@
         "@id": "http://example.org/data/dim_happy_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -829,9 +897,24 @@
     "@type": [
       "http://example.org/mava/ontology#ObservationSeries"
     ],
+    "http://example.org/mava/ontology#derivationMethod": [
+      {
+        "@value": "cluster_to_scalar"
+      }
+    ],
+    "http://example.org/mava/ontology#derivedFrom": [
+      {
+        "@id": "http://example.org/data/series_face_regions"
+      }
+    ],
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_joanne_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_person_identification"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -856,6 +939,11 @@
         "@id": "http://example.org/data/dim_long_shot_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shot_sizes"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -876,6 +964,11 @@
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_medium_shot_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shot_sizes"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -900,6 +993,11 @@
         "@id": "http://example.org/data/dim_neutral_score"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -917,9 +1015,24 @@
     "@type": [
       "http://example.org/mava/ontology#ObservationSeries"
     ],
+    "http://example.org/mava/ontology#derivationMethod": [
+      {
+        "@value": "cluster_to_scalar"
+      }
+    ],
+    "http://example.org/mava/ontology#derivedFrom": [
+      {
+        "@id": "http://example.org/data/series_face_regions"
+      }
+    ],
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_paul_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_person_identification"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -955,6 +1068,11 @@
         "@id": "http://example.org/data/dim_rms_volume_rms"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_whisper_transcript"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -975,6 +1093,11 @@
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_sad_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -999,6 +1122,11 @@
         "@id": "http://example.org/data/dim_shot_density_density"
       }
     ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shots"
+      }
+    ],
     "http://example.org/mava/ontology#samplingInterval": [
       {
         "@type": "http://www.w3.org/2001/XMLSchema#decimal",
@@ -1015,6 +1143,33 @@
     "@id": "http://example.org/data/series_shot_sizes",
     "@type": [
       "http://example.org/mava/ontology#AnnotationSeries"
+    ],
+    "http://example.org/mava/ontology#derivationMethod": [
+      {
+        "@value": "argmax"
+      }
+    ],
+    "http://example.org/mava/ontology#derivedFrom": [
+      {
+        "@id": "http://example.org/data/series_close_up"
+      },
+      {
+        "@id": "http://example.org/data/series_extreme_close_up"
+      },
+      {
+        "@id": "http://example.org/data/series_full_shot"
+      },
+      {
+        "@id": "http://example.org/data/series_long_shot"
+      },
+      {
+        "@id": "http://example.org/data/series_medium_shot"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shots"
+      }
     ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
@@ -1038,6 +1193,16 @@
     "@type": [
       "http://example.org/mava/ontology#AnnotationSeries"
     ],
+    "http://example.org/mava/ontology#derivationMethod": [
+      {
+        "@value": "manual"
+      }
+    ],
+    "http://example.org/mava/ontology#derivedFrom": [
+      {
+        "@id": "http://example.org/data/series_shots"
+      }
+    ],
     "http://example.org/mava/ontology#seriesDescription": [
       {
         "@value": "Shots-modified"
@@ -1052,6 +1217,11 @@
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_surprise_score"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_face_emotions"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [
@@ -1074,6 +1244,11 @@
     "http://example.org/mava/ontology#hasDimension": [
       {
         "@id": "http://example.org/data/dim_video_brightness_brightness"
+      }
+    ],
+    "http://example.org/mava/ontology#hasParent": [
+      {
+        "@id": "http://example.org/data/series_shots"
       }
     ],
     "http://example.org/mava/ontology#samplingInterval": [

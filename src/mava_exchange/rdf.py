@@ -56,6 +56,16 @@ def _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX) -> None:  # 
             g.add((dim_uri, MAVA.valueRange, Literal(dim_meta["range"])))
 
 
+def _add_relations(g, series_uri, track_def, MAVA, EX) -> None:
+    """Emit hierarchy/provenance edges: hasParent, derivedFrom, derivationMethod."""
+    if track_def.get("parent") is not None:
+        g.add((series_uri, MAVA.hasParent, EX[f"series_{track_def['parent']}"]))
+    for src in track_def.get("derived_from") or []:
+        g.add((series_uri, MAVA.derivedFrom, EX[f"series_{src}"]))
+    if track_def.get("method") is not None:
+        g.add((series_uri, MAVA.derivationMethod, Literal(track_def["method"])))
+
+
 def export_manifest_as_rdf(  # noqa: PLR0912
     manifest: dict,
     format: str = "turtle",
@@ -149,6 +159,8 @@ def export_manifest_as_rdf(  # noqa: PLR0912
         if "description" in track_def:
             g.add((series_uri, MAVA.seriesDescription,
                    Literal(track_def["description"])))
+
+        _add_relations(g, series_uri, track_def, MAVA, EX)
 
     if format == "turtle":
         # Collapse rdflib's trailing blank lines to a single newline so the

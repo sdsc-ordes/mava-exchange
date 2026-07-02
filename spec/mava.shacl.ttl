@@ -15,10 +15,14 @@
 #    - ObservationSeriesShape
 #    - AnnotationSeriesShape
 #    - AnnotationListSeriesShape
+#    - RegionSeriesShape
 #    - DimensionShape
+#    - TrackHierarchyShape   (hasParent)
+#    - TrackDerivationShape  (derivedFrom + derivationMethod)
 #
 # 2. DATA SHAPES — validate individual Parquet rows exported as RDF
 #    - ObservationPointShape
+#    - RegionDetectionShape
 #    - AnnotationShape (parent for both single and list segments)
 #    - AnnotationSegmentShape
 #    - AnnotationListSegmentShape
@@ -31,7 +35,9 @@
 # - The data becomes 1,000-1,000,000 triples (one triple set per row)
 #
 # For validating .mediapkg files, use src/mava_exchange/validate.py instead.
-# These SHACL shapes are for validating RDF exports only.
+# These SHACL shapes are for validating RDF exports only. Note: the acyclicity
+# of the hasParent graph is NOT expressible in core SHACL — it is enforced by
+# validate.py, not here.
 # ═══════════════════════════════════════════════════════════════════════
 
 
@@ -212,6 +218,59 @@ mava:DimensionShape a sh:NodeShape ;
         sh:maxCount  1 ;
         sh:datatype  xsd:string ;
         sh:message "Optional. If present, must be a string describing the value range." ;
+    ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# Track hierarchy — containment (hasParent)
+# Targets any series that declares a parent. A series has at most one parent,
+# and the parent must itself be a series. (Acyclicity is enforced by
+# validate.py — it is not expressible in core SHACL.)
+# ───────────────────────────────────────────────────────────────────────
+
+mava:TrackHierarchyShape a sh:NodeShape ;
+    sh:targetSubjectsOf mava:hasParent ;
+    sh:description "A series' parent is single-valued and is itself a series." ;
+
+    sh:property [
+        sh:path     mava:hasParent ;
+        sh:maxCount 1 ;
+        sh:or (
+            [ sh:class mava:ObservationSeries ]
+            [ sh:class mava:AnnotationSeries ]
+            [ sh:class mava:AnnotationListSeries ]
+            [ sh:class mava:RegionSeries ]
+        ) ;
+        sh:message "hasParent must reference exactly one existing series." ;
+    ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# Track provenance — derivation (derivedFrom + derivationMethod)
+# Targets any series that declares derivedFrom. Its sources must be series, and
+# a derivationMethod is required whenever derivedFrom is present.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:TrackDerivationShape a sh:NodeShape ;
+    sh:targetSubjectsOf mava:derivedFrom ;
+    sh:description "A derived series has ≥1 series source and exactly one method." ;
+
+    sh:property [
+        sh:path     mava:derivedFrom ;
+        sh:minCount 1 ;
+        sh:or (
+            [ sh:class mava:ObservationSeries ]
+            [ sh:class mava:AnnotationSeries ]
+            [ sh:class mava:AnnotationListSeries ]
+            [ sh:class mava:RegionSeries ]
+        ) ;
+        sh:message "derivedFrom must reference existing series." ;
+    ] ;
+
+    sh:property [
+        sh:path     mava:derivationMethod ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "derivationMethod is required (exactly one) when derivedFrom is present." ;
     ] .
 
 # ═════════════════════════════════════════════════════════════════════

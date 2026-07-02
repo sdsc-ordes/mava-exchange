@@ -144,122 +144,52 @@ ex:series_anchor_daubner a mava:ObservationSeries ;
     mava:samplingInterval 0.5 ;
     mava:seriesDescription "Anchor: Daubner" .
 
-ex:series_angry a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_angry_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Angry" .
-
-ex:series_close_up a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_close_up_score ;
-    mava:samplingInterval 0.2 ;
-    mava:seriesDescription "Close-Up" .
-
-ex:series_disgust a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_disgust_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Disgust" .
-
 ex:series_dominant_colors a mava:ObservationSeries ;
     mava:hasDimension ex:dim_dominant_colors_b,
         ex:dim_dominant_colors_g,
         ex:dim_dominant_colors_r ;
+    mava:hasParent ex:series_shots ;
     mava:samplingInterval 0.5 ;
     mava:seriesDescription "Dominant Color(s)" .
 
-ex:series_extreme_close_up a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_extreme_close_up_score ;
-    mava:samplingInterval 0.2 ;
-    mava:seriesDescription "Extreme Close-Up" .
-
-ex:series_face_emotions a mava:AnnotationSeries ;
-    mava:seriesDescription "Face Emotions" .
-
-ex:series_face_regions a mava:RegionSeries ;
-    mava:coordinateSpace "normalized" ;
-    mava:hasDimension ex:dim_face_regions_det_score,
-        ex:dim_face_regions_h,
-        ex:dim_face_regions_w,
-        ex:dim_face_regions_x,
-        ex:dim_face_regions_y ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Per-frame face bounding boxes, normalized to [0,1] of the frame, top-left origin. One row per detection." .
-
-ex:series_fear a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_fear_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Fear" .
-
-ex:series_full_shot a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_full_shot_score ;
-    mava:samplingInterval 0.2 ;
-    mava:seriesDescription "Full Shot" .
-
-ex:series_happy a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_happy_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Happy" .
-
 ex:series_joanne a mava:ObservationSeries ;
+    mava:derivationMethod "cluster_to_scalar" ;
+    mava:derivedFrom ex:series_face_regions ;
     mava:hasDimension ex:dim_joanne_score ;
+    mava:hasParent ex:series_person_identification ;
     mava:samplingInterval 0.5 ;
     mava:seriesDescription "Joanne" .
 
-ex:series_long_shot a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_long_shot_score ;
-    mava:samplingInterval 0.2 ;
-    mava:seriesDescription "Long Shot" .
-
-ex:series_medium_shot a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_medium_shot_score ;
-    mava:samplingInterval 0.2 ;
-    mava:seriesDescription "Medium Shot" .
-
-ex:series_neutral a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_neutral_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Neutral" .
-
 ex:series_paul a mava:ObservationSeries ;
+    mava:derivationMethod "cluster_to_scalar" ;
+    mava:derivedFrom ex:series_face_regions ;
     mava:hasDimension ex:dim_paul_score ;
+    mava:hasParent ex:series_person_identification ;
     mava:samplingInterval 0.5 ;
     mava:seriesDescription "Paul" .
 
-ex:series_person_identification a mava:AnnotationSeries ;
-    mava:seriesDescription "Person Identification" .
-
 ex:series_rms_volume a mava:ObservationSeries ;
     mava:hasDimension ex:dim_rms_volume_rms ;
+    mava:hasParent ex:series_whisper_transcript ;
     mava:samplingInterval 0.064 ;
     mava:seriesDescription "RMS Volume" .
 
-ex:series_sad a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_sad_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Sad" .
-
 ex:series_shot_density a mava:ObservationSeries ;
     mava:hasDimension ex:dim_shot_density_density ;
+    mava:hasParent ex:series_shots ;
     mava:samplingInterval 0.1 ;
     mava:seriesDescription "Shot Density" .
 
-ex:series_shot_sizes a mava:AnnotationSeries ;
-    mava:seriesDescription "Shot Sizes" .
-
 ex:series_shots_modified a mava:AnnotationSeries ;
+    mava:derivationMethod "manual" ;
+    mava:derivedFrom ex:series_shots ;
     mava:seriesDescription "Shots-modified" .
-
-ex:series_surprise a mava:ObservationSeries ;
-    mava:hasDimension ex:dim_surprise_score ;
-    mava:samplingInterval 0.5 ;
-    mava:seriesDescription "Surprise" .
 
 ex:series_video_brightness a mava:ObservationSeries ;
     mava:hasDimension ex:dim_video_brightness_brightness ;
+    mava:hasParent ex:series_shots ;
     mava:samplingInterval 0.5 ;
     mava:seriesDescription "Video Brightness" .
-
-ex:series_whisper_transcript a mava:AnnotationSeries ;
-    mava:seriesDescription "Whisper Transcript" .
 
 ex:video_silent_child a mava:Video ;
     mava:hasAnalysis ex:series_face_regions,
@@ -294,5 +224,114 @@ ex:video_tagesschau a mava:Video ;
         ex:series_whisper_transcript ;
     dcterms:source ex:tagesschau.mp4 .
 
+ex:series_angry a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_angry_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Angry" .
+
+ex:series_close_up a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_close_up_score ;
+    mava:hasParent ex:series_shot_sizes ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Close-Up" .
+
+ex:series_disgust a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_disgust_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Disgust" .
+
+ex:series_extreme_close_up a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_extreme_close_up_score ;
+    mava:hasParent ex:series_shot_sizes ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Extreme Close-Up" .
+
+ex:series_fear a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_fear_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Fear" .
+
+ex:series_full_shot a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_full_shot_score ;
+    mava:hasParent ex:series_shot_sizes ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Full Shot" .
+
+ex:series_happy a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_happy_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Happy" .
+
+ex:series_long_shot a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_long_shot_score ;
+    mava:hasParent ex:series_shot_sizes ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Long Shot" .
+
+ex:series_medium_shot a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_medium_shot_score ;
+    mava:hasParent ex:series_shot_sizes ;
+    mava:samplingInterval 0.2 ;
+    mava:seriesDescription "Medium Shot" .
+
+ex:series_neutral a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_neutral_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Neutral" .
+
+ex:series_sad a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_sad_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Sad" .
+
+ex:series_surprise a mava:ObservationSeries ;
+    mava:hasDimension ex:dim_surprise_score ;
+    mava:hasParent ex:series_face_emotions ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Surprise" .
+
+ex:series_whisper_transcript a mava:AnnotationSeries ;
+    mava:seriesDescription "Whisper Transcript" .
+
+ex:series_face_regions a mava:RegionSeries ;
+    mava:coordinateSpace "normalized" ;
+    mava:hasDimension ex:dim_face_regions_det_score,
+        ex:dim_face_regions_h,
+        ex:dim_face_regions_w,
+        ex:dim_face_regions_x,
+        ex:dim_face_regions_y ;
+    mava:samplingInterval 0.5 ;
+    mava:seriesDescription "Per-frame face bounding boxes, normalized to [0,1] of the frame, top-left origin. One row per detection." .
+
+ex:series_person_identification a mava:AnnotationSeries ;
+    mava:seriesDescription "Person Identification" .
+
+ex:series_shot_sizes a mava:AnnotationSeries ;
+    mava:derivationMethod "argmax" ;
+    mava:derivedFrom ex:series_close_up,
+        ex:series_extreme_close_up,
+        ex:series_full_shot,
+        ex:series_long_shot,
+        ex:series_medium_shot ;
+    mava:hasParent ex:series_shots ;
+    mava:seriesDescription "Shot Sizes" .
+
 ex:series_shots a mava:AnnotationSeries ;
     mava:seriesDescription "Shots" .
+
+ex:series_face_emotions a mava:AnnotationSeries ;
+    mava:derivationMethod "argmax" ;
+    mava:derivedFrom ex:series_angry,
+        ex:series_disgust,
+        ex:series_fear,
+        ex:series_happy,
+        ex:series_neutral,
+        ex:series_sad,
+        ex:series_surprise ;
+    mava:seriesDescription "Face Emotions" .
