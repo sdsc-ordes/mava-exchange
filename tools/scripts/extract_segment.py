@@ -278,10 +278,16 @@ def build_regions(cfg: dict, raw: Path, out: Path) -> dict:
 
     w0, w1 = window
     rows = []
+    unclustered = 0
     for b in bboxes:
         t = float(b["time"])
         if not (w0 <= t <= w1):
             continue
+        # A detection whose ref_id was never clustered keeps a valid (required)
+        # cluster_id: -1 marks it "unclustered" rather than dropping the box.
+        cluster_id = face_to_cluster.get(b["ref_id"], -1)
+        if cluster_id == -1:
+            unclustered += 1
         rows.append(
             {
                 "start in seconds": f"{t - w0:g}",  # rebased to 0 (clip start)
@@ -290,16 +296,18 @@ def build_regions(cfg: dict, raw: Path, out: Path) -> dict:
                 "w": f"{b['w']:.6f}",
                 "h": f"{b['h']:.6f}",
                 "det_score": f"{b['det_score']:.4f}",
-                "cluster_id": face_to_cluster[b["ref_id"]],
+                "cluster_id": cluster_id,
                 "label": "",  # labels are not in the export (clusters are unnamed)
             }
         )
     rows.sort(key=lambda r: (float(r["start in seconds"]), r["cluster_id"]))
     cols = ["start in seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"]
     write_tsv(out / f"{rc['track']}.tsv", cols, rows)
+    real_clusters = {r["cluster_id"] for r in rows} - {-1}
+    note = f", {unclustered} unclustered" if unclustered else ""
     print(
         f"  {rc['track']}: RegionSeries ({len(rows)} boxes, "
-        f"{len({r['cluster_id'] for r in rows})} clusters)"
+        f"{len(real_clusters)} clusters{note})"
     )
     return {
         "type": "mava:RegionSeries",
