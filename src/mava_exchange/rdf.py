@@ -40,7 +40,7 @@ def _canonical_jsonld(data: str) -> str:
         )
     elif isinstance(obj, dict):
         _sort_node(obj)
-    return json.dumps(obj, indent=2, sort_keys=True)
+    return json.dumps(obj, indent=2, sort_keys=True) + "\n"
 
 
 def _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX) -> None:  # noqa: PLR0913
@@ -151,7 +151,9 @@ def export_manifest_as_rdf(  # noqa: PLR0912
                    Literal(track_def["description"])))
 
     if format == "turtle":
-        return g.serialize(format="turtle")
+        # Collapse rdflib's trailing blank lines to a single newline so the
+        # output matches the pre-commit end-of-file hook (no regenerate churn).
+        return g.serialize(format="turtle").rstrip() + "\n"
     elif format == "json-ld":
         return _canonical_jsonld(g.serialize(format="json-ld"))
     else:
