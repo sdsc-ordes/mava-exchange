@@ -78,14 +78,31 @@ viewer port="8000":
     @echo "Viewer → http://localhost:{{port}}/  (drop in examples/output/corpus.mediapkg)"
     python3 -m http.server -d docs/_static/viewer-app {{port}}
 
-# Inspect a .mediapkg archive.
-# Usage:
-#   just inspect examples/output/corpus.mediapkg
-#   just inspect path/to/corpus.mediapkg --track emotions --video video_001
-#   just inspect examples/output/corpus.mediapkg --format turtle   # or json-ld
+# Unpack a .mediapkg (ZIP) into a dir; optional 3rd arg (turtle|json-ld) also renders the manifest as RDF.
 [group('usage')]
-inspect pkg *args:
-    mediapkg-inspect "{{pkg}}" {{args}}
+unpack pkg dir format="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p "{{dir}}"
+    unzip -o -q "{{pkg}}" -d "{{dir}}"
+    echo "Unpacked {{pkg}} → {{dir}}/"
+    if [ -n "{{format}}" ]; then
+        ext="ttl"; [ "{{format}}" = "json-ld" ] && ext="jsonld"
+        uv run mediapkg-inspect "{{pkg}}" --format "{{format}}" > "{{dir}}/manifest.$ext"
+        echo "Rendered {{dir}}/manifest.$ext"
+    fi
+
+# Pack a directory (manifest.json at its root) into a .mediapkg and validate it.
+[group('usage')]
+pack dir pkg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -f "{{dir}}/manifest.json" || { echo "✗ {{dir}}/manifest.json not found (it must sit at the archive root)"; exit 1; }
+    out="$(cd "$(dirname "{{pkg}}")" && pwd)/$(basename "{{pkg}}")"
+    rm -f "$out"
+    ( cd "{{dir}}" && zip -q -r -X "$out" . -x '*.ttl' '*.jsonld' '*.DS_Store' )
+    echo "Packed {{dir}}/ → {{pkg}}"
+    uv run mediapkg-validate "{{pkg}}"
 
 # Validate a .mediapkg archive.
 # Usage:

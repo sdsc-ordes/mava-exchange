@@ -22,12 +22,14 @@ examples/
     <track>.tsv           #   one slim TSV per track (rows only), filename == track name
   output/
     corpus.mediapkg       # the built package (both videos)
-    inspect/
-      corpus.mediapkg.ttl     # RDF (Turtle) export of the manifest
-      corpus.mediapkg.jsonld  # RDF (JSON-LD) export of the manifest
   videos/<src>.mp4        # short demo clips, timeline rebased to 0
   scripts/build_mediapkg.py
 ```
+
+An RDF view of the manifest (Turtle / JSON-LD) isn't committed — render it on
+demand with `just unpack examples/output/corpus.mediapkg tmp/pkg turtle` (or
+`json-ld`; `tmp/` is a gitignored scratch dir), or
+`mediapkg-inspect examples/output/corpus.mediapkg --format turtle`.
 
 ## How the examples are derived
 
@@ -93,10 +95,10 @@ under `data/<src>/raw_data/`; sources whose raw video is absent are skipped.
 
 ## Regenerate everything
 
-One command does the whole import — input, clips, corpus, and inspect RDF:
+One command does the whole import — input, clips, and corpus:
 
 ```bash
-just examples::regenerate   # extract -> cut-clips -> example -> snapshots
+just examples::regenerate   # extract -> cut-clips -> example
 ```
 
 Or run the stages individually:
@@ -105,7 +107,6 @@ Or run the stages individually:
 just examples::extract     # (1) raw  -> examples/input/     (needs data/)
 just examples::cut-clips   # (3) raw  -> examples/videos/     (needs data/ + ffmpeg)
 just example               # (2) input -> corpus.mediapkg
-just examples::snapshots   # refresh output/inspect/*.ttl,*.jsonld from the corpus
 ```
 
 Only `example` runs without the raw data — `examples::extract` and
@@ -120,11 +121,11 @@ no clean needed.
 For a from-scratch rebuild you can also wipe the generated outputs first:
 
 ```bash
-just examples::clean        # remove corpus, inspect RDF, and clips
-just examples::regenerate   # rebuild them all from data/
+just examples::clean        # remove corpus and clips
+just examples::regenerate   # rebuild them from data/
 ```
 
 This is safe as long as `data/` holds the raw sources for every example (it
-does: both `silent_child` and `tagesschau`). The corpus and inspect RDF are
-byte-reproducible; the **clips are re-encoded**, so regenerating them produces a
-new (functionally identical) binary — commit that intentionally.
+does: both `silent_child` and `tagesschau`). The corpus is byte-reproducible;
+the **clips are re-encoded**, so regenerating them produces a new (functionally
+identical) binary — commit that intentionally.

@@ -48,3 +48,8 @@ data/*
 !data/README.md
 !data/tibava_project_export.png
 !data/tibava_tsv_export.png
+
+# Scratch dir for trying `just unpack` / `just pack` — keep the folder, ignore
+# whatever you extract into it.
+tmp/*
+!tmp/.gitkeep
