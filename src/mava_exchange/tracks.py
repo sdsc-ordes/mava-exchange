@@ -3,11 +3,12 @@ Track definitions for annotation data.
 
 A track describes one Parquet file in a .mediapkg archive.
 
-Three types:
+Four types:
 
 - **ObservationSeries** - Dense time-series (emotion scores, audio volume)
 - **AnnotationSeries** - Sparse intervals with single labels (transcripts, shots)
 - **AnnotationListSeries** - Sparse intervals with multiple labels (scene tags)
+- **RegionSeries** - Spatial detections / bounding boxes, long format (faces, objects)
 
 Example::
 
