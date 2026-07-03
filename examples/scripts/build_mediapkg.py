@@ -88,7 +88,6 @@ def build_track(name: str, meta: dict):
             description=meta.get("description", ""),
             dimensions=_dims(meta),
             sampling_interval=meta.get("sampling_interval_seconds"),
-            coordinate_space=meta.get("coordinate_space", "normalized"),
             **_relations(meta),
         )
     raise ValueError(f"Unknown track type {t!r} for track {name!r}")

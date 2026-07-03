@@ -36,7 +36,6 @@ def test_region_series_roundtrip(tmp_path, region_track, region_df):
     with MediaPackageReader(pkg) as r:
         track = r.track_def("face_regions")
         assert isinstance(track, RegionSeries)
-        assert track.coordinate_space == "normalized"
         assert track.sampling_interval == 0.5
         assert track.columns == [
             "start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label",

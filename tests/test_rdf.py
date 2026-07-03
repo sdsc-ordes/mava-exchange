@@ -120,7 +120,6 @@ class TestRDFExport:
             w.add_track("v1", region_track, region_df)
         ttl = export_manifest_as_rdf(_manifest(pkg), format="turtle")
         assert "mava:RegionSeries" in ttl
-        assert "mava:coordinateSpace" in ttl
         assert "mava:Dimension" in ttl
         # geometry dimensions are emitted as Dimension nodes
         assert "det_score" in ttl

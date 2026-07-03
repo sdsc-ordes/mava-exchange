@@ -143,7 +143,7 @@ def region_series_with_data(draw: st.DrawFn) -> tuple[RegionSeries, pd.DataFrame
 
     track = RegionSeries(
         name=name, description="Generated region track",
-        sampling_interval=0.5, coordinate_space="normalized", dimensions=dims,
+        sampling_interval=0.5, dimensions=dims,
     )
     df = pd.DataFrame(df_dict)
     df["cluster_id"] = pd.array(cluster_ids, dtype="Int64")
@@ -380,10 +380,9 @@ def test_parent_cycle_is_rejected(tmp_path):
 
 
 def test_out_of_range_geometry_is_rejected(tmp_path):
-    """Normalized RegionSeries with geometry outside [0,1] fails validation."""
+    """RegionSeries with normalized geometry outside [0,1] fails validation."""
     track = RegionSeries(
         name="face_regions", description="Boxes", sampling_interval=0.5,
-        coordinate_space="normalized",
         dimensions=[
             DimensionSpec("x", "left", "[0,1]"),
             DimensionSpec("y", "top", "[0,1]"),
@@ -415,8 +414,8 @@ def _rewrite_manifest(pkg: Path, mutate) -> None:
     """Rewrite a .mediapkg in place, applying `mutate` to the parsed manifest.
 
     The writer never emits some shapes a hand-authored or older manifest could
-    contain (an omitted coordinate_space, an empty derived_from list, ...), so
-    tests inject them by editing the manifest of an already-written package.
+    contain (e.g. an empty derived_from list), so tests inject them by editing
+    the manifest of an already-written package.
     """
     with zipfile.ZipFile(pkg, "r") as zf:
         entries = {name: zf.read(name) for name in zf.namelist()}
@@ -426,44 +425,6 @@ def _rewrite_manifest(pkg: Path, mutate) -> None:
     with zipfile.ZipFile(pkg, "w", zipfile.ZIP_DEFLATED) as zf:
         for name, data in entries.items():
             zf.writestr(name, data)
-
-
-def test_out_of_range_geometry_rejected_when_coordinate_space_absent(tmp_path):
-    """A RegionSeries manifest omitting coordinate_space defaults to 'normalized'
-    (matching the reader), so out-of-[0,1] geometry is still rejected."""
-    track = RegionSeries(
-        name="face_regions", description="Boxes", sampling_interval=0.5,
-        coordinate_space="normalized",
-        dimensions=[
-            DimensionSpec("x", "left", "[0,1]"),
-            DimensionSpec("y", "top", "[0,1]"),
-            DimensionSpec("w", "width", "[0,1]"),
-            DimensionSpec("h", "height", "[0,1]"),
-            DimensionSpec("det_score", "score", "[0,1]"),
-        ],
-    )
-    df = pd.DataFrame({
-        "start_seconds": [0.0, 0.0],
-        "x": [0.1, 1.5],          # 1.5 is out of range
-        "y": [0.2, 0.2],
-        "w": [0.1, 0.1],
-        "h": [0.1, 0.1],
-        "det_score": [0.9, 0.8],
-        "cluster_id": pd.array([0, 1], dtype="Int64"),
-        "label": ["Alice", None],
-    })
-    pkg = tmp_path / "oob_no_coord_space.mediapkg"
-    with MediaPackageWriter(pkg, description="Out of range") as w:
-        w.add_video("v1", "https://example.org/v1.mp4")
-        w.add_track("v1", track, df)
-
-    _rewrite_manifest(
-        pkg, lambda m: m["tracks"]["face_regions"].pop("coordinate_space", None)
-    )
-
-    result = validate_mediapkg(pkg)
-    assert not result.valid
-    assert any("'x' has values outside [0,1]" in e for e in result.errors)
 
 
 def test_empty_derived_from_is_accepted(tmp_path):

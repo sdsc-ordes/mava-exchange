@@ -144,9 +144,6 @@ def export_manifest_as_rdf(  # noqa: PLR0912
             if "sampling_interval_seconds" in track_def:
                 g.add((series_uri, MAVA.samplingInterval,
                        Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
-            if "coordinate_space" in track_def:
-                g.add((series_uri, MAVA.coordinateSpace,
-                       Literal(track_def["coordinate_space"])))
 
             _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
 

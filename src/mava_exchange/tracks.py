@@ -303,9 +303,6 @@ class RegionSeries:
     sampling_interval: float | None = None
     """Seconds between samples for regularly-sampled detections."""
 
-    coordinate_space: Literal["normalized", "pixel"] = "normalized"
-    """Coordinate convention for the geometry columns."""
-
     parent: str | None = None
     """Containment parent track name (None if top-level)."""
 
@@ -330,7 +327,6 @@ class RegionSeries:
             "type":             self.type,
             "description":      self.description,
             **_relations(self),
-            "coordinate_space": self.coordinate_space,
             "columns":          self.columns,
             "dimensions":       {dim.name: dim.to_dict() for dim in self.dimensions},
         }

@@ -70,7 +70,6 @@ def region_track():
         name="face_regions",
         description="Per-frame face bounding boxes",
         sampling_interval=0.5,
-        coordinate_space="normalized",
         dimensions=[
             DimensionSpec("x", "Box left edge (normalized)", "[0,1]"),
             DimensionSpec("y", "Box top edge (normalized)", "[0,1]"),

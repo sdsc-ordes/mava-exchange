@@ -20,8 +20,7 @@ unaffected.
 
 - `RegionSeries` track type for spatial detections (bounding boxes), in long
   format — one row per detection. Geometry is `x` / `y` / `w` / `h` plus a
-  `det_score`, with an optional `coordinate_space` (`"normalized"` default, or
-  `"pixel"`).
+  `det_score`; geometry is always normalized to `[0,1]` of the frame.
 - Per-row identity on `RegionSeries`: `cluster_id` (machine cluster, integer)
   and a nullable `label` (human identity; not unique, not 1:1 with cluster).
 - Track hierarchy and provenance on every track type: `parent` (containment,
@@ -30,10 +29,9 @@ unaffected.
 - Optional video frame metadata: `width`, `height`, `fps`.
 - Ontology (`mava.ttl`): `mava:RegionSeries`, `mava:RegionDetection`, geometry
   and identity properties (`mava:x`, `mava:y`, `mava:width`, `mava:height`,
-  `mava:detectionScore`, `mava:coordinateSpace`, `mava:clusterId`,
-  `mava:identityLabel`), and relationship properties (`mava:hasParent`,
-  `mava:derivedFrom`, `mava:derivationMethod`). SHACL shapes for the new class
-  and properties.
+  `mava:detectionScore`, `mava:clusterId`, `mava:identityLabel`), and
+  relationship properties (`mava:hasParent`, `mava:derivedFrom`,
+  `mava:derivationMethod`). SHACL shapes for the new class and properties.
 - Validator (`validate_mediapkg`): accepts version `"0.2"` and `RegionSeries`;
   checks region geometry/score ranges and the `parent` / `derived_from` /
   `method` relationship rules.

@@ -263,7 +263,6 @@ Each track entry MUST contain:
 | `columns`                   | array of strings | MUST                                        | Ordered list of column names in the Parquet file.                                                                      |
 | `dimensions`                | object           | MUST for `ObservationSeries`/`RegionSeries` | Maps each value column name to its description and value range.                                                        |
 | `sampling_interval_seconds` | number           | OPTIONAL                                    | For `ObservationSeries` / `RegionSeries`: the sampling interval in seconds.                                            |
-| `coordinate_space`          | string           | OPTIONAL                                    | For `RegionSeries`: `"normalized"` (geometry in `[0,1]` of the frame) or `"pixel"`. Defaults to `"normalized"`.        |
 | `parent`                    | string           | OPTIONAL                                    | Containment parent: the name of the track this one lives under. At most one; the parent graph MUST be acyclic.         |
 | `derived_from`              | array of strings | OPTIONAL                                    | Provenance: names of the tracks this track is computed from (1..n).                                                    |
 | `method`                    | string           | MUST when `derived_from` present            | How the track was derived, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`.                               |
@@ -424,26 +423,24 @@ detection score and an identity. It was added in 0.2 for face/object detections.
 
 **Required columns:**
 
-| Column          | Maps to               | Parquet type | Description                                                               |
-| --------------- | --------------------- | ------------ | ------------------------------------------------------------------------- |
-| `start_seconds` | `mava:atTime`         | `DOUBLE`     | Time of the detection in seconds from video start. MUST be non-negative.  |
-| `x`             | `mava:x`              | `DOUBLE`     | Box left edge. In `[0,1]` when `coordinate_space` is `"normalized"`.      |
-| `y`             | `mava:y`              | `DOUBLE`     | Box top edge (top-left origin). In `[0,1]` when normalized.               |
-| `w`             | `mava:width`          | `DOUBLE`     | Box width. In `[0,1]` when normalized.                                    |
-| `h`             | `mava:height`         | `DOUBLE`     | Box height. In `[0,1]` when normalized.                                   |
-| `det_score`     | `mava:detectionScore` | `DOUBLE`     | Detection confidence. MUST be in `[0,1]`.                                 |
-| `cluster_id`    | `mava:clusterId`      | `INT64`      | Machine cluster the detection belongs to. MUST be present.                |
-| `label`         | `mava:identityLabel`  | `STRING`     | Human identity label. Nullable; not unique and not 1:1 with `cluster_id`. |
+| Column          | Maps to               | Parquet type | Description                                                                |
+| --------------- | --------------------- | ------------ | -------------------------------------------------------------------------- |
+| `start_seconds` | `mava:atTime`         | `DOUBLE`     | Time of the detection in seconds from video start. MUST be non-negative.   |
+| `x`             | `mava:x`              | `DOUBLE`     | Box left edge, normalized to `[0,1]` of the frame width.                   |
+| `y`             | `mava:y`              | `DOUBLE`     | Box top edge (top-left origin), normalized to `[0,1]` of the frame height. |
+| `w`             | `mava:width`          | `DOUBLE`     | Box width, normalized to `[0,1]` of the frame width.                       |
+| `h`             | `mava:height`         | `DOUBLE`     | Box height, normalized to `[0,1]` of the frame height.                     |
+| `det_score`     | `mava:detectionScore` | `DOUBLE`     | Detection confidence. MUST be in `[0,1]`.                                  |
+| `cluster_id`    | `mava:clusterId`      | `INT64`      | Machine cluster the detection belongs to. MUST be present.                 |
+| `label`         | `mava:identityLabel`  | `STRING`     | Human identity label. Nullable; not unique and not 1:1 with `cluster_id`.  |
 
 `x`, `y`, `w`, `h`, and `det_score` are **dimension columns** declared in the
 track's `dimensions` object, exactly as for `ObservationSeries`. `cluster_id`
 and `label` are **fixed columns** present in every `RegionSeries`.
 
-**Coordinate space.** The optional `coordinate_space` field on the track is
-`"normalized"` (default — geometry in `[0,1]` of the frame) or `"pixel"`
-(absolute pixels). When the space is `"normalized"`, `x`, `y`, `w`, `h` MUST lie
-in `[0,1]`. Absolute pixel geometry is recoverable from normalized values via
-the video's `width` / `height`.
+**Coordinate space.** Geometry is always **normalized** to the frame: `x`, `y`,
+`w`, `h` MUST lie in `[0,1]` (top-left origin). Absolute pixel geometry is
+recoverable from the normalized values via the video's `width` / `height`.
 
 **Identity model.** Identity lives on the timed rows, not in a sidecar.
 `cluster_id` is the unsupervised machine cluster (stable, always present).
@@ -459,7 +456,6 @@ or uniqueness.
   "type": "mava:RegionSeries",
   "description": "Per-frame face bounding boxes, sampled every 0.5s. Coordinates normalized to [0,1] of the frame, top-left origin.",
   "sampling_interval_seconds": 0.5,
-  "coordinate_space": "normalized",
   "columns": ["start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"],
   "dimensions": {
     "x":         {"description": "Box left edge, normalized",  "range": "[0,1]"},
@@ -636,8 +632,7 @@ The ontology defines:
 - Time properties: `mava:atTime`, `mava:startTime`, `mava:endTime`
 - Value properties: `mava:numericValue`, `mava:stringValue`, `mava:listValue`
 - Region geometry / identity: `mava:x`, `mava:y`, `mava:width`, `mava:height`,
-  `mava:detectionScore`, `mava:coordinateSpace`, `mava:clusterId`,
-  `mava:identityLabel`
+  `mava:detectionScore`, `mava:clusterId`, `mava:identityLabel`
 - Track relationships: `mava:hasParent` (containment), `mava:derivedFrom` +
   `mava:derivationMethod` (provenance)
 
@@ -691,8 +686,8 @@ Implementations SHOULD verify that:
 - `end_seconds > start_seconds` for all rows in `AnnotationSeries` files
 - `start_seconds >= 0` for all rows
 - For `RegionSeries`: `cluster_id` and `label` columns are declared; geometry
-  and `det_score` columns are numeric; `det_score` is in `[0,1]`; and when
-  `coordinate_space` is `"normalized"`, `x` / `y` / `w` / `h` are in `[0,1]`
+  and `det_score` columns are numeric; `det_score` is in `[0,1]`; and the
+  normalized geometry `x` / `y` / `w` / `h` are in `[0,1]`
 - For track relationships: every `parent` and `derived_from` names an existing
   track, `method` is present whenever `derived_from` is, and the `parent` graph
   is acyclic

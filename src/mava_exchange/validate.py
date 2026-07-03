@@ -24,8 +24,8 @@ KNOWN_TRACK_TYPES = {
     "mava:RegionSeries",
 }
 
-# Fixed geometry columns of a RegionSeries (normalized to [0,1] when
-# coordinate_space == "normalized"). det_score is always [0,1].
+# Fixed geometry columns of a RegionSeries — always normalized to [0,1] of the
+# frame. det_score is also always in [0,1].
 REGION_GEOMETRY_COLS = ("x", "y", "w", "h")
 
 
@@ -415,12 +415,9 @@ def _check_unit_range(path: str, name: str, col: pd.Series, result: ValidationRe
 def _check_region_series(path: str, df: pd.DataFrame, track_def: dict, result: ValidationResult) -> None:
     """Check RegionSeries geometry/score dimensions are numeric and in range.
 
-    Geometry columns (x, y, w, h) must lie in [0,1] when the series declares
-    coordinate_space == "normalized"; det_score is always a confidence in [0,1].
+    Geometry columns (x, y, w, h) are normalized to [0,1] of the frame, and
+    det_score is a confidence in [0,1]; both are range-checked.
     """
-    # An absent coordinate_space defaults to "normalized" — matching the reader
-    # (reader._track_from_dict) — so the geometry range check still applies.
-    normalized = track_def.get("coordinate_space", "normalized") == "normalized"
     for dim_name in track_def.get("dimensions", {}):
         if dim_name not in df.columns:
             continue
@@ -430,9 +427,7 @@ def _check_region_series(path: str, df: pd.DataFrame, track_def: dict, result: V
             continue
         result.ok()
 
-        if dim_name == "det_score":
-            _check_unit_range(path, dim_name, col, result)
-        elif dim_name in REGION_GEOMETRY_COLS and normalized:
+        if dim_name == "det_score" or dim_name in REGION_GEOMETRY_COLS:
             _check_unit_range(path, dim_name, col, result)
 
 

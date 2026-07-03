@@ -314,7 +314,6 @@ def build_regions(cfg: dict, raw: Path, out: Path) -> dict:
         "description": "Per-frame face bounding boxes, normalized to [0,1] of the "
         "frame, top-left origin. One row per detection.",
         "parent": None,
-        "coordinate_space": "normalized",
         "sampling_interval_seconds": 0.5,
         "dimensions": {
             "x": {"description": "Box left edge (normalized)", "range": "[0,1]"},

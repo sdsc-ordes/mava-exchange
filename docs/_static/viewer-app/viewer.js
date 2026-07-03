@@ -630,7 +630,6 @@ function renderRegionSeries(chart, data, trackDef, videoId) {
   )
   const frameW = video?.width || 16
   const frameH = video?.height || 9
-  const pixelSpace = trackDef.coordinate_space === "pixel"
 
   // Unique, sorted timestamps.
   const times = [...new Set(data.map((r) => Number(r.start_seconds)))].sort(
@@ -679,10 +678,10 @@ function renderRegionSeries(chart, data, trackDef, videoId) {
     ctx.clearRect(0, 0, cw, ch)
     const seen = new Map()
     boxes.forEach((b) => {
-      const px = (pixelSpace ? b.x / frameW : b.x) * cw
-      const py = (pixelSpace ? b.y / frameH : b.y) * ch
-      const pw = (pixelSpace ? b.w / frameW : b.w) * cw
-      const ph = (pixelSpace ? b.h / frameH : b.h) * ch
+      const px = b.x * cw
+      const py = b.y * ch
+      const pw = b.w * cw
+      const ph = b.h * ch
 
       const color = clusterColor(b.cluster_id)
       ctx.lineWidth = 2

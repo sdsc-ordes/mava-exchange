@@ -284,25 +284,25 @@ mava:belongsToRegionSeries a owl:ObjectProperty ;
 
 mava:x a owl:DatatypeProperty ;
     rdfs:label   "x" ;
-    rdfs:comment "Left edge of a detection's bounding box. Normalized to [0,1] of the frame width when the series coordinateSpace is 'normalized'. Maps to the 'x' column." ;
+    rdfs:comment "Left edge of a detection's bounding box, normalized to [0,1] of the frame width. Maps to the 'x' column." ;
     rdfs:domain  mava:RegionDetection ;
     rdfs:range   xsd:decimal .
 
 mava:y a owl:DatatypeProperty ;
     rdfs:label   "y" ;
-    rdfs:comment "Top edge of a detection's bounding box (top-left origin). Normalized to [0,1] of the frame height when the series coordinateSpace is 'normalized'. Maps to the 'y' column." ;
+    rdfs:comment "Top edge of a detection's bounding box (top-left origin), normalized to [0,1] of the frame height. Maps to the 'y' column." ;
     rdfs:domain  mava:RegionDetection ;
     rdfs:range   xsd:decimal .
 
 mava:width a owl:DatatypeProperty ;
     rdfs:label   "width" ;
-    rdfs:comment "Width of a detection's bounding box. Normalized to [0,1] of the frame width when the series coordinateSpace is 'normalized'. Maps to the 'w' column." ;
+    rdfs:comment "Width of a detection's bounding box, normalized to [0,1] of the frame width. Maps to the 'w' column." ;
     rdfs:domain  mava:RegionDetection ;
     rdfs:range   xsd:decimal .
 
 mava:height a owl:DatatypeProperty ;
     rdfs:label   "height" ;
-    rdfs:comment "Height of a detection's bounding box. Normalized to [0,1] of the frame height when the series coordinateSpace is 'normalized'. Maps to the 'h' column." ;
+    rdfs:comment "Height of a detection's bounding box, normalized to [0,1] of the frame height. Maps to the 'h' column." ;
     rdfs:domain  mava:RegionDetection ;
     rdfs:range   xsd:decimal .
 
@@ -322,12 +322,6 @@ mava:identityLabel a owl:DatatypeProperty ;
     rdfs:label   "identity label" ;
     rdfs:comment "Human-provided identity label for a detection (e.g. a person's name). Nullable and incomplete; not unique and not 1:1 with clusterId. Maps to the 'label' column." ;
     rdfs:domain  mava:RegionDetection ;
-    rdfs:range   xsd:string .
-
-mava:coordinateSpace a owl:DatatypeProperty ;
-    rdfs:label   "coordinate space" ;
-    rdfs:comment "Coordinate convention for a RegionSeries geometry: 'normalized' ([0,1] of the frame) or 'pixel' (absolute pixels)." ;
-    rdfs:domain  mava:RegionSeries ;
     rdfs:range   xsd:string .
 
 

@@ -41,7 +41,6 @@ face_regions:
     Per-frame face bounding boxes, normalized to [0,1] of the frame, top-left
     origin. One row per detection.
   parent: null
-  coordinate_space: normalized
   sampling_interval_seconds: 0.5
   dimensions:
     x:

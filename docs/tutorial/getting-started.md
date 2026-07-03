@@ -204,7 +204,6 @@ faces = RegionSeries(
     name="face_regions",
     description="Per-frame face bounding boxes, normalized to [0,1] of the frame.",
     sampling_interval=0.5,
-    coordinate_space="normalized",   # or "pixel"
     dimensions=[
         DimensionSpec("x",         "Box left edge (normalized)", "[0,1]"),
         DimensionSpec("y",         "Box top edge (normalized)",  "[0,1]"),
@@ -232,9 +231,10 @@ with MediaPackageWriter("faces.mediapkg") as writer:
     writer.add_track("video_001", faces, faces_df)
 ```
 
-When `coordinate_space="normalized"`, `x`/`y`/`w`/`h` must lie in `[0,1]`
-(pixels are recoverable from the video's `width`/`height`). `label` is nullable
-and need not be unique — several clusters may share one label.
+Geometry is always **normalized** to `[0,1]` of the frame (top-left origin), so
+`x`/`y`/`w`/`h` must lie in `[0,1]`; absolute pixels are recoverable from the
+video's `width`/`height`. `label` is nullable and need not be unique — several
+clusters may share one label.
 
 ### 1.6 Declaring relationships between tracks
 

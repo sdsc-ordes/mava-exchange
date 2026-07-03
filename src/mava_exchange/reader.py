@@ -97,7 +97,6 @@ def _track_from_dict(name: str, d: dict) -> Track:
             description=d.get("description", ""),
             dimensions=_dims_from_dict(d),
             sampling_interval=d.get("sampling_interval_seconds"),
-            coordinate_space=d.get("coordinate_space", "normalized"),
             **rel,
         )
     else:
