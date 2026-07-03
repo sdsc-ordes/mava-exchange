@@ -411,16 +411,17 @@ def test_out_of_range_geometry_is_rejected(tmp_path):
     assert any("'x' has values outside [0,1]" in e for e in result.errors)
 
 
-def _strip_coordinate_space(pkg: Path, track_name: str) -> None:
-    """Rewrite a .mediapkg in place, dropping coordinate_space from a track def.
+def _rewrite_manifest(pkg: Path, mutate) -> None:
+    """Rewrite a .mediapkg in place, applying `mutate` to the parsed manifest.
 
-    The writer always emits coordinate_space, so this is the only way to build
-    a manifest that omits it (hand-authored or older packages).
+    The writer never emits some shapes a hand-authored or older manifest could
+    contain (an omitted coordinate_space, an empty derived_from list, ...), so
+    tests inject them by editing the manifest of an already-written package.
     """
     with zipfile.ZipFile(pkg, "r") as zf:
         entries = {name: zf.read(name) for name in zf.namelist()}
     manifest = json.loads(entries["manifest.json"])
-    manifest["tracks"][track_name].pop("coordinate_space", None)
+    mutate(manifest)
     entries["manifest.json"] = json.dumps(manifest, indent=2).encode()
     with zipfile.ZipFile(pkg, "w", zipfile.ZIP_DEFLATED) as zf:
         for name, data in entries.items():
@@ -456,8 +457,31 @@ def test_out_of_range_geometry_rejected_when_coordinate_space_absent(tmp_path):
         w.add_video("v1", "https://example.org/v1.mp4")
         w.add_track("v1", track, df)
 
-    _strip_coordinate_space(pkg, "face_regions")
+    _rewrite_manifest(
+        pkg, lambda m: m["tracks"]["face_regions"].pop("coordinate_space", None)
+    )
 
     result = validate_mediapkg(pkg)
     assert not result.valid
     assert any("'x' has values outside [0,1]" in e for e in result.errors)
+
+
+def test_empty_derived_from_is_accepted(tmp_path):
+    """An empty derived_from list declares no provenance, so it must not trigger
+    the 'method is required' error (that is only for real source tracks)."""
+    track = AnnotationSeries(name="child", description="No real provenance")
+    df = pd.DataFrame(
+        {"start_seconds": [0.0], "end_seconds": [1.0], "annotations": ["x"]}
+    )
+    pkg = tmp_path / "empty_derived.mediapkg"
+    with MediaPackageWriter(pkg, description="Empty derived_from") as w:
+        w.add_video("v1", "https://example.org/v1.mp4")
+        w.add_track("v1", track, df)
+
+    # The writer drops a falsy derived_from; inject the empty list a hand-authored
+    # manifest could carry (with no method).
+    _rewrite_manifest(pkg, lambda m: m["tracks"]["child"].update(derived_from=[]))
+
+    result = validate_mediapkg(pkg)
+    assert result.valid, result.summary()
+    assert not any("method" in e for e in result.errors)

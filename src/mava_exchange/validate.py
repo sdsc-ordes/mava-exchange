@@ -225,8 +225,10 @@ def _check_relations(manifest: dict, result: ValidationResult) -> None:
             else:
                 result.ok()
 
+        # A non-empty derived_from declares provenance; an absent or empty list
+        # declares none, so it must not trigger the 'method is required' error.
         derived = track.get("derived_from")
-        if derived is not None:
+        if derived:
             for src in derived:
                 if src not in names:
                     result.error(
