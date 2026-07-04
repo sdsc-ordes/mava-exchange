@@ -305,13 +305,31 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
 }
 ```
 
-#### Track example - AnnotationListSeries
+#### Track example — AnnotationListSeries
 
 ```json
 "scene_tags": {
   "type": "mava:AnnotationListSeries",
   "description": "Scene classification tags from Places3 model (indoor/outdoor + natural/man-made)",
   "columns": ["start_seconds", "end_seconds", "annotations"]
+}
+```
+
+#### Track example — RegionSeries
+
+```json
+"face_regions": {
+  "type": "mava:RegionSeries",
+  "description": "Per-frame face bounding boxes, sampled every 0.5s. Coordinates normalized to [0,1] of the frame, top-left origin.",
+  "sampling_interval_seconds": 0.5,
+  "columns": ["start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"],
+  "dimensions": {
+    "x":         {"description": "Box left edge, normalized",  "range": "[0,1]"},
+    "y":         {"description": "Box top edge, normalized",   "range": "[0,1]"},
+    "w":         {"description": "Box width, normalized",      "range": "[0,1]"},
+    "h":         {"description": "Box height, normalized",     "range": "[0,1]"},
+    "det_score": {"description": "Detection confidence",       "range": "[0,1]"}
+  }
 }
 ```
 
@@ -448,24 +466,6 @@ recoverable from the normalized values via the video's `width` / `height`.
 share one label (e.g. a person split across clusters). Consumers MUST NOT assume
 `cluster_id` ↔ `label` is one-to-one, and MUST NOT require label completeness
 or uniqueness.
-
-#### Track example — RegionSeries
-
-```json
-"face_regions": {
-  "type": "mava:RegionSeries",
-  "description": "Per-frame face bounding boxes, sampled every 0.5s. Coordinates normalized to [0,1] of the frame, top-left origin.",
-  "sampling_interval_seconds": 0.5,
-  "columns": ["start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"],
-  "dimensions": {
-    "x":         {"description": "Box left edge, normalized",  "range": "[0,1]"},
-    "y":         {"description": "Box top edge, normalized",   "range": "[0,1]"},
-    "w":         {"description": "Box width, normalized",      "range": "[0,1]"},
-    "h":         {"description": "Box height, normalized",     "range": "[0,1]"},
-    "det_score": {"description": "Detection confidence",       "range": "[0,1]"}
-  }
-}
-```
 
 **Examples of RegionSeries tracks:** face bounding boxes, object detections, any
 localized per-frame spatial annotation.
