@@ -30,6 +30,10 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 
+# The relationship fields (parent/derived_from/method) are repeated per type
+# rather than inherited from a base class: the shared *logic* lives in
+# _relations() below; a base would force @dataclass(kw_only=True) and still need
+# the Track union for type-narrowing, so it isn't worth it.
 def _relations(track: Any) -> dict[str, Any]:
     """Optional hierarchy / provenance edges, emitted only when present."""
     d: dict[str, Any] = {}
