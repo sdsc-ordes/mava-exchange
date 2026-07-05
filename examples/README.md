@@ -33,99 +33,51 @@ demand with `just unpack examples/output/corpus.mediapkg tmp/pkg turtle` (or
 
 ## How the examples are derived
 
-Everything under `examples/` is **generated** — nothing here is hand-authored.
-The raw data comes from the **TIBAVA demo instance** (see
-[`data/README.md`](../data/README.md)); the derive scripts below are a
-**temporary guide**, to be retired once the applications export `.mediapkg`
-directly via the `mava-exchange` package.
+Everything under `examples/` is **generated** — nothing here is hand-authored,
+and the derive scripts are a **temporary guide**, to be retired once
+applications export `.mediapkg` directly via `mava-exchange`. The raw data and
+the two upstream stages that produce `input/` and `videos/`
+(`extract_segment.py`, `cut_clips.py`) live with the raw data — see
+[`data/README.md`](../data/README.md).
 
-The chain runs in two stages, with the committed `input/` in the middle:
+This README owns the last stage: the committed `input/` → the corpus.
 
+```mermaid
+flowchart LR
+    input["examples/input/ (committed)"]
+    corpus["examples/output/corpus.mediapkg"]
+    input -->|"scripts/build_mediapkg.py · just example"| corpus
 ```
-data/<src>/  ──(1) extract──▶  examples/input/<src>/  ──(2) build──▶  examples/output/corpus.mediapkg
- (raw, gitignored)                (committed)                             (committed)
-        │
-        └────────────(3) cut────▶  examples/videos/<src>.mp4  (committed)
-```
 
-### (1) Raw → `examples/input/` — `just examples::extract`
+[`scripts/build_mediapkg.py`](scripts/build_mediapkg.py) expects one folder per
+video under `input/<src>/`, each holding:
 
-[`data/scripts/extract_segment.py`](../data/scripts/extract_segment.py) reads
-the raw platform exports under `data/<src>/` (gitignored — see
-[`data/README.md`](../data/README.md)) and writes the declarative input:
+- `video.yml` — `id`, `src`, `title`, `width`/`height`/`fps`, `duration`;
+- `tracks.yml` — per-track `type`, `parent`, `derived_from`, `method`,
+  `dimensions`;
+- one `<track>.tsv` per track (filename == track name, `start_seconds` first).
 
-- the **track tree** comes straight from the export's `timelines.yml`
-  (`parent ← parent_id`, `type ← node type`); a small per-source overlay adds
-  the `derived_from` / `method` edges the raw dumps don't record;
-- each track's rows are sliced to a time **window**, **rebased to 0** (so a clip
-  cut at the window start lines up), stripped of absolute `hh:mm:ss` timecodes,
-  and written to `<track>.tsv`;
-- `silent_child` additionally resolves real face boxes into a `RegionSeries`
-  (`bbox.ref_id → face → cluster → cluster_id`);
-- `video.yml` records `source_window` (where the clip was cut from) alongside
-  `width` / `height` / `fps` / `duration`.
-
-The per-source window, included tracks, and derivation overlay live in the
-`SOURCES` table at the top of that script.
-
-> Maintainer-only: this step needs the raw data and is not required to _use_ the
-> examples.
-
-### (2) `examples/input/` → `corpus.mediapkg` — `just example`
-
-[`scripts/build_mediapkg.py`](scripts/build_mediapkg.py) is generic and
-data-driven: it auto-discovers every folder under `input/`, reads `video.yml` +
-`tracks.yml`, builds each track from its declared `type`/`dimensions`, loads the
-matching `<track>.tsv`, and writes `output/corpus.mediapkg`. There is no
-per-video or per-track code — add a video by adding an `input/<src>/` folder.
-
-The creation timestamp is fixed, so regenerating the corpus is
-byte-reproducible.
-
-### (3) Raw video → `examples/videos/<src>.mp4` — `just examples::cut-clips`
-
-[`data/scripts/cut_clips.py`](../data/scripts/cut_clips.py) cuts each short demo
-clip from the raw source video using the `source_window` recorded in
-`input/<src>/video.yml`, rebasing the clip's timeline to 0 so it matches the
-0-based TSV rows (and the viewer). It needs `ffmpeg` and the raw source video
-under `data/<src>/raw_data/`; sources whose raw video is absent are skipped.
-
-> Unlike the corpus, clips are **not** byte-reproducible (they are re-encoded).
-> They are binary demo assets, not a reproducibility oracle.
+It is fully **generic**: it auto-discovers every `input/<src>/` folder and every
+track declared in `tracks.yml`, so a new video or track is added by dropping
+files under `input/` — no code change. The creation timestamp is fixed, so the
+corpus is byte-reproducible.
 
 ## Regenerate everything
 
-One command does the whole import — input, clips, and corpus:
-
 ```bash
-just examples::regenerate   # extract -> cut-clips -> example
+just examples::regenerate   # whole import: extract -> cut-clips -> example
 ```
 
-Or run the stages individually:
+Or the stages individually:
 
 ```bash
-just examples::extract     # (1) raw  -> examples/input/     (needs data/)
-just examples::cut-clips   # (3) raw  -> examples/videos/     (needs data/ + ffmpeg)
-just example               # (2) input -> corpus.mediapkg
+just examples::extract     # raw   -> examples/input/    (needs data/)
+just examples::cut-clips   # raw   -> examples/videos/   (needs data/ + ffmpeg)
+just example               # input -> corpus.mediapkg
 ```
 
-Only `example` runs without the raw data — `examples::extract` and
-`examples::cut-clips` are maintainer steps that need the gitignored `data/`.
-
-### Clean rebuild
-
-Every stage overwrites in place (the extractor even prunes stale per-source
-files), so re-running `just examples::regenerate` is the normal, safe "retry" —
-no clean needed.
-
-For a from-scratch rebuild you can also wipe the generated outputs first:
-
-```bash
-just examples::clean        # remove corpus and clips
-just examples::regenerate   # rebuild them from data/
-```
-
-This is safe as long as `data/` holds the raw sources for every example (it
-does: both `silent_child` and `tagesschau`). The corpus is byte-reproducible;
-the **clips are re-encoded**, so regenerating them produces a new (functionally
-identical) binary — commit that intentionally.
+Every stage overwrites in place, so re-running is the normal, safe retry; only
+`just example` works without the gitignored `data/` (`just examples::clean`
+wipes the outputs first for a from-scratch rebuild). The corpus is
+byte-reproducible, but clips are re-encoded — regenerating them yields a new,
+functionally identical binary (commit intentionally).

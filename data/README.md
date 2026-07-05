@@ -1,22 +1,30 @@
 # `data/` — illustrative raw exports (not version controlled)
 
 This directory holds the **raw video-annotation exports** the example corpus was
-derived from. In order to provide provenance and reproduciblity, we explain here
-how the example data has been derived. The scripts that were used are part of
-this repo, in [`data/scripts/`](scripts/).
+derived from, kept for provenance and reproducibility.
 
-The actual data is gitignored. It is described here where the examples came from
-and how the import can be repeated. The maintainer scripts under `data/scripts/`
-are the tracked exception — everything else under `data/` is not version
-controlled.
+The data itself is gitignored (downloaded from the
+[**TIBAVA** demo instance](https://service.tib.eu/tibava)). The maintainer
+scripts that rebuild `examples/input/` and `examples/videos/` live in
+[`data/scripts/`](scripts/) and run via `just examples::regenerate`; see
+[`examples/README.md`](../examples/README.md) for how the input becomes the
+corpus.
+
+`data/scripts/` turns the raw exports into the committed example inputs:
+
+```mermaid
+flowchart LR
+    raw["data/ (raw exports, gitignored)"]
+    input["examples/input/ (committed)"]
+    videos["examples/videos/ (committed)"]
+    raw -->|"scripts/extract_segment.py · just examples::extract"| input
+    raw -->|"scripts/cut_clips.py · just examples::cut-clips"| videos
+```
 
 ## Where it comes from — the TIBAVA demo instance
 
-The example data is exported, for now, from a project in the
-[**TIBAVA** demo instance](https://service.tib.eu/tibava). Two videos are
-currently imported: `Silent Child` and `Tageschau`
-
-of TIBAVA's export modes produce the two halves of each `data/<src>/` folder:
+Two videos are currently imported: `Silent Child` and `Tagesschau`. Two of
+TIBAVA's export modes produce the two halves of each `data/<src>/` folder:
 
 <table>
 <tr>
@@ -33,14 +41,14 @@ of TIBAVA's export modes produce the two halves of each `data/<src>/` folder:
 
 This raw data, and the scripts that turn it into `.mediapkg`
 (`data/scripts/extract_segment.py`, `examples/scripts/build_mediapkg.py`,
-`data/scripts/cut_clips.py`), are a **transitional guide**. The end state is
-that the applications export `.mediapkg` **directly, via the `mava-exchange`
-Python package** — at which point this manual raw→mediapkg path is retired. The
-scripts stay in the repo only as a reference for that integration.
+`data/scripts/cut_clips.py`) are a temporary bridge for developing the format.
+The goal is that applications export and import `.mediapkg` directly via the
+`mava-exchange` package, at which point this manual raw→mediapkg path is
+retired.
 
-It is also not committed because it is **media / biometric data**: third-party
-copyrighted video plus face crops, embeddings, and clustering of identifiable
-people. LFS would not change that — publishing is publishing.
+The data is also not committed because it is **media / biometric data**:
+third-party copyrighted video plus face crops, embeddings, and clustering of
+identifiable people.
 
 ## Expected layout
 
@@ -68,13 +76,6 @@ data/<src>/
   the demo clip using the `source_window` recorded in
   `examples/input/<src>/video.yml`.
 
-> Not every source arrives complete. A source needs `tsv/` (per-track rows) to
-> feed the extractor, box blobs to get a `RegionSeries`, and
-> `raw_data/<hash>.mp4` to cut a clip. Missing pieces are skipped, not
-> fabricated.
-
-## Obtaining it (maintainers)
-
-Export the source project from the TIBAVA demo instance using the two modes
-shown above and place the result under `data/<src>/` in the layout above. See
-[`examples/README.md`](../examples/README.md) for how it flows into the corpus.
+> A source that isn't exported locally is skipped; one that is present but
+> missing required pieces (`raw_data/` ymls, `tsv/`, or declared region blobs)
+> is a hard error — see `validate_source_layout` in `extract_segment.py`.
