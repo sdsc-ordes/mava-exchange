@@ -39,12 +39,11 @@ TIBAVA's export modes produce the two halves of each `data/<src>/` folder:
 
 ## Temporary by design
 
-This raw data, and the scripts that turn it into `.mediapkg`
-(`data/scripts/extract_segment.py`, `examples/scripts/build_mediapkg.py`,
-`data/scripts/cut_clips.py`) are a temporary bridge for developing the format.
-The goal is that applications export and import `.mediapkg` directly via the
-`mava-exchange` package, at which point this manual raw→mediapkg path is
-retired.
+This raw data, and the `data/scripts/` that turn it into the committed example
+inputs (`extract_segment.py`, `cut_clips.py`), are a temporary bridge for
+developing the format. The goal is that applications export and import
+`.mediapkg` directly via the `mava-exchange` package, at which point this manual
+path is retired.
 
 The data is also not committed because it is **media / biometric data**:
 third-party copyrighted video plus face crops, embeddings, and clustering of

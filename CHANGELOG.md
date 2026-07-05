@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-06-22
+## [0.2.0] - 2026-07-05
 
 Format version `0.1` → `0.2`. **Additive** — all `0.1` packages remain valid
 `0.2` packages. The only backward-incompatibility is in the other direction: a
