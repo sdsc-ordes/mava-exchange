@@ -1,35 +1,39 @@
 # `data/` — illustrative raw exports (not version controlled)
 
-This directory holds the **raw video-annotation exports** the example corpus is
-derived from. Everything here except this README and the two screenshots below
-is **gitignored** and must not be committed. Consumers of the examples don't
-need it — everything they need is already under [`examples/`](../examples/).
+This directory holds the **raw video-annotation exports** the example corpus was
+derived from. In order to provide provenance and reproduciblity, we explain here
+how the example data has been derived. The scripts that were used are part of
+this repo, in [`data/scripts/`](scripts/).
 
-It exists only to **show what the real data looks like**, so the `.mediapkg`
-format (and the writer/reader/validator) can be developed and checked for
-idempotent round-tripping against genuine platform output.
+The actual data is gitignored. It is described here where the examples came from
+and how the import can be repeated. The maintainer scripts under `data/scripts/`
+are the tracked exception — everything else under `data/` is not version
+controlled.
 
 ## Where it comes from — the TIBAVA demo instance
 
-The example data is exported, for now, from a project in the **TIBAVA** demo
-instance (the video-annotation platform this format serves). Two of TIBAVA's
-export modes produce the two halves of each `data/<src>/` folder:
+The example data is exported, for now, from a project in the
+[**TIBAVA** demo instance](https://service.tib.eu/tibava). Two videos are
+currently imported: `Silent Child` and `Tageschau`
 
-**Export project → _Include video_** produces `raw_data/` (the timeline tree,
-typed plugin results, result blobs, and the source video):
+of TIBAVA's export modes produce the two halves of each `data/<src>/` folder:
 
-![TIBAVA "Export project" dialog with Include video checked](tibava_project_export.png)
-
-**Individual CSVs → _Use seconds_** produces the per-track `tsv/` files (one per
-timeline node), which the extractor slices into `examples/input`:
-
-![TIBAVA "Individual CSVs" dialog with Use seconds checked](tibava_tsv_export.png)
+<table>
+<tr>
+<td width="50%"><strong>Export project → <em>Include video</em></strong> produces <code>raw_data/</code> — the timeline tree, typed plugin results, result blobs, and the source video.</td>
+<td width="50%"><strong>Individual CSVs → <em>Use seconds</em></strong> produces the per-track <code>tsv/</code> files (one per timeline node), which the extractor slices into <code>examples/input</code>.</td>
+</tr>
+<tr>
+<td><img src="tibava_project_export.png" width="360" alt="TIBAVA Export project dialog with Include video checked"></td>
+<td><img src="tibava_tsv_export.png" width="360" alt="TIBAVA Individual CSVs dialog with Use seconds checked"></td>
+</tr>
+</table>
 
 ## Temporary by design
 
 This raw data, and the scripts that turn it into `.mediapkg`
-(`tools/scripts/extract_segment.py`, `examples/scripts/build_mediapkg.py`,
-`tools/scripts/cut_clips.py`), are a **transitional guide**. The end state is
+(`data/scripts/extract_segment.py`, `examples/scripts/build_mediapkg.py`,
+`data/scripts/cut_clips.py`), are a **transitional guide**. The end state is
 that the applications export `.mediapkg` **directly, via the `mava-exchange`
 Python package** — at which point this manual raw→mediapkg path is retired. The
 scripts stay in the repo only as a reference for that integration.

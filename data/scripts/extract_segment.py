@@ -25,7 +25,7 @@ transform can wire track → file 1:1 by name.
 It does NOT produce a `.mediapkg` — that transform is the next step.
 
 Run:
-    just extract-examples          # or: uv run tools/scripts/extract_segment.py
+    just examples::extract         # or: uv run data/scripts/extract_segment.py
 """
 
 from __future__ import annotations
@@ -368,6 +368,52 @@ def write_tracks_yml(name: str, cfg: dict, tracks: dict, out: Path) -> None:
     (out / "tracks.yml").write_text(header + body)
 
 
+def validate_source_layout(name: str, cfg: dict) -> bool:
+    """Check the expected ``data/<name>/`` layout before extracting.
+
+    Returns True if the source is present and well-formed (proceed) and False if
+    the source is simply absent (skip — not every source is exported locally).
+    Raises ``ValueError`` when the source directory exists but its layout is
+    malformed (a misplaced or incomplete export), rather than letting a cryptic
+    FileNotFoundError surface deep in extraction. See data/README.md for the
+    expected layout.
+    """
+    src_dir = DATA / name
+    if not src_dir.exists():
+        print(f"  skip {name}: no data/{name}/ (source not exported locally)")
+        return False
+
+    problems: list[str] = []
+    raw = src_dir / "raw_data"
+    tsv = src_dir / "tsv"
+
+    if not raw.is_dir():
+        problems.append("missing raw_data/ directory")
+    else:
+        for req in ("video.yml", "timelines.yml"):
+            if not (raw / req).is_file():
+                problems.append(f"missing raw_data/{req}")
+        # A source that declares a regions capability must ship its blobs.
+        rc = cfg.get("regions")
+        if rc:
+            for key in ("bboxes_yml", "cluster_zip"):
+                if not (raw / rc[key]).exists():
+                    problems.append(
+                        f"regions: missing raw_data/{rc[key]} (for track {rc['track']!r})"
+                    )
+
+    if not tsv.is_dir():
+        problems.append("missing tsv/ directory")
+
+    if problems:
+        detail = "\n".join(f"  - {p}" for p in problems)
+        raise ValueError(
+            f"data/{name}/ is present but its layout is malformed:\n{detail}\n"
+            "See data/README.md for the expected data/<src>/ layout."
+        )
+    return True
+
+
 def extract(name: str, cfg: dict) -> None:
     raw = DATA / name / "raw_data"
     tsv = DATA / name / "tsv"
@@ -388,7 +434,8 @@ def extract(name: str, cfg: dict) -> None:
 
 def main() -> None:
     for name, cfg in SOURCES.items():
-        extract(name, cfg)
+        if validate_source_layout(name, cfg):
+            extract(name, cfg)
     print("\nDone.")
 
 

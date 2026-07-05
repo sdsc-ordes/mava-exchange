@@ -50,7 +50,7 @@ data/<src>/  ──(1) extract──▶  examples/input/<src>/  ──(2) build�
 
 ### (1) Raw → `examples/input/` — `just examples::extract`
 
-[`tools/scripts/extract_segment.py`](../tools/scripts/extract_segment.py) reads
+[`data/scripts/extract_segment.py`](../data/scripts/extract_segment.py) reads
 the raw platform exports under `data/<src>/` (gitignored — see
 [`data/README.md`](../data/README.md)) and writes the declarative input:
 
@@ -84,8 +84,8 @@ byte-reproducible.
 
 ### (3) Raw video → `examples/videos/<src>.mp4` — `just examples::cut-clips`
 
-[`tools/scripts/cut_clips.py`](../tools/scripts/cut_clips.py) cuts each short
-demo clip from the raw source video using the `source_window` recorded in
+[`data/scripts/cut_clips.py`](../data/scripts/cut_clips.py) cuts each short demo
+clip from the raw source video using the `source_window` recorded in
 `input/<src>/video.yml`, rebasing the clip's timeline to 0 so it matches the
 0-based TSV rows (and the viewer). It needs `ffmpeg` and the raw source video
 under `data/<src>/raw_data/`; sources whose raw video is absent are skipped.

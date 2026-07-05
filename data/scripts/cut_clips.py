@@ -16,7 +16,7 @@ committed clip (unlike corpus.mediapkg, which is byte-reproducible). The clips
 are binary demo assets, not a reproducibility oracle.
 
 Run:
-    just cut-clips          # or: uv run tools/scripts/cut_clips.py
+    just examples::cut-clips     # or: uv run data/scripts/cut_clips.py
 """
 
 from __future__ import annotations
@@ -73,7 +73,14 @@ def cut(start: float, end: float, raw: Path, out: Path) -> None:
 def main() -> None:
     for vdir in sorted(p for p in INPUT_ROOT.iterdir() if p.is_dir()):
         name = vdir.name
-        v = yaml.safe_load((vdir / "video.yml").read_text())
+        vy = vdir / "video.yml"
+        if not vy.is_file():
+            raise ValueError(
+                f"examples/input/{name}/ is malformed: missing video.yml "
+                "(every extracted input folder must have one). "
+                "Regenerate it with `just examples::extract`."
+            )
+        v = yaml.safe_load(vy.read_text())
         win = v.get("source_window")
         if not win:
             print(f"  skip {name}: no source_window in video.yml")

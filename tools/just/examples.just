@@ -8,12 +8,12 @@ default:
 
 # (maintainers) Regenerate examples/input/ from the raw exports in data/ (gitignored).
 extract:
-    cd "{{root_dir}}" && uv run tools/scripts/extract_segment.py
+    cd "{{root_dir}}" && uv run data/scripts/extract_segment.py
     cd "{{root_dir}}" && just format examples/input
 
 # (maintainers) Cut the short demo clips (examples/videos/) from raw sources in data/.
 cut-clips:
-    cd "{{root_dir}}" && uv run tools/scripts/cut_clips.py
+    cd "{{root_dir}}" && uv run data/scripts/cut_clips.py
 
 # Safe only when data/ holds the raw sources to rebuild them (it does).
 # (maintainers) Remove generated example OUTPUTS (corpus, clips).
