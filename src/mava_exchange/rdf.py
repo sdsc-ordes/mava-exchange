@@ -139,7 +139,7 @@ def _initialize_graph(manifest, pkg_uri, MAVA, EX) -> Graph:
                Literal(manifest["created"], datatype=XSD.dateTime)))
     return g
 
-def _serialize_graph(g, format) -> None:
+def _serialize_graph(g, format) -> str:
     """Serialize graph based on given formats."""
     if format == "turtle":
         # Collapse rdflib's trailing blank lines to a single newline so the
