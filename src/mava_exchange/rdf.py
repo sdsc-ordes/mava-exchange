@@ -65,8 +65,92 @@ def _add_relations(g, series_uri, track_def, MAVA, EX) -> None:
     if track_def.get("method") is not None:
         g.add((series_uri, MAVA.derivationMethod, Literal(track_def["method"])))
 
+def _add_scalar_series(g, track_name, track_def, MAVA, EX) -> None:
+    """Emit an Observation- or RegionSeries for each video track."""
+    series_uri = EX[f"series_{track_name}"]
+    if "sampling_interval_seconds" in track_def:
+                g.add((series_uri, MAVA.samplingInterval,
+                       Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
 
-def export_manifest_as_rdf(  # noqa: PLR0912
+    _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
+
+def _add_tracks(g, manifest, MAVA, EX) -> None:
+    """Emit instances of tracks."""
+    for track_name, track_def in manifest["tracks"].items():
+        series_uri = EX[f"series_{track_name}"]
+        track_type = track_def.get("type")
+
+        if track_type == "mava:ObservationSeries":
+            g.add((series_uri, RDF.type, MAVA.ObservationSeries))
+
+            _add_scalar_series(g, track_name, track_def, MAVA, EX)
+
+        elif track_type == "mava:RegionSeries":
+            g.add((series_uri, RDF.type, MAVA.RegionSeries))
+
+            _add_scalar_series(g, track_name, track_def, MAVA, EX)
+
+        elif track_type == "mava:AnnotationSeries":
+            g.add((series_uri, RDF.type, MAVA.AnnotationSeries))
+
+        elif track_type == "mava:AnnotationListSeries":
+            g.add((series_uri, RDF.type, MAVA.AnnotationListSeries))
+
+        if "description" in track_def:
+            g.add((series_uri, MAVA.seriesDescription,
+                   Literal(track_def["description"])))
+
+        _add_relations(g, series_uri, track_def, MAVA, EX)
+
+
+def _add_videos(g, manifest, pkg_uri, MAVA, EX) -> None:
+    """Emit video instances and all their analyses."""
+    for video in manifest["videos"]:
+        video_uri = EX[f"video_{video['id']}"]
+        g.add((pkg_uri, MAVA.hasVideo, video_uri))
+        g.add((video_uri, RDF.type, MAVA.Video))
+
+        if "src" in video:
+            # Absolute URI -> use as-is; a bare filename -> resolve against the
+            # stable example base. Passing a relative ref to URIRef would let the
+            # serializer resolve it against the cwd, leaking a local file:// path.
+            src = video["src"]
+            src_uri = URIRef(src) if "://" in src else EX[src]
+            g.add((video_uri, DCTERMS.source, src_uri))
+
+        for track_name in video.get("files", {}).keys():
+            series_uri = EX[f"series_{track_name}"]
+            g.add((video_uri, MAVA.hasAnalysis, series_uri))
+
+
+def _initialize_graph(manifest, pkg_uri, MAVA, EX) -> Graph:
+    """Initialize mava graph and add description based on manifest."""
+    g = Graph()
+    g.bind("mava", MAVA)
+    g.bind("dcterms", DCTERMS)
+    g.bind("xsd", XSD)
+    g.bind("ex", EX)
+    g.add((pkg_uri, RDF.type, MAVA.MediaPackage))
+    description = manifest.get("description", "")
+    if description:
+        g.add((pkg_uri, DCTERMS.description, Literal(description)))
+    if "created" in manifest:
+        g.add((pkg_uri, DCTERMS.created,
+               Literal(manifest["created"], datatype=XSD.dateTime)))
+    return g
+
+def _serialize_graph(g, format) -> None:
+    """Serialize graph based on given formats."""
+    if format == "turtle":
+        # Collapse rdflib's trailing blank lines to a single newline so the
+        # output matches the pre-commit end-of-file hook (no regenerate churn).
+        return g.serialize(format="turtle").rstrip() + "\n"
+    elif format == "json-ld":
+        return _canonical_jsonld(g.serialize(format="json-ld"))
+    else:
+        raise ValueError(f"Unknown format '{format}'. Use 'turtle' or 'json-ld'.")
+
+def export_manifest_as_rdf(
     manifest: dict,
     format: str = "turtle",
     base_uri: str = "http://example.org/data/",
@@ -93,77 +177,12 @@ def export_manifest_as_rdf(  # noqa: PLR0912
     MAVA = Namespace(manifest.get("ontology", "http://example.org/mava/ontology#"))
     EX = Namespace(base_uri)
 
-    g = Graph()
-    g.bind("mava", MAVA)
-    g.bind("dcterms", DCTERMS)
-    g.bind("xsd", XSD)
-    g.bind("ex", EX)
-
     pkg_uri = EX["package"]
-    g.add((pkg_uri, RDF.type, MAVA.MediaPackage))
-    description = manifest.get("description", "")
-    if description:
-        g.add((pkg_uri, DCTERMS.description, Literal(description)))
-    if "created" in manifest:
-        g.add((pkg_uri, DCTERMS.created,
-               Literal(manifest["created"], datatype=XSD.dateTime)))
 
-    for video in manifest["videos"]:
-        video_uri = EX[f"video_{video['id']}"]
-        g.add((pkg_uri, MAVA.hasVideo, video_uri))
-        g.add((video_uri, RDF.type, MAVA.Video))
+    g = _initialize_graph(manifest, pkg_uri, MAVA, EX)
 
-        if "src" in video:
-            # Absolute URI -> use as-is; a bare filename -> resolve against the
-            # stable example base. Passing a relative ref to URIRef would let the
-            # serializer resolve it against the cwd, leaking a local file:// path.
-            src = video["src"]
-            src_uri = URIRef(src) if "://" in src else EX[src]
-            g.add((video_uri, DCTERMS.source, src_uri))
+    _add_videos(g, manifest, pkg_uri, MAVA, EX)
 
-        for track_name in video.get("files", {}).keys():
-            series_uri = EX[f"series_{track_name}"]
-            g.add((video_uri, MAVA.hasAnalysis, series_uri))
+    _add_tracks(g, manifest, MAVA, EX)
 
-    for track_name, track_def in manifest["tracks"].items():
-        series_uri = EX[f"series_{track_name}"]
-        track_type = track_def.get("type")
-
-        if track_type == "mava:ObservationSeries":
-            g.add((series_uri, RDF.type, MAVA.ObservationSeries))
-
-            if "sampling_interval_seconds" in track_def:
-                g.add((series_uri, MAVA.samplingInterval,
-                       Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
-
-            _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
-
-        elif track_type == "mava:RegionSeries":
-            g.add((series_uri, RDF.type, MAVA.RegionSeries))
-
-            if "sampling_interval_seconds" in track_def:
-                g.add((series_uri, MAVA.samplingInterval,
-                       Literal(track_def["sampling_interval_seconds"], datatype=XSD.decimal)))
-
-            _add_dimensions(g, series_uri, track_name, track_def, MAVA, EX)
-
-        elif track_type == "mava:AnnotationSeries":
-            g.add((series_uri, RDF.type, MAVA.AnnotationSeries))
-
-        elif track_type == "mava:AnnotationListSeries":
-            g.add((series_uri, RDF.type, MAVA.AnnotationListSeries))
-
-        if "description" in track_def:
-            g.add((series_uri, MAVA.seriesDescription,
-                   Literal(track_def["description"])))
-
-        _add_relations(g, series_uri, track_def, MAVA, EX)
-
-    if format == "turtle":
-        # Collapse rdflib's trailing blank lines to a single newline so the
-        # output matches the pre-commit end-of-file hook (no regenerate churn).
-        return g.serialize(format="turtle").rstrip() + "\n"
-    elif format == "json-ld":
-        return _canonical_jsonld(g.serialize(format="json-ld"))
-    else:
-        raise ValueError(f"Unknown format '{format}'. Use 'turtle' or 'json-ld'.")
+    return _serialize_graph(g, format)
