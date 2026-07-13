@@ -53,7 +53,7 @@ typecheck *args:
 # Audit dependencies for known vulnerabilities.
 [group('general')]
 audit *args:
-    uv run pip-audit
+    uv audit {{args}}
 
 # Run an executable.
 [group('general')]
