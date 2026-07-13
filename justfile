@@ -78,31 +78,71 @@ viewer port="8001":
     @echo "Viewer → http://localhost:{{port}}/  (drop in examples/output/corpus.mediapkg)"
     python3 -m http.server -d docs/_static/viewer-app {{port}}
 
-# Unpack a .mediapkg (ZIP) into a dir; optional 3rd arg (turtle|json-ld) also renders the manifest as RDF.
+# Convert a manifest from a .mediapkg into RDF (turtle|json-ld).
 [group('usage')]
-unpack pkg dir format="":
+rdf-convert pkg dir format="ttl":
     #!/usr/bin/env bash
     set -euo pipefail
+    case "{{format}}" in
+        ttl|turtle)
+            ext="ttl"
+            fmt="turtle"
+            ;;
+        json-ld|jsonld)
+            ext="jsonld"
+            fmt="json-ld"
+            ;;
+        *)
+            echo "Error: format must be one of: ttl, turtle, json-ld, jsonld (got '{{format}}')" >&2
+            exit 1
+            ;;
+    esac
+    uv run mediapkg-inspect "{{pkg}}" --format "$fmt" > "{{dir}}/manifest.$ext"
+    echo "Rendered {{dir}}/manifest.$ext"
+
+# Unpack a .mediapkg (ZIP) into a dir and validate it.
+[group('usage')]
+unpack pkg dir validate="true":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{validate}}" in
+        true|false) ;;
+        *)
+            echo "Error: validate must be 'true' or 'false' (got '{{validate}}')" >&2
+            exit 1
+            ;;
+    esac
     mkdir -p "{{dir}}"
     unzip -o -q "{{pkg}}" -d "{{dir}}"
     echo "Unpacked {{pkg}} → {{dir}}/"
-    if [ -n "{{format}}" ]; then
-        ext="ttl"; [ "{{format}}" = "json-ld" ] && ext="jsonld"
-        uv run mediapkg-inspect "{{pkg}}" --format "{{format}}" > "{{dir}}/manifest.$ext"
-        echo "Rendered {{dir}}/manifest.$ext"
+    if [ "{{validate}}" = "true" ]; then
+        echo "Running validation..."
+        just validate "{{pkg}}"
+        echo "Unpacked {{pkg}} → {{dir}}/ and validated successfully"
     fi
 
 # Pack a directory (manifest.json at its root) into a .mediapkg and validate it.
 [group('usage')]
-pack dir pkg:
+pack dir pkg validate="true":
     #!/usr/bin/env bash
     set -euo pipefail
+    case "{{validate}}" in
+        true|false) ;;
+        *)
+            echo "Error: validate must be 'true' or 'false' (got '{{validate}}')" >&2
+            exit 1
+            ;;
+    esac
     test -f "{{dir}}/manifest.json" || { echo "✗ {{dir}}/manifest.json not found (it must sit at the archive root)"; exit 1; }
     out="$(cd "$(dirname "{{pkg}}")" && pwd)/$(basename "{{pkg}}")"
     rm -f "$out"
     ( cd "{{dir}}" && zip -q -r -X "$out" . -x '*.ttl' '*.jsonld' '*.DS_Store' )
     echo "Packed {{dir}}/ → {{pkg}}"
-    uv run mediapkg-validate "{{pkg}}"
+    if [ "{{validate}}" = "true" ]; then
+        echo "Running validation..."
+        just validate "{{pkg}}"
+        echo "Packed {{dir}}/ → {{pkg}} and validated successfully"
+    fi
 
 # Validate a .mediapkg archive.
 # Usage:
