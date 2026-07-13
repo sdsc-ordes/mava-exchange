@@ -16,15 +16,6 @@ shot_density:
     density:
       description: Shot Density
       range: "[0,1]"
-video_brightness:
-  type: mava:ObservationSeries
-  description: Video Brightness
-  parent: shots
-  sampling_interval_seconds: 0.5
-  dimensions:
-    brightness:
-      description: Video Brightness
-      range: "[0,1]"
 dominant_colors:
   type: mava:ObservationSeries
   description: Dominant Color(s)
@@ -45,21 +36,10 @@ shot_sizes:
   description: Shot Sizes
   parent: shots
   derived_from:
-    - extreme_close_up
     - close_up
     - medium_shot
-    - full_shot
     - long_shot
   method: argmax
-extreme_close_up:
-  type: mava:ObservationSeries
-  description: Extreme Close-Up
-  parent: shot_sizes
-  sampling_interval_seconds: 0.2
-  dimensions:
-    score:
-      description: Extreme Close-Up
-      range: "[0,1]"
 close_up:
   type: mava:ObservationSeries
   description: Close-Up
@@ -77,15 +57,6 @@ medium_shot:
   dimensions:
     score:
       description: Medium Shot
-      range: "[0,1]"
-full_shot:
-  type: mava:ObservationSeries
-  description: Full Shot
-  parent: shot_sizes
-  sampling_interval_seconds: 0.2
-  dimensions:
-    score:
-      description: Full Shot
       range: "[0,1]"
 long_shot:
   type: mava:ObservationSeries
@@ -114,41 +85,10 @@ face_emotions:
   description: Face Emotions
   parent: null
   derived_from:
-    - angry
-    - disgust
-    - fear
     - happy
     - sad
-    - surprise
     - neutral
   method: argmax
-angry:
-  type: mava:ObservationSeries
-  description: Angry
-  parent: face_emotions
-  sampling_interval_seconds: 0.5
-  dimensions:
-    score:
-      description: Angry
-      range: "[0,1]"
-disgust:
-  type: mava:ObservationSeries
-  description: Disgust
-  parent: face_emotions
-  sampling_interval_seconds: 0.5
-  dimensions:
-    score:
-      description: Disgust
-      range: "[0,1]"
-fear:
-  type: mava:ObservationSeries
-  description: Fear
-  parent: face_emotions
-  sampling_interval_seconds: 0.5
-  dimensions:
-    score:
-      description: Fear
-      range: "[0,1]"
 happy:
   type: mava:ObservationSeries
   description: Happy
@@ -166,15 +106,6 @@ sad:
   dimensions:
     score:
       description: Sad
-      range: "[0,1]"
-surprise:
-  type: mava:ObservationSeries
-  description: Surprise
-  parent: face_emotions
-  sampling_interval_seconds: 0.5
-  dimensions:
-    score:
-      description: Surprise
       range: "[0,1]"
 neutral:
   type: mava:ObservationSeries
