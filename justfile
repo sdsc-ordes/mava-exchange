@@ -74,7 +74,7 @@ example:
 
 # Serve the standalone .mediapkg viewer locally (needs internet for CDN libs).
 [group('usage')]
-viewer port="8000":
+viewer port="8001":
     @echo "Viewer → http://localhost:{{port}}/  (drop in examples/output/corpus.mediapkg)"
     python3 -m http.server -d docs/_static/viewer-app {{port}}
 
