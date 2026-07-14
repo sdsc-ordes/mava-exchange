@@ -2,7 +2,7 @@
 Build example INPUT from short segments of real platform exports.
 
 This is a one-off data-preparation script, NOT part of the library. It reads the
-raw platform data (gitignored, under `data/<source>/`) and emits small, committed
+raw platform data (gitignored, under `examples/raw/<source>/`) and emits small, committed
 example inputs under `examples/input/<source>/`.
 
 Two complementary real examples are produced:
@@ -40,7 +40,7 @@ from pathlib import Path
 import yaml
 
 REPO = Path(__file__).resolve().parents[2]
-DATA = REPO / "data"
+DATA = REPO / "examples" / "raw"
 OUT_ROOT = REPO / "examples" / "input"
 
 # Dense single-value tracks: a nicer dimension/column name than the default.
@@ -70,16 +70,14 @@ SOURCES = {
         "derivations": {
             "shot_sizes": (
                 [
-                    "extreme_close_up",
                     "close_up",
                     "medium_shot",
-                    "full_shot",
                     "long_shot",
                 ],
                 "argmax",
             ),
             "face_emotions": (
-                ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"],
+                ["happy", "sad", "neutral"],
                 "argmax",
             ),
             "shots_modified": (["shots"], "manual"),

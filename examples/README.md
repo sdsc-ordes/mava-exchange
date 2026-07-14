@@ -1,68 +1,43 @@
 # Examples
 
-A worked, real-data example corpus for the `.mediapkg` format, plus the pipeline
-that produces it. Two source videos are included:
+A real-data example corpus for the `.mediapkg` format, plus the pipeline that
+produces it.
 
-- **`tagesschau`** — a rich **hierarchy** example: `Shots ⊃ Shot Sizes ⊃ …`,
-  audio under the transcript, `Face Emotions ⊃ 7 emotions`, a named anchor, and
-  a human-edited second segmentation. Derivations: `argmax` /
-  `cluster_to_scalar` / `manual`. No bounding boxes (this export has none).
-- **`silent_child`** — the **spatial** example: real face bounding boxes as a
-  `RegionSeries` (`face_regions`), with a resolved `cluster_id` per detection,
-  plus a little hierarchy context (per-person presence derived from the
-  regions).
+Everything under `examples/` is **generated** — nothing here is hand-authored.
+The flow below is meant as a support for the development process.
 
-## Layout
+## Quickstart
 
-```
-examples/
-  input/<src>/            # declarative INPUT (committed, human-readable)
-    video.yml             #   id, src, title, width/height/fps, duration, source_window
-    tracks.yml            #   per-track metadata: type, parent, derived_from, method, dimensions
-    <track>.tsv           #   one slim TSV per track (rows only), filename == track name
-  output/
-    corpus.mediapkg       # the built package (both videos)
-  videos/<src>.mp4        # short demo clips, timeline rebased to 0
-  scripts/build_mediapkg.py
+Create a `.mediapkg` based on the example input:
+
+```bash
+just example               # input -> corpus.mediapkg
 ```
 
-An RDF view of the manifest (Turtle / JSON-LD) isn't committed — render it on
-demand with `just unpack examples/output/corpus.mediapkg tmp/pkg turtle` (or
-`json-ld`; `tmp/` is a gitignored scratch dir), or
-`mediapkg-inspect examples/output/corpus.mediapkg --format turtle`.
+To fully (re)generate example inputs, follow the instructions below.
 
-## How the examples are derived
+## How the create example inputs
 
-Everything under `examples/` is **generated** — nothing here is hand-authored,
-and the derive scripts are a **temporary guide**, to be retired once
-applications export `.mediapkg` directly via `mava-exchange`. The raw data and
-the two upstream stages that produce `input/` and `videos/`
-(`extract_segment.py`, `cut_clips.py`) live with the raw data — see
-[`data/README.md`](../data/README.md).
+## Step 1: fetch raw data from the TIBAVA demo instance
 
-This README owns the last stage: the committed `input/` → the corpus.
+Two videos are currently imported: `Silent Child` and `Tagesschau`. Two of
+TIBAVA's export modes produce the two halves of each `examples/input/<src>/`
+folder:
 
-```mermaid
-flowchart LR
-    input["examples/input/ (committed)"]
-    corpus["examples/output/corpus.mediapkg"]
-    input -->|"scripts/build_mediapkg.py · just example"| corpus
-```
+<table>
+<tr>
+<td width="50%"><strong>Export project → <em>Include video</em></strong> produces <code>raw/</code> — the timeline tree, typed plugin results, result blobs, and the source video.</td>
+<td width="50%"><strong>Individual CSVs → <em>Use seconds</em></strong> produces the per-track tsv files (one per timeline node), which the extractor gets from <code>raw/</code> and slices into <code>examples/input</code>.</td>
+</tr>
+<tr>
+<td><img src="img/tibava_project_export.png" width="360" alt="TIBAVA Export project dialog with Include video checked"></td>
+<td><img src="img/tibava_tsv_export.png" width="360" alt="TIBAVA Individual CSVs dialog with Use seconds checked"></td>
+</tr>
+</table>
 
-[`scripts/build_mediapkg.py`](scripts/build_mediapkg.py) expects one folder per
-video under `input/<src>/`, each holding:
+## Step 2: cut and extract the data
 
-- `video.yml` — `id`, `src`, `title`, `width`/`height`/`fps`, `duration`;
-- `tracks.yml` — per-track `type`, `parent`, `derived_from`, `method`,
-  `dimensions`;
-- one `<track>.tsv` per track (filename == track name, `start_seconds` first).
-
-It is fully **generic**: it auto-discovers every `input/<src>/` folder and every
-track declared in `tracks.yml`, so a new video or track is added by dropping
-files under `input/` — no code change. The creation timestamp is fixed, so the
-corpus is byte-reproducible.
-
-## Regenerate everything
+To re-create local example `input/` files to help with the development process:
 
 ```bash
 just examples::regenerate   # whole import: extract -> cut-clips -> example
@@ -71,13 +46,17 @@ just examples::regenerate   # whole import: extract -> cut-clips -> example
 Or the stages individually:
 
 ```bash
-just examples::extract     # raw   -> examples/input/    (needs data/)
-just examples::cut-clips   # raw   -> examples/videos/   (needs data/ + ffmpeg)
+just examples::extract     # examples/raw   -> examples/input/
+just examples::cut-clips   # examples/raw   -> examples/videos/   (needs ffmpeg)
 just example               # input -> corpus.mediapkg
 ```
 
-Every stage overwrites in place, so re-running is the normal, safe retry; only
-`just example` works without the gitignored `data/` (`just examples::clean`
-wipes the outputs first for a from-scratch rebuild). The corpus is
-byte-reproducible, but clips are re-encoded — regenerating them yields a new,
-functionally identical binary (commit intentionally).
+To reset the examples directory (no output, no raw data):
+
+```bash
+just examples::clean
+```
+
+```
+
+```

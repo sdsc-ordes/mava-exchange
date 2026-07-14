@@ -27,15 +27,15 @@ from pathlib import Path
 import yaml
 
 REPO = Path(__file__).resolve().parents[2]
-DATA = REPO / "data"
+DATA = REPO / "examples" / "raw"
 INPUT_ROOT = REPO / "examples" / "input"
 VIDEOS_OUT = REPO / "examples" / "videos"
 
 
 def raw_source(name: str) -> Path | None:
-    """Locate the raw source video for a source under data/<name>/raw_data/."""
-    raw = DATA / name / "raw_data"
-    vy = raw / "video.yml"
+    """Locate the raw source video for a source under examples/raw."""
+    raw = DATA
+    vy = DATA / "video.yml"
     if vy.exists():
         v = yaml.safe_load(vy.read_text())
         exact = raw / f"{v['file']}{v.get('ext', '.mp4')}"
