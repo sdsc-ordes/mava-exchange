@@ -21,6 +21,7 @@
 - 📊 View ObservationSeries as line charts
 - 📝 View AnnotationSeries as timelines
 - 🏷️ View AnnotationListSeries with multi-label tags
+- 🎯 View RegionSeries bounding boxes over the video, with the track hierarchy
 - 🔍 Inspect package metadata and structure
 
 ## Technologies

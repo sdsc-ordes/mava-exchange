@@ -18,7 +18,7 @@ A `.mediapkg` file is a ZIP archive containing annotation data for one or more
 videos. Each video has one or more **tracks** — Parquet files containing the
 actual data.
 
-There are two kinds of tracks:
+There are four kinds of tracks:
 
 - **ObservationSeries** — a dense time-series of numeric values sampled at
   regular intervals. Each row is one point in time with one or more numeric
@@ -33,6 +33,11 @@ There are two kinds of tracks:
   per segment. Each row covers a time span with a list of string values. Use
   this for multi-label classifications, keyword tags, or any annotation where
   multiple values apply simultaneously.
+
+- **RegionSeries** — spatial detections in long format (one row per detection,
+  so many rows may share a `start_seconds`). Each row is a bounding box (`x`,
+  `y`, `w`, `h`) with a detection score and an identity (`cluster_id` + optional
+  `label`). Use this for face or object boxes. (Added in format 0.2.)
 
 ---
 
@@ -184,12 +189,102 @@ with MediaPackageWriter("corpus.mediapkg", description="Two-video corpus") as wr
     writer.add_track("video_002", transcript_track, transcript_df)
 ```
 
+### 1.5 Spatial detections — `RegionSeries`
+
+A `RegionSeries` stores bounding boxes in **long format**: one row per
+detection, so several rows can share the same `start_seconds`. The geometry
+columns (`x`, `y`, `w`, `h`) and `det_score` are declared as dimensions, just
+like an `ObservationSeries`; `cluster_id` (machine cluster) and a nullable
+`label` (human identity) are added automatically.
+
+```python
+from mava_exchange import RegionSeries, DimensionSpec
+
+faces = RegionSeries(
+    name="face_regions",
+    description="Per-frame face bounding boxes, normalized to [0,1] of the frame.",
+    sampling_interval=0.5,
+    dimensions=[
+        DimensionSpec("x",         "Box left edge (normalized)", "[0,1]"),
+        DimensionSpec("y",         "Box top edge (normalized)",  "[0,1]"),
+        DimensionSpec("w",         "Box width (normalized)",     "[0,1]"),
+        DimensionSpec("h",         "Box height (normalized)",    "[0,1]"),
+        DimensionSpec("det_score", "Detection confidence",       "[0,1]"),
+    ],
+)
+
+# One row per detection. cluster_id is an integer; label may be None.
+faces_df = pd.DataFrame({
+    "start_seconds": [0.0,  0.0,  0.5],   # two detections at t=0.0
+    "x":          [0.10, 0.60, 0.11],
+    "y":          [0.20, 0.18, 0.21],
+    "w":          [0.15, 0.14, 0.15],
+    "h":          [0.30, 0.28, 0.30],
+    "det_score":  [0.95, 0.88, 0.93],
+    "cluster_id": pd.array([0, 1, 0], dtype="Int64"),
+    "label":      ["Alice", None, "Alice"],
+})
+
+with MediaPackageWriter("faces.mediapkg") as writer:
+    writer.add_video("video_001", "https://example.org/videos/talk.mp4",
+                     width=3840, height=2160, fps=25.0)
+    writer.add_track("video_001", faces, faces_df)
+```
+
+Geometry is always **normalized** to `[0,1]` of the frame (top-left origin), so
+`x`/`y`/`w`/`h` must lie in `[0,1]`; absolute pixels are recoverable from the
+video's `width`/`height`. `label` is nullable and need not be unique — several
+clusters may share one label.
+
+### 1.6 Declaring relationships between tracks
+
+Every track type accepts two independent, optional edges:
+
+- **`parent`** — containment: the track this one lives _under_ (a single track
+  name; the parent graph must be acyclic).
+- **`derived_from`** + **`method`** — provenance: the source tracks this one is
+  _computed from_ (a list), and how (`method` is required when `derived_from` is
+  set, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`).
+
+A track may have both at once — e.g. an aggregation that _lives under_
+`aggregations` yet is _computed from_ several sources:
+
+```python
+shots = AnnotationSeries(name="shots", description="Shot segmentation")
+
+# Contained in `shots`, and derived (argmax) from the five shot-size scores:
+shot_sizes = AnnotationSeries(
+    name="shot_sizes",
+    description="Dominant shot size per shot",
+    parent="shots",
+    derived_from=["extreme_close_up", "close_up", "medium", "full", "long"],
+    method="argmax",
+)
+
+# A per-person presence score, derived from the face detections:
+person_alice = ObservationSeries(
+    name="person_alice",
+    description="Alice presence score",
+    sampling_interval=0.5,
+    dimensions=[DimensionSpec("presence", "Presence score", "[0,1]")],
+    parent="person_identification",
+    derived_from=["face_regions"],
+    method="cluster_to_scalar",
+)
+```
+
+These edges are written into `manifest.json` (and exported to RDF as
+`mava:hasParent` / `mava:derivedFrom` / `mava:derivationMethod`). The validator
+checks that every referenced track exists, that `method` is present whenever
+`derived_from` is, and that the `parent` graph is acyclic.
+
 ---
 
 ## 2. Reading a `.mediapkg`
 
 Use `MediaPackageReader` to read a package. Use it as a context manager to
-ensure the file is closed properly.
+ensure the file is closed properly. To run the examples below you can use the
+`corpus.mediapkg` under `examples/output` from the `mava-exchange` repository.
 
 ```python
 from mava_exchange import MediaPackageReader
@@ -197,32 +292,35 @@ from mava_exchange import MediaPackageReader
 with MediaPackageReader("corpus.mediapkg") as reader:
 
     # What's in this package?
-    print(reader.video_ids)       # ["video_001", "video_002"]
-    print(reader.track_names)     # ["emotions", "transcript", "rms_volume", "scene_tags"]
+    print(reader.video_ids)       # ['silent_child', 'tagesschau']
+    print(reader.track_names)     # ['shots', 'person_identification', ... ]
 
     # Which tracks does a specific video have?
-    print(reader.tracks_for_video("video_001"))  # ["emotions", "transcript"]
-    print(reader.tracks_for_video("video_002"))  # ["rms_volume", "transcript"]
+    print(reader.tracks_for_video("silent_child")) # ['shots', 'person_identification', ... ]
+    print(reader.tracks_for_video("tagesschau"))   # ['shots', 'shot_density', ...]
 
     # Read a track into a DataFrame
-    df = reader.read_track("video_001", "emotions")
+    df = reader.read_track("tagesschau", "dominant_colors")
     print(df.head())
-    #    start_seconds     angry     happy   neutral
-    # 0            0.0  0.12451  0.64231  0.23318
-    # 1            0.5  0.08734  0.71204  0.20062
+    # start_seconds         r         g         b
+    # 0            0.0  0.070001  0.121187  0.178580
+    # 1            0.5  0.069677  0.118246  0.171448
+    # 2            1.0  0.070119  0.118845  0.172824
+    # 3            1.5  0.070927  0.120733  0.176737
+    # 4            2.0  0.071317  0.123408  0.183246
 
     # Read all tracks for a video at once
-    tracks = reader.read_video("video_001")
+    tracks = reader.read_video("tagesschau")
     # tracks == {"emotions": df, "transcript": df}
 
     # Get track definition (reconstructed as a typed object)
-    track = reader.track_def("emotions")
+    track = reader.track_def("dominant_colors")
     print(track.sampling_interval)        # 0.5
-    print([d.name for d in track.dimensions])  # ["angry", "happy", "neutral"]
+    print([d.name for d in track.dimensions])  # ['r', 'g', 'b']
 
     # Get video metadata
-    meta = reader.video_meta("video_001")
-    print(meta["src"])  # "https://example.org/videos/talk_001.mp4"
+    meta = reader.video_meta("tagesschau")
+    print(meta["src"])  # "tagesschau.mp4"
 ```
 
 ### Quick file stats without loading data
@@ -294,66 +392,106 @@ mediapkg-inspect corpus.mediapkg
 ```
 
 ```
+
 ════════════════════════════════════════════════════════════
   corpus.mediapkg
 ════════════════════════════════════════════════════════════
 
-Version:     0.1
-Created:     2025-08-12T10:00:00+00:00
+Version:     0.2
+Created:     2025-01-01T00:00:00+00:00
 Ontology:    http://example.org/mava/ontology#
-Description: Two-video corpus
+Description: Example corpus: real segments (tagesschau hierarchy, silent_child face regions).
 Videos:      2
 
 Tracks:
-  emotions               mava:ObservationSeries  @0.5s  [angry, happy, neutral]
-  transcript             mava:AnnotationSeries
+  shots                  mava:AnnotationSeries
+  person_identification  mava:AnnotationSeries
+  joanne                 mava:ObservationSeries  @0.5s  [score]
+  paul                   mava:ObservationSeries  @0.5s  [score]
+  face_regions           mava:RegionSeries  @0.5s  [x, y, w, h, det_score]
+  shot_density           mava:ObservationSeries  @0.1s  [density]
+  dominant_colors        mava:ObservationSeries  @0.5s  [r, g, b]
+  shot_sizes             mava:AnnotationSeries
+  close_up               mava:ObservationSeries  @0.2s  [score]
+  medium_shot            mava:ObservationSeries  @0.2s  [score]
+  long_shot              mava:ObservationSeries  @0.2s  [score]
+  whisper_transcript     mava:AnnotationSeries
   rms_volume             mava:ObservationSeries  @0.064s  [rms]
+  face_emotions          mava:AnnotationSeries
+  happy                  mava:ObservationSeries  @0.5s  [score]
+  sad                    mava:ObservationSeries  @0.5s  [score]
+  neutral                mava:ObservationSeries  @0.5s  [score]
+  anchor_daubner         mava:ObservationSeries  @0.5s  [score]
+  shots_modified         mava:AnnotationSeries
 
 Videos:
-  video_001
-    src:    https://example.org/videos/talk_001.mp4
-    tracks: emotions, transcript
-  video_002
-    src:    https://example.org/videos/talk_002.mp4
-    tracks: rms_volume, transcript
+  silent_child
+    src:    silent_child.mp4
+    tracks: shots, person_identification, joanne, paul, face_regions
+  tagesschau
+    src:    tagesschau.mp4
+    tracks: shots, shot_density, dominant_colors, shot_sizes, close_up, medium_shot, long_shot, whisper_transcript, rms_volume, face_emotions, happy, sad, neutral, anchor_daubner, shots_modified
 
 Files:
-  Path                                          Rows     Raw   Compressed  Saved
-  -------------------------------------------- ------  ------  ----------  -----
-  video_001/emotions.parquet                      100   8.2KB      3.1KB    62%
-  video_001/transcript.parquet                      3   2.1KB      1.4KB    33%
-  video_002/rms_volume.parquet                    200   6.4KB      2.8KB    56%
-  video_002/transcript.parquet                      3   2.1KB      1.4KB    33%
+  Path                                            Rows         Raw  Compressed   Saved
+  --------------------------------------------- ------  ----------  ----------  ------
+  silent_child/shots.parquet                         6       2.4KB       1.2KB     51%
+  silent_child/person_identification.parquet         6       2.4KB       1.2KB     51%
+  silent_child/joanne.parquet                       41       2.3KB       1.4KB     40%
+  silent_child/paul.parquet                         41       2.3KB       1.4KB     40%
+  silent_child/face_regions.parquet                 46       6.8KB       3.4KB     50%
+  tagesschau/shots.parquet                          11       2.4KB       1.2KB     49%
+  tagesschau/shot_density.parquet                  901      15.6KB      11.6KB     25%
+  tagesschau/dominant_colors.parquet               181       8.2KB       5.6KB     32%
+  tagesschau/shot_sizes.parquet                     10       2.6KB       1.3KB     50%
+  tagesschau/close_up.parquet                      451       7.8KB       5.1KB     34%
+  tagesschau/medium_shot.parquet                   451       8.0KB       5.4KB     33%
+  tagesschau/long_shot.parquet                     451       6.6KB       4.3KB     35%
+  tagesschau/whisper_transcript.parquet             18       4.0KB       2.2KB     45%
+  tagesschau/rms_volume.parquet                   1407      22.3KB      15.3KB     31%
+  tagesschau/face_emotions.parquet                   9       2.5KB       1.3KB     50%
+  tagesschau/happy.parquet                         155       3.7KB       2.3KB     37%
+  tagesschau/sad.parquet                           155       3.8KB       2.5KB     36%
+  tagesschau/neutral.parquet                       155       3.8KB       2.5KB     36%
+  tagesschau/anchor_daubner.parquet                155       3.9KB       2.5KB     36%
+  tagesschau/shots_modified.parquet                 11       2.4KB       1.2KB     49%
+
+  TOTAL                                                    114.0KB      72.8KB     36%
 ```
 
 **Drill into a specific track:**
 
 ```bash
-mediapkg-inspect corpus.mediapkg --track emotions --video video_001 --head 3
+mediapkg-inspect corpus.mediapkg --track face_emotions --video tagesschau --head 3
 ```
 
 ```
-Track:   emotions  (mava:ObservationSeries)
-Video:   video_001
-Desc:    Face emotion probability scores from DeepFace model
-Rows:    100
+════════════════════════════════════════════════════════════
+  corpus.mediapkg
+════════════════════════════════════════════════════════════
+
+
+Track:   dominant_colors  (mava:ObservationSeries)
+Video:   tagesschau
+Desc:    Dominant Color(s)
+Rows:    181
 
 Columns:
-  start_seconds          double[pyarrow]
-  angry                  double[pyarrow]
-  happy                  double[pyarrow]
-  neutral                double[pyarrow]
+  start_seconds          float64
+  r                      float64
+  g                      float64
+  b                      float64
 
 First 3 rows:
-  start_seconds     angry     happy   neutral
-            0.0  0.12451  0.64231  0.23318
-            0.5  0.08734  0.71204  0.20062
-            1.0  0.21003  0.55891  0.23106
+ start_seconds        r        g        b
+           0.0 0.070001 0.121187 0.178580
+           0.5 0.069677 0.118246 0.171448
+           1.0 0.070119 0.118845 0.172824
 
 Dimensions:
-  angry                Anger probability    [0,1]
-  happy                Happiness probability  [0,1]
-  neutral              Neutral expression   [0,1]
+  r                    Component r  [0,1]
+  g                    Component g  [0,1]
+  b                    Component b  [0,1]
 ```
 
 ---
@@ -377,7 +515,7 @@ context mapping column names to the MAVA ontology, and the file inventory. See
 
 ## Next steps
 
-- See `examples/tsv_to_mediapkg.py` for a complete example converting real TSV
-  annotation files from two different tools into a corpus package.
+- See `examples/README.md` for the real-data example corpus and the pipeline
+  that builds it (`examples/scripts/build_mediapkg.py`).
 - See `spec/SPEC.md` for the full format specification.
 - See `spec/mava.ttl` for the MAVA ontology and SHACL validation shapes.

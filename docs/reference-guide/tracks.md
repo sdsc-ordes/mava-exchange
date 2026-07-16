@@ -19,3 +19,5 @@
 - Use
   [**AnnotationListSeries**](../generated/mava_exchange.tracks.AnnotationListSeries.rst)
   for multi-label intervals
+- Use [**RegionSeries**](../generated/mava_exchange.tracks.RegionSeries.rst) for
+  spatial detections (bounding boxes), long format

@@ -23,6 +23,7 @@ Complete reference for the `mava-exchange` Python package.
    tracks.ObservationSeries
    tracks.AnnotationSeries
    tracks.AnnotationListSeries
+   tracks.RegionSeries
    tracks.DimensionSpec
    validate.ValidationResult
 ```
