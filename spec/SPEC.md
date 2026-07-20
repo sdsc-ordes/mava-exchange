@@ -464,8 +464,8 @@ recoverable from the normalized values via the video's `width` / `height`.
 `cluster_id` is the unsupervised machine cluster (stable, always present).
 `label` is a human-applied name that MAY be missing, and several clusters MAY
 share one label (e.g. a person split across clusters). Consumers MUST NOT assume
-`cluster_id` ↔ `label` is one-to-one, and MUST NOT require label completeness
-or uniqueness.
+`cluster_id` ↔ `label` is one-to-one, and MUST NOT require label completeness or
+uniqueness.
 
 **Examples of RegionSeries tracks:** face bounding boxes, object detections, any
 localized per-frame spatial annotation.
