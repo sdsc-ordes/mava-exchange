@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-12
+
+### Added
+
+- `toolSpecificDataModel` field for all `mava` series to allow idempotent import
+  and export. This field can preserve information to distinguish different
+  source data models mapped to the same `mava` series.
+
 ## [0.2.0] - 2026-07-05
 
 Format version `0.1` → `0.2`. **Additive** — all `0.1` packages remain valid
