@@ -45,6 +45,11 @@ def _relations(track: Any) -> dict[str, Any]:
         d["method"] = track.method
     return d
 
+def _add_specific_model(track: Any, d: dict[str, Any]) -> dict[str, Any]:
+    """Optional tool specific data model, emitted only when present."""
+    if track.tool_specific_data_model is not None:
+        d["tool_specific_data_model"] = track.tool_specific_data_model
+    return d
 
 @dataclass
 class DimensionSpec:
@@ -126,6 +131,9 @@ class ObservationSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_specific_data_model: list[str] | None = None
+    """Source data model to distiguish from other data models mapping to the same mava series."""
+
     type: Literal["mava:ObservationSeries"] = field(
         default="mava:ObservationSeries", init=False
     )
@@ -146,7 +154,7 @@ class ObservationSeries:
         }
         if self.sampling_interval is not None:
             d["sampling_interval_seconds"] = self.sampling_interval
-        return d
+        return _add_specific_model(self, d)
 
 
 @dataclass
@@ -187,6 +195,9 @@ class AnnotationSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_specific_data_model: list[str] | None = None
+    """Source data model to distiguish from other data models mapping to the same mava series."""
+
     type: Literal["mava:AnnotationSeries"] = field(
         default="mava:AnnotationSeries", init=False
     )
@@ -198,12 +209,14 @@ class AnnotationSeries:
 
     def to_dict(self) -> dict:
         """Converts to dictionary for manifest.json."""
-        return {
+        d: dict[str, Any] = {
             "type":        self.type,
             "description": self.description,
             **_relations(self),
             "columns":     self.columns,
-        }
+            }
+
+        return _add_specific_model(self, d)
 
 
 @dataclass
@@ -248,6 +261,9 @@ class AnnotationListSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_specific_data_model: list[str] | None = None
+    """Source data model to distiguish from other data models mapping to the same mava series."""
+
     type: Literal["mava:AnnotationListSeries"] = field(
         default="mava:AnnotationListSeries", init=False
     )
@@ -259,12 +275,14 @@ class AnnotationListSeries:
 
     def to_dict(self) -> dict:
         """Converts to dictionary for manifest.json."""
-        return {
+        d: dict[str, Any] = {
             "type":        self.type,
             "description": self.description,
             **_relations(self),
             "columns":     self.columns,
-        }
+            }
+
+        return _add_specific_model(self, d)
 
 
 @dataclass
@@ -316,6 +334,9 @@ class RegionSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_specific_data_model: list[str] | None = None
+    """Source data model to distiguish from other data models mapping to the same mava series."""
+
     type: Literal["mava:RegionSeries"] = field(
         default="mava:RegionSeries", init=False
     )
@@ -336,7 +357,7 @@ class RegionSeries:
         }
         if self.sampling_interval is not None:
             d["sampling_interval_seconds"] = self.sampling_interval
-        return d
+        return _add_specific_model(self, d)
 
 
 # Type alias for any kind of track
