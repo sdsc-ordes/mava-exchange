@@ -5,7 +5,7 @@ Checks that ObservationSeries and AnnotationSeries produce the correct
 manifest dicts and column lists.
 """
 
-from mava_exchange import ObservationSeries, AnnotationSeries, DimensionSpec
+from mava_exchange import AnnotationSeries, DimensionSpec, ObservationSeries
 
 
 class TestObservationSeries:
@@ -53,6 +53,23 @@ class TestObservationSeries:
             dimensions=[DimensionSpec("angry", "Anger", "[0,1]")]
         )
         assert track.to_dict()["sampling_interval_seconds"] == 0.5
+
+    def test_to_dict_tool_specific_data_model_interval_optional(self):
+            track = ObservationSeries(
+                name="emotions",
+                description="Test",
+                dimensions=[DimensionSpec("angry", "Anger", "[0,1]")]
+            )
+            assert "tool_specific_data_model" not in track.to_dict()
+
+    def test_to_dict_tool_specific_data_model_present_when_set(self):
+            track = ObservationSeries(
+                name="emotions",
+                description="Test",
+                tool_specific_data_model=["EmotionDataModel"],
+                dimensions=[DimensionSpec("angry", "Anger", "[0,1]")]
+            )
+            assert track.to_dict()["tool_specific_data_model"] == ["EmotionDataModel"]
 
     def test_to_dict_dimensions(self):
         track = ObservationSeries(

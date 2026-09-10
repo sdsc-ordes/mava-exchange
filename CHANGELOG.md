@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-12
+
+### Added
+
+- `toolSpecificDataModel` field for all `mava` series to allow idempotent import
+  and export. This field can preserve information to distinguish different
+  source data models mapped to the same `mava` series.
+
 ## [0.2.0] - 2026-07-05
 
 Format version `0.1` → `0.2`. **Additive** — all `0.1` packages remain valid
@@ -63,6 +71,7 @@ unaffected.
 - PyLODE-generated ontology documentation
 - GitHub Actions workflow for automatic documentation deployment
 
-[Unreleased]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/sdsc-ordes/mava-exchange/releases/tag/v0.1.0

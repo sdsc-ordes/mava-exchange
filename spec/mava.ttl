@@ -49,7 +49,7 @@ mava:Video a owl:Class ;
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION 2 — Package class
 #
-# This class links a media package to the video or video corpus it dexcribes.
+# This class links a media package to the video or video corpus it describes.
 # ═══════════════════════════════════════════════════════════════════════
 
 mava:MediaPackage a owl:Class ;
@@ -192,7 +192,7 @@ mava:belongsToObservationSeries a owl:ObjectProperty ;
 mava:seriesDescription a owl:DatatypeProperty ;
     rdfs:label   "series description" ;
     rdfs:comment "Human-readable description of what a series contains." ;
-    rdfs:domain  [ owl:unionOf (mava:AnnotationSeries mava:ObservationSeries mava:AnnotationListSeries) ] ;
+    rdfs:domain  [ owl:unionOf (mava:AnnotationSeries mava:ObservationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
     rdfs:range   xsd:string .
 
 mava:samplingInterval a owl:DatatypeProperty ;
@@ -201,6 +201,11 @@ mava:samplingInterval a owl:DatatypeProperty ;
     rdfs:domain  mava:ObservationSeries ;
     rdfs:range   xsd:decimal .
 
+mava:toolSpecificDataModel a owl:DatatypeProperty ;
+    rdfs:label  "tool-specific data model" ;
+    rdfs:comment "Distinguishes data models from a single tool mapping to the same mava series and prevents ambiguity during import."
+    rdfs:domain  [ owl:unionOf (mava:AnnotationSeries mava:ObservationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
+    rdfs:range   xsd:string .
 
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION 6 — Time properties

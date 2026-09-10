@@ -94,6 +94,25 @@ with MediaPackageWriter("corpus.mediapkg") as w:
     w.add_track("v002", emotions, emotions_df_2)  # Same track definition
 ```
 
+### Preserve the source data model
+
+```python
+# Two internal data models map to the same mava series
+emotions = ObservationSeries(
+    name="emotions",
+    description="Face emotion scores",
+    sampling_interval=0.5,
+    dimensions=[
+        DimensionSpec("happy", "Happiness", "[0,1]"),
+        DimensionSpec("redness", "Redness", "[0,1]"),
+    ]
+    tool_specific_data_model=[
+        "emotion-data", #useful for a future import
+        "colour-data"   #otherwise ambiguous
+    ]
+)
+```
+
 ## What Gets Written
 
 When you call `write()` (or exit the context manager), a ZIP file is created
