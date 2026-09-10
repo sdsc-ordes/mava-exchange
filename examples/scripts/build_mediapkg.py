@@ -72,15 +72,22 @@ def build_track(name: str, meta: dict):
             description=meta.get("description", ""),
             dimensions=_dims(meta),
             sampling_interval=meta.get("sampling_interval_seconds"),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
             **_relations(meta),
         )
     if t == "mava:AnnotationSeries":
         return AnnotationSeries(
-            name=name, description=meta.get("description", ""), **_relations(meta)
+            name=name,
+            description=meta.get("description", ""),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
+            **_relations(meta)
         )
     if t == "mava:AnnotationListSeries":
         return AnnotationListSeries(
-            name=name, description=meta.get("description", ""), **_relations(meta)
+            name=name,
+            description=meta.get("description", ""),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
+            **_relations(meta)
         )
     if t == "mava:RegionSeries":
         return RegionSeries(
@@ -88,6 +95,7 @@ def build_track(name: str, meta: dict):
             description=meta.get("description", ""),
             dimensions=_dims(meta),
             sampling_interval=meta.get("sampling_interval_seconds"),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
             **_relations(meta),
         )
     raise ValueError(f"Unknown track type {t!r} for track {name!r}")

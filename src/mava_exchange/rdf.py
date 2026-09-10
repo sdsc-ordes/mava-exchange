@@ -101,7 +101,7 @@ def _add_tracks(g, manifest, MAVA, EX) -> None:
                    Literal(track_def["description"])))
 
         if "tool_specific_data_model" in track_def:
-            for model in track_def["tool_specific_data_model"].items():
+            for model in track_def["tool_specific_data_model"]:
                 g.add((series_uri, MAVA.toolSpecificDataModel,
                            Literal(model)))
 
