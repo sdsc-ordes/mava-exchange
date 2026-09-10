@@ -5,7 +5,7 @@ Checks that ObservationSeries and AnnotationSeries produce the correct
 manifest dicts and column lists.
 """
 
-from mava_exchange import ObservationSeries, AnnotationSeries, DimensionSpec
+from mava_exchange import AnnotationSeries, DimensionSpec, ObservationSeries
 
 
 class TestObservationSeries:

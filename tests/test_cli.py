@@ -7,34 +7,30 @@ import pytest
 
 from mava_exchange.cli import inspect_cmd, validate_cmd
 
-
 # ─────────────────────────────────────────────
 # validate_cmd
 # ─────────────────────────────────────────────
 
 
 def test_validate_cmd_valid_package(single_video_pkg, capsys):
-    with patch("sys.argv", ["mediapkg-validate", str(single_video_pkg)]):
-        with pytest.raises(SystemExit) as exc:
-            validate_cmd()
+    with patch("sys.argv", ["mediapkg-validate", str(single_video_pkg)]), pytest.raises(SystemExit) as exc:
+        validate_cmd()
     assert exc.value.code == 0
     out = capsys.readouterr().out
     assert "VALID" in out
 
 
 def test_validate_cmd_strict_flag(single_video_pkg, capsys):
-    with patch("sys.argv", ["mediapkg-validate", str(single_video_pkg), "--strict"]):
-        with pytest.raises(SystemExit) as exc:
-            validate_cmd()
+    with patch("sys.argv", ["mediapkg-validate", str(single_video_pkg), "--strict"]), pytest.raises(SystemExit) as exc:
+        validate_cmd()
     assert exc.value.code == 0
 
 
 def test_validate_cmd_invalid_package(tmp_path, capsys):
     bad = tmp_path / "bad.mediapkg"
     bad.write_bytes(b"not a zip")
-    with patch("sys.argv", ["mediapkg-validate", str(bad)]):
-        with pytest.raises(SystemExit) as exc:
-            validate_cmd()
+    with patch("sys.argv", ["mediapkg-validate", str(bad)]), pytest.raises(SystemExit) as exc:
+        validate_cmd()
     assert exc.value.code == 1
     out = capsys.readouterr().out
     assert "INVALID" in out

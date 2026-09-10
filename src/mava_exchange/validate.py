@@ -11,10 +11,9 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
-
 
 KNOWN_VERSIONS = {"0.1", "0.2"}
 KNOWN_TRACK_TYPES = {

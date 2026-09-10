@@ -94,12 +94,14 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"tests/**" = ["INP001", "PLR2004", "PLR0913", "PT012", "S101"]
+"tests/**" = ["INP001", "PLR2004", "PLR0913", "PLR0917", "PT012", "S101"]
 "examples/*" = ["INP001"]
 "tools/**" = ["INP001"]
 "data/scripts/**" = ["INP001"]
 "[!t][!e][!s][!t][!s]*/**" = ["PT"]
 "docs/*" = ["INP001"]
+"src/mava_exchange/rdf.py" = ["PLR0917"]
+"src/mava_exchange/writer.py" = ["PLR0917"]
 # assert used only for mypy type-narrowing after guards that already raise
 "src/mava_exchange/reader.py" = ["S101"]
 

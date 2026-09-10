@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -41,7 +41,7 @@ INPUT_ROOT = Path(__file__).resolve().parents[1] / "input"
 OUT_PATH = Path(__file__).resolve().parents[1] / "output" / "corpus.mediapkg"
 
 # Fixed timestamp so regenerating the corpus is byte-reproducible.
-FIXED_CREATED = datetime(2025, 1, 1, tzinfo=timezone.utc)
+FIXED_CREATED = datetime(2025, 1, 1, tzinfo=UTC)
 
 NUM_RE = re.compile(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?")
 
