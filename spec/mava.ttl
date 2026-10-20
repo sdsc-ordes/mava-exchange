@@ -203,7 +203,7 @@ mava:samplingInterval a owl:DatatypeProperty ;
 
 mava:toolSpecificDataModel a owl:DatatypeProperty ;
     rdfs:label  "tool-specific data model" ;
-    rdfs:comment "Distinguishes data models from a single tool mapping to the same mava series and prevents ambiguity during import."
+    rdfs:comment "Distinguishes data models from a single tool mapping to the same mava series and prevents ambiguity during import." ;
     rdfs:domain  [ owl:unionOf (mava:AnnotationSeries mava:ObservationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
     rdfs:range   xsd:string .
 
