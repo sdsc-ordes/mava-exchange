@@ -66,10 +66,10 @@ class TestObservationSeries:
             track = ObservationSeries(
                 name="emotions",
                 description="Test",
-                tool_specific_data_model=["EmotionDataModel"],
+                tool_specific_data_model={"toolName": "EmotionDataModel"},
                 dimensions=[DimensionSpec("angry", "Anger", "[0,1]")]
             )
-            assert track.to_dict()["tool_specific_data_model"] == ["EmotionDataModel"]
+            assert track.to_dict()["tool_specific_data_model"] == {"toolName": "EmotionDataModel"}
 
     def test_to_dict_dimensions(self):
         track = ObservationSeries(

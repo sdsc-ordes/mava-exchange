@@ -50,7 +50,7 @@ def _relations(track: Any) -> dict[str, Any]:
 def _add_optional_common_fields(track: Any, d: dict[str, Any]) -> dict[str, Any]:
     """Optional tool specific data model, emitted only when present."""
     if track.tool_specific_data_model is not None:
-        d["tool_specific_data_model"] = list(track.tool_specific_data_model)
+        d["tool_specific_data_model"] = dict(track.tool_specific_data_model)
     return d
 
 @dataclass
@@ -133,7 +133,7 @@ class ObservationSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
-    tool_specific_data_model: list[str] | None = None
+    tool_specific_data_model: dict[str, Any] | None = None
     """Source data model to distiguish from other data models mapping to the same mava series."""
 
     type: Literal["mava:ObservationSeries"] = field(
@@ -198,7 +198,7 @@ class AnnotationSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
-    tool_specific_data_model: list[str] | None = None
+    tool_specific_data_model: dict[str, Any] | None = None
     """Source data model to distiguish from other data models mapping to the same mava series."""
 
     type: Literal["mava:AnnotationSeries"] = field(
@@ -264,7 +264,7 @@ class AnnotationListSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
-    tool_specific_data_model: list[str] | None = None
+    tool_specific_data_model: dict[str, Any] | None = None
     """Source data model to distiguish from other data models mapping to the same mava series."""
 
     type: Literal["mava:AnnotationListSeries"] = field(
@@ -337,7 +337,7 @@ class RegionSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
-    tool_specific_data_model: list[str] | None = None
+    tool_specific_data_model: dict[str, Any] | None = None
     """Source data model to distiguish from other data models mapping to the same mava series."""
 
     type: Literal["mava:RegionSeries"] = field(

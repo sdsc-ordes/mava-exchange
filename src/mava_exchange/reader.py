@@ -77,18 +77,21 @@ def _track_from_dict(name: str, d: dict) -> Track:
             description=d.get("description", ""),
             dimensions=_dims_from_dict(d),
             sampling_interval=d.get("sampling_interval_seconds"),
+            tool_specific_data_model=d.get("tool_specific_data_model"),
             **rel,
         )
     elif track_type == "mava:AnnotationSeries":
         return AnnotationSeries(
             name=name,
             description=d.get("description", ""),
+            tool_specific_data_model=d.get("tool_specific_data_model"),
             **rel,
         )
     elif track_type == "mava:AnnotationListSeries":
         return AnnotationListSeries(
             name=name,
             description=d.get("description", ""),
+            tool_specific_data_model=d.get("tool_specific_data_model"),
             **rel,
         )
     elif track_type == "mava:RegionSeries":
@@ -97,6 +100,7 @@ def _track_from_dict(name: str, d: dict) -> Track:
             description=d.get("description", ""),
             dimensions=_dims_from_dict(d),
             sampling_interval=d.get("sampling_interval_seconds"),
+            tool_specific_data_model=d.get("tool_specific_data_model"),
             **rel,
         )
     else:

@@ -16,7 +16,8 @@ shot_density:
     density:
       description: Shot Density
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 dominant_colors:
   type: mava:ObservationSeries
   description: Dominant Color(s)
@@ -32,7 +33,8 @@ dominant_colors:
     b:
       description: Component b
       range: "[0,1]"
-  tool_specific_data_model: ["RGB_HIST"]
+  tool_specific_data_model:
+    tibava: "RGB_HIST"
 shot_sizes:
   type: mava:AnnotationSeries
   description: Shot Sizes
@@ -51,7 +53,8 @@ close_up:
     score:
       description: Close-Up
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 medium_shot:
   type: mava:ObservationSeries
   description: Medium Shot
@@ -61,7 +64,8 @@ medium_shot:
     score:
       description: Medium Shot
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 long_shot:
   type: mava:ObservationSeries
   description: Long Shot
@@ -71,7 +75,8 @@ long_shot:
     score:
       description: Long Shot
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 whisper_transcript:
   type: mava:AnnotationSeries
   description: Whisper Transcript
@@ -103,7 +108,8 @@ happy:
     score:
       description: Happy
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 sad:
   type: mava:ObservationSeries
   description: Sad
@@ -113,7 +119,8 @@ sad:
     score:
       description: Sad
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 neutral:
   type: mava:ObservationSeries
   description: Neutral
@@ -123,7 +130,8 @@ neutral:
     score:
       description: Neutral
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 anchor_daubner:
   type: mava:ObservationSeries
   description: "Anchor: Daubner"
@@ -133,7 +141,8 @@ anchor_daubner:
     score:
       description: "Anchor: Daubner"
       range: "[0,1]"
-  tool_specific_data_model: ["SCALAR"]
+  tool_specific_data_model:
+    tibava: "SCALAR"
 shots_modified:
   type: mava:AnnotationSeries
   description: Shots-modified
