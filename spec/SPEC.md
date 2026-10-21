@@ -634,6 +634,8 @@ The ontology defines:
   boxes), long format
 - `mava:Dimension` — a single measured quantity within an ObservationSeries or
   RegionSeries
+- `mava:toolSpecificDataModel` - a dictionary to distinguish tracks that mapped
+  to the same `Series` and prevent ambiguities when importing.
 - Time properties: `mava:atTime`, `mava:startTime`, `mava:endTime`
 - Value properties: `mava:numericValue`, `mava:stringValue`, `mava:listValue`
 - Region geometry / identity: `mava:x`, `mava:y`, `mava:width`, `mava:height`,
