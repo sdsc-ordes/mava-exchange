@@ -126,6 +126,11 @@ audio_wave = ObservationSeries(
 )
 ```
 
+We recommend preserving the content in `tool_specific_data_model` when importing
+and exporting `.mediapkg` files i.e. only add values to existing keys or add new
+keys, but do not delete or reset the content. By deleting or resetting content,
+the full interoperability of a `.mediapkg` is not guaranteed.
+
 ### 1.3 Prepare your DataFrames
 
 Each track expects a DataFrame with the columns declared in its definition.
@@ -271,8 +276,8 @@ Geometry is always **normalized** to `[0,1]` of the frame (top-left origin), so
 video's `width`/`height`. `label` is nullable and need not be unique — several
 clusters may share one label.
 
-> ![NOTE] `RegionSeries` also supports the `tool_specific_data_model` field. See
-> section 1.2 for details
+> ℹ️ **NOTE**: `RegionSeries` also supports the `tool_specific_data_model`
+> field. See section 1.2 for details
 
 ### 1.7 Declaring relationships between tracks
 
@@ -533,7 +538,7 @@ Dimensions:
   b                    Component b  [0,1]
 ```
 
-> ![NOTE] The `tool_specific_data_model` field is not shown in the
+> ℹ️ **NOTE**: The `tool_specific_data_model` field is not shown in the
 > `mediapkg-inspect` because of its specificity. In order to check it, you
 > should use the `manifest` described in the next section.
 
