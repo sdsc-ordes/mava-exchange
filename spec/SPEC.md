@@ -283,6 +283,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
   "type": "mava:ObservationSeries",
   "description": "Per-frame probability scores from face analysis, sampled every 0.5s.",
   "sampling_interval_seconds": 0.5,
+  "tool_specific_data_model": { "tibava": "emotions"},
   "columns": ["start_seconds", "angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"],
   "dimensions": {
     "angry":    {"description": "Anger probability score",    "range": "[0,1]"},
@@ -302,6 +303,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
 "transcript": {
   "type": "mava:AnnotationSeries",
   "description": "Speech-to-text segments from Whisper transcription model.",
+  "tool_specific_data_model": { "tibava": "transcript"},
   "columns": ["start_seconds", "end_seconds", "annotations"]
 }
 ```
@@ -312,6 +314,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
 "scene_tags": {
   "type": "mava:AnnotationListSeries",
   "description": "Scene classification tags from Places3 model (indoor/outdoor + natural/man-made)",
+  "tool_specific_data_model": { "tibava": "scene_tags"},
   "columns": ["start_seconds", "end_seconds", "annotations"]
 }
 ```
@@ -323,6 +326,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
   "type": "mava:RegionSeries",
   "description": "Per-frame face bounding boxes, sampled every 0.5s. Coordinates normalized to [0,1] of the frame, top-left origin.",
   "sampling_interval_seconds": 0.5,
+  "tool_specific_data_model": { "tibava": "face_regions"},
   "columns": ["start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"],
   "dimensions": {
     "x":         {"description": "Box left edge, normalized",  "range": "[0,1]"},
