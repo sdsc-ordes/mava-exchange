@@ -4,6 +4,7 @@
 @prefix mava:    <http://example.org/mava/ontology#> .
 @prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
 
@@ -205,7 +206,7 @@ mava:toolSpecificDataModel a owl:DatatypeProperty ;
     rdfs:label  "tool-specific data model" ;
     rdfs:comment "Distinguishes data models from a single tool mapping to the same mava series and prevents ambiguity during import." ;
     rdfs:domain  [ owl:unionOf (mava:AnnotationSeries mava:ObservationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
-    rdfs:range   xsd:string .
+    rdfs:range   rdf:JSON .
 
 # ═══════════════════════════════════════════════════════════════════════
 # SECTION 6 — Time properties
