@@ -5,7 +5,7 @@
 - Download mediapkg example
   [`corpus.mediapkg`](https://github.com/sdsc-ordes/mava-exchange/blob/main/examples/output/corpus.mediapkg)
   or use your own mediapkg
-- You can use the emmbedded viewer or open the viewer in full page mode
+- You can use the embedded viewer or open the viewer in full page mode
   <a href="viewer-app.html" target="_blank">here</a>.
 - Drag and drop a `.mediapkg` file into the viewer
 - Browse videos and tracks
