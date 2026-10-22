@@ -11,10 +11,9 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
-
 
 KNOWN_VERSIONS = {"0.1", "0.2"}
 KNOWN_TRACK_TYPES = {
@@ -181,11 +180,56 @@ def _check_track(track_name: str, track: dict, result: ValidationResult, strict:
     else:
         result.ok()
 
+    _check_tool_specific_data_model(track_name, track, result)
+
     if track.get("type") == "mava:ObservationSeries":
         _check_observation_series_track(track_name, track, result, strict)
 
     if track.get("type") == "mava:RegionSeries":
         _check_region_series_track(track_name, track, result, strict)
+
+def _check_tool_specific_data_model(
+    track_name: str, track: dict, result: ValidationResult
+) -> None:
+    """Check the optional tool_specific_data_model is well formed.
+
+    A dict with tools names as keys and lists of strings as values. A
+    list at the top level carries no tool name and would be unusable on
+    import.
+
+    Each value is a list of keywords with at least one entry.
+    """
+    if "tool_specific_data_model" not in track:
+        return
+
+    tsdm = track["tool_specific_data_model"]
+    if not isinstance(tsdm, dict):
+        result.error(
+            f"Track '{track_name}': 'tool_specific_data_model' must be a dictionary"
+            f"keyed by tool name, got {type(tsdm).__name__}"
+        )
+        return
+    result.ok()
+
+    for tool, keyword in tsdm.items():
+        if not isinstance(tool, str) or not tool:
+            result.error(
+                f"Track '{track_name}': 'tool_specific_data_model' has a "
+                f"non-string or empty tool name"
+            )
+        elif isinstance(keyword, list) and all(isinstance(m, str) for m in keyword):
+            if keyword:
+                result.ok()
+            else:
+                result.error(
+                    f"Track '{track_name}': 'tool_specific_data_model[{tool}]' "
+                    f"is an empty list — omit the tool instead"
+                )
+        else:
+            result.error(
+                f"Track '{track_name}': 'tool_specific_data_model[{tool}]' must "
+                f"be a a list of strings, got {type(keyword).__name__}"
+            )
 
 
 def _check_tracks(manifest: dict, result: ValidationResult, strict: bool) -> None:

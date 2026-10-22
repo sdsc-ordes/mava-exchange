@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -41,7 +41,7 @@ INPUT_ROOT = Path(__file__).resolve().parents[1] / "input"
 OUT_PATH = Path(__file__).resolve().parents[1] / "output" / "corpus.mediapkg"
 
 # Fixed timestamp so regenerating the corpus is byte-reproducible.
-FIXED_CREATED = datetime(2025, 1, 1, tzinfo=timezone.utc)
+FIXED_CREATED = datetime(2025, 1, 1, tzinfo=UTC)
 
 NUM_RE = re.compile(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?")
 
@@ -72,15 +72,22 @@ def build_track(name: str, meta: dict):
             description=meta.get("description", ""),
             dimensions=_dims(meta),
             sampling_interval=meta.get("sampling_interval_seconds"),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
             **_relations(meta),
         )
     if t == "mava:AnnotationSeries":
         return AnnotationSeries(
-            name=name, description=meta.get("description", ""), **_relations(meta)
+            name=name,
+            description=meta.get("description", ""),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
+            **_relations(meta)
         )
     if t == "mava:AnnotationListSeries":
         return AnnotationListSeries(
-            name=name, description=meta.get("description", ""), **_relations(meta)
+            name=name,
+            description=meta.get("description", ""),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
+            **_relations(meta)
         )
     if t == "mava:RegionSeries":
         return RegionSeries(
@@ -88,6 +95,7 @@ def build_track(name: str, meta: dict):
             description=meta.get("description", ""),
             dimensions=_dims(meta),
             sampling_interval=meta.get("sampling_interval_seconds"),
+            tool_specific_data_model=meta.get("tool_specific_data_model"),
             **_relations(meta),
         )
     raise ValueError(f"Unknown track type {t!r} for track {name!r}")

@@ -94,6 +94,41 @@ with MediaPackageWriter("corpus.mediapkg") as w:
     w.add_track("v002", emotions, emotions_df_2)  # Same track definition
 ```
 
+### Preserve the source data model
+
+Several of a tool's internal data models can end up in the same MAVA series.
+Exporting is fine; re-importing is ambiguous, because nothing records which
+dimension came from which model. `tool_specific_data_model` keeps that: a dict
+with tools' names as keys, and a list of keywords for each internal model.
+
+```python
+# `happy` comes from the tool's emotion model, `redness` from its colour model
+emotions = ObservationSeries(
+    name="emotions",
+    description="Face emotion scores",
+    sampling_interval=0.5,
+    dimensions=[
+        DimensionSpec("happy", "Happiness", "[0,1]"),
+        DimensionSpec("redness", "Redness", "[0,1]"),
+    ]
+    tool_specific_data_model={
+        "tibava": ["emotion-model", "colour-model"],
+    }
+)
+```
+
+A single source model is written as a list with a single element:
+
+```python
+tool_specific_data_model={"tibava": ["emotion-model"]}
+```
+
+The field constantly follows the import-export cycle:
+`MediaPackageReader.track_def()` returns it unchanged, so an importer can route
+the series back to the right model. A package that passes through several tools
+gains a key per tool — add keys and values, never delete them. See
+[the tutorial](../tutorial/getting-started.md) for the full story.
+
 ## What Gets Written
 
 When you call `write()` (or exit the context manager), a ZIP file is created

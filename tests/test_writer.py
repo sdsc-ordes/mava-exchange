@@ -8,13 +8,13 @@ manifest structure and Parquet files.
 import json
 import zipfile
 
-import pytest
 import pandas as pd
+import pytest
 
 from mava_exchange import (
+    DimensionSpec,
     MediaPackageWriter,
     ObservationSeries,
-    DimensionSpec,
 )
 
 
@@ -158,9 +158,8 @@ class TestWriterValidation:
                                                           emotions_track,
                                                           emotions_df):
         pkg_path = tmp_path / "x.mediapkg"
-        with pytest.raises(RuntimeError):
-            with MediaPackageWriter(pkg_path) as w:
-                w.add_video("v001", "https://example.org/v.mp4")
-                w.add_track("v001", emotions_track, emotions_df)
-                raise RuntimeError("something went wrong")
+        with pytest.raises(RuntimeError), MediaPackageWriter(pkg_path) as w:
+            w.add_video("v001", "https://example.org/v.mp4")
+            w.add_track("v001", emotions_track, emotions_df)
+            raise RuntimeError("something went wrong")
         assert not pkg_path.exists()

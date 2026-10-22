@@ -21,7 +21,6 @@ from .rdf import export_manifest_as_rdf
 from .reader import MediaPackageReader, file_stats
 from .validate import validate_mediapkg
 
-
 # ─────────────────────────────────────────────
 # inspect
 # ─────────────────────────────────────────────

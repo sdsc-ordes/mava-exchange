@@ -100,6 +100,16 @@ def _add_tracks(g, manifest, MAVA, EX) -> None:
             g.add((series_uri, MAVA.seriesDescription,
                    Literal(track_def["description"])))
 
+        if "tool_specific_data_model" in track_def:
+            for model in track_def["tool_specific_data_model"]:
+                g.add((series_uri, MAVA.toolSpecificDataModel,
+                           Literal(model)))
+                # sort_keys keeps regeneration byte-stable.
+                g.add((series_uri, MAVA.toolSpecificDataModel,
+                    Literal(json.dumps(track_def["tool_specific_data_model"],
+                                       sort_keys=True),
+                            datatype=RDF.JSON)))
+
         _add_relations(g, series_uri, track_def, MAVA, EX)
 
 
@@ -118,7 +128,7 @@ def _add_videos(g, manifest, pkg_uri, MAVA, EX) -> None:
             src_uri = URIRef(src) if "://" in src else EX[src]
             g.add((video_uri, DCTERMS.source, src_uri))
 
-        for track_name in video.get("files", {}).keys():
+        for track_name in video.get("files", {}):
             series_uri = EX[f"series_{track_name}"]
             g.add((video_uri, MAVA.hasAnalysis, series_uri))
 

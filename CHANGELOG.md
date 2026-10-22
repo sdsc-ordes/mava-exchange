@@ -8,6 +8,23 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-12
+
+Format version stays `0.2`. **Additive** — all existing packages remain valid,
+and readers that ignore unknown manifest fields are unaffected.
+
+### Added
+
+- `tool_specific_data_model` on all four series types: an optional JSON object
+  keyed by tool name, recording which tool-internal data model a series came
+  from. Each value is an array of one or multiple keywords depending on how many
+  tool-internal models map to the same `mava` series. Prevents ambiguity at
+  import.
+- `mava:toolSpecificDataModel` ontology property, exported as a single
+  `rdf:JSON` literal, with a matching SHACL shape.
+- `validate_mediapkg` now checks the field's shape, so it is enforced rather
+  than assumed.
+
 ## [0.2.0] - 2026-07-05
 
 Format version `0.1` → `0.2`. **Additive** — all `0.1` packages remain valid
@@ -63,6 +80,7 @@ unaffected.
 - PyLODE-generated ontology documentation
 - GitHub Actions workflow for automatic documentation deployment
 
-[Unreleased]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/sdsc-ordes/mava-exchange/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/sdsc-ordes/mava-exchange/releases/tag/v0.1.0
