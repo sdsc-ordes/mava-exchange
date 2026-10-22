@@ -202,10 +202,14 @@ mava:samplingInterval a owl:DatatypeProperty ;
     rdfs:domain  mava:ObservationSeries ;
     rdfs:range   xsd:decimal .
 
-mava:toolSpecificDataModel a owl:DatatypeProperty ;
-    rdfs:label  "tool-specific data model" ;
-    rdfs:comment "Distinguishes data models from a single tool mapping to the same mava series and prevents ambiguity during import." ;
-    rdfs:domain  [ owl:unionOf (mava:AnnotationSeries mava:ObservationSeries mava:AnnotationListSeries mava:RegionSeries) ] ;
+rdf:JSON a rdfs:Datatype .
+
+mava:toolSpecificDataModel a owl:DatatypeProperty ;   # add owl:FunctionalProperty if one per series
+    rdfs:label   "tool-specific data model" ;
+    rdfs:comment "A JSON object (Python dict) that distinguishes data models from a single tool mapping to the same mava series and prevents ambiguity during import." ;
+    rdfs:domain  [ a owl:Class ;                       # 'a owl:Class' keeps this strict OWL 2 DL
+                   owl:unionOf ( mava:AnnotationSeries mava:ObservationSeries
+                                 mava:AnnotationListSeries mava:RegionSeries ) ] ;
     rdfs:range   rdf:JSON .
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -256,17 +256,17 @@ with no spaces (use underscores).
 
 Each track entry MUST contain:
 
-| Field                       | Type             | Required                                    | Description                                                                                                                                                   |
-| --------------------------- | ---------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`                      | string           | MUST                                        | One of `"mava:ObservationSeries"`, `"mava:AnnotationSeries"`, `"mava:AnnotationListSeries"`, or `"mava:RegionSeries"`.                                        |
-| `description`               | string           | MUST                                        | Human-readable description of the track.                                                                                                                      |
-| `columns`                   | array of strings | MUST                                        | Ordered list of column names in the Parquet file.                                                                                                             |
-| `dimensions`                | object           | MUST for `ObservationSeries`/`RegionSeries` | Maps each value column name to its description and value range.                                                                                               |
-| `sampling_interval_seconds` | number           | OPTIONAL                                    | For `ObservationSeries` / `RegionSeries`: the sampling interval in seconds.                                                                                   |
-| `tool_specific_data_model`  | dict             | OPTIONAL                                    | Dictionary with tool names as keys and keywords as values to prevent ambiguity when multiple data models map to the same `mava` series. Useful for importing. |
-| `parent`                    | string           | OPTIONAL                                    | Containment parent: the name of the track this one lives under. At most one; the parent graph MUST be acyclic.                                                |
-| `derived_from`              | array of strings | OPTIONAL                                    | Provenance: names of the tracks this track is computed from (1..n).                                                                                           |
-| `method`                    | string           | MUST when `derived_from` present            | How the track was derived, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`.                                                                      |
+| Field                       | Type             | Required                                    | Description                                                                                                                                                                                       |
+| --------------------------- | ---------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                      | string           | MUST                                        | One of `"mava:ObservationSeries"`, `"mava:AnnotationSeries"`, `"mava:AnnotationListSeries"`, or `"mava:RegionSeries"`.                                                                            |
+| `description`               | string           | MUST                                        | Human-readable description of the track.                                                                                                                                                          |
+| `columns`                   | array of strings | MUST                                        | Ordered list of column names in the Parquet file.                                                                                                                                                 |
+| `dimensions`                | object           | MUST for `ObservationSeries`/`RegionSeries` | Maps each value column name to its description and value range.                                                                                                                                   |
+| `sampling_interval_seconds` | number           | OPTIONAL                                    | For `ObservationSeries` / `RegionSeries`: the sampling interval in seconds.                                                                                                                       |
+| `tool_specific_data_model`  | object           | OPTIONAL                                    | Collection of keywords to identify the specific internal data model used by a tool. This information is useful during import when the same `mava` series includes different internal data models. |
+| `parent`                    | string           | OPTIONAL                                    | Containment parent: the name of the track this one lives under. At most one; the parent graph MUST be acyclic.                                                                                    |
+| `derived_from`              | array of strings | OPTIONAL                                    | Provenance: names of the tracks this track is computed from (1..n).                                                                                                                               |
+| `method`                    | string           | MUST when `derived_from` present            | How the track was derived, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`.                                                                                                          |
 
 **Track relationships.** `parent` and `derived_from` are two distinct edges and
 MUST NOT be conflated. `parent` is single-valued containment (where a track
@@ -634,8 +634,8 @@ The ontology defines:
   boxes), long format
 - `mava:Dimension` — a single measured quantity within an ObservationSeries or
   RegionSeries
-- `mava:toolSpecificDataModel` - a dictionary to distinguish tracks that mapped
-  to the same `Series` and prevent ambiguities when importing.
+- `mava:toolSpecificDataModel` - an object to distinguish tracks that mapped to
+  the same `Series` and prevent ambiguities when importing.
 - Time properties: `mava:atTime`, `mava:startTime`, `mava:endTime`
 - Value properties: `mava:numericValue`, `mava:stringValue`, `mava:listValue`
 - Region geometry / identity: `mava:x`, `mava:y`, `mava:width`, `mava:height`,
@@ -790,6 +790,12 @@ are situations where multiple data models from a given tool map to a single MAVA
 series. Exporting is not a problem, but importing leads to ambiguity. To help
 mapping MAVA series back to tool-specific data models, there's a
 `tool_specific_data_model` field.
+
+The field is an object with both keys and an arrays associated to them. A
+package that passes through several tools carries a key per tool. Each array
+includes one or multiple model keyword(s), depending on how many annotations are
+ambiguous during import for a given MAVA series. Consumers SHOULD add keys and
+values and MUST NOT delete entries written by another tool.
 
 ---
 

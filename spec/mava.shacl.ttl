@@ -1,5 +1,6 @@
 @prefix mava:    <http://example.org/mava/ontology#> .
 @prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -19,6 +20,7 @@
 #    - DimensionShape
 #    - TrackHierarchyShape   (hasParent)
 #    - TrackDerivationShape  (derivedFrom + derivationMethod)
+#    - ToolSpecificDataModelShape (toolSpecificDataModel)
 #
 # 2. DATA SHAPES — validate individual Parquet rows exported as RDF
 #    - ObservationPointShape
@@ -178,6 +180,25 @@ mava:RegionSeriesShape a sh:NodeShape ;
         sh:minExclusive 0 ;
         sh:message   "Optional. If present, must be a positive number." ;
     ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# ToolSpecificDataModel
+# Optional on every series type, so this targets the property rather than
+# repeating the same constraint in four node shapes. The manifest field is a
+# JSON object keyed by tool name, exported whole as one rdf:JSON literal.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:ToolSpecificDataModelShape a sh:NodeShape ;
+    sh:targetSubjectsOf mava:toolSpecificDataModel ;
+    sh:description "A series may record at most one tool-specific data model object." ;
+
+    sh:property [
+        sh:path     mava:toolSpecificDataModel ;
+        sh:maxCount 1 ;
+        sh:datatype rdf:JSON ;
+        sh:message  "Optional. If present, exactly one rdf:JSON literal holding the tool_specific_data_model object." ;
+    ] .
+
 
 # ───────────────────────────────────────────────────────────────────────
 # Dimension
