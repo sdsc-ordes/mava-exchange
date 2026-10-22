@@ -109,20 +109,20 @@ brightness_track = ObservationSeries(
     sampling_interval=0.1,
     # we add a dict with key set as the source tool
     # and a value as our internal identifier
-    tool_specific_data_model={"autoannotator":"video_brightness"}
+    tool_specific_data_model={"autoannotator": "video_brightness"},
     dimensions=[
-        DimensionSpec("brigthness", "Brightness intensity", "[0,1]"),
-    ]
+        DimensionSpec("brightness", "Brightness intensity", "[0,1]"),
+    ],
 )
 
 audio_wave = ObservationSeries(
     name="audio_wave",
     description="Audio waveform",
     sampling_interval=0.1,
-    tool_specific_data_model={"autoannotator":"audio_waveform"}
+    tool_specific_data_model={"autoannotator": "audio_waveform"},
     dimensions=[
         DimensionSpec("waveform", "Audio waveform", "[0,1]"),
-    ]
+    ],
 )
 ```
 
@@ -360,7 +360,7 @@ with MediaPackageReader("corpus.mediapkg") as reader:
     track = reader.track_def("dominant_colors")
     print(track.sampling_interval)        # 0.5
     print([d.name for d in track.dimensions])  # ['r', 'g', 'b']
-    print(track.tool_specific_metadata) # {'tibava': 'RGB_HIST'}
+    print(track.tool_specific_data_model)  # {'tibava': 'RGB_HIST'}
 
     # Get video metadata
     meta = reader.video_meta("tagesschau")
