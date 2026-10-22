@@ -109,7 +109,7 @@ brightness_track = ObservationSeries(
     sampling_interval=0.1,
     # we add a dict with key set as the source tool
     # and a value as our internal identifier
-    tool_specific_data_model={"autoannotator": "video_brightness"},
+    tool_specific_data_model={"autoannotator": ["video_brightness"]},
     dimensions=[
         DimensionSpec("brightness", "Brightness intensity", "[0,1]"),
     ]
@@ -119,7 +119,7 @@ audio_wave = ObservationSeries(
     name="audio_wave",
     description="Audio waveform",
     sampling_interval=0.1,
-    tool_specific_data_model={"autoannotator": "audio_waveform"},
+    tool_specific_data_model={"autoannotator": ["audio_waveform"]},
     dimensions=[
         DimensionSpec("waveform", "Audio waveform", "[0,1]"),
     ]
