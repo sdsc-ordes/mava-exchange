@@ -57,6 +57,10 @@ dev = [
     "mypy>=1.0",
     "pip-audit>=2.0",
     "pylode>=3.2.3",
+    # pylode declares `kurra` with no upper bound, but kurra 3.x dropped
+    # `get_missing_labels`, which pylode still imports — `just pylode` dies
+    # with an ImportError. Pin until pylode constrains it itself.
+    "kurra<3",
     "sphinx-autodoc-typehints>=3.9.8",
 ]
 
