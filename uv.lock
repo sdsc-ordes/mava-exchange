@@ -3,16 +3,16 @@ revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version < '3.13' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'emscripten'",
-    "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version == '3.13.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'win32'",
+    "python_full_version < '3.13' and sys_platform == 'emscripten'",
     "python_full_version < '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
@@ -1246,7 +1246,7 @@ wheels = [
 
 [[package]]
 name = "kurra"
-version = "3.1.0"
+version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
@@ -1257,9 +1257,9 @@ dependencies = [
     { name = "sparqlib" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/a8/f148a8f3f3bd51c6b52594ee280cee3cdaea523b21dccea3a1e45923b6a6/kurra-3.1.0.tar.gz", hash = "sha256:6f1ccc8343e2fd6f431ee269084a1d6e3f50aca6359fd20adee905a8f773c3ca", size = 261816, upload-time = "2026-10-01T08:18:06.208Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/bd/a6c19ae99ddccba52c2c94bd6ff19742a1dc09b5c0f03d8168e0132afaf8/kurra-2.4.0.tar.gz", hash = "sha256:9a0285c2c2e3cd73b7d0e1899734ad7c805b4a463cebf565736adb0c0ab85d9f", size = 115924, upload-time = "2026-07-15T14:02:13.281Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/87/b6/73c792c9d53b56267b35e6f8e920b3132478c15c55f2a191767c401262fd/kurra-3.1.0-py3-none-any.whl", hash = "sha256:9a6dc1082467b4eaf229144464a2dac0dcbfc1ff5ad69c3722c639f066495340", size = 51553, upload-time = "2026-10-01T08:18:04.575Z" },
+    { url = "https://files.pythonhosted.org/packages/11/4d/826cf33322958c13853faac2e04a709f7faba2537c6219766e6c9d198a2c/kurra-2.4.0-py3-none-any.whl", hash = "sha256:c11ff74b967ff2d20e0069f11ee9eae1c3bba6f44d36150d244b8f31935c8d99", size = 35596, upload-time = "2026-07-15T14:02:12.043Z" },
 ]
 
 [[package]]
@@ -1532,7 +1532,7 @@ wheels = [
 
 [[package]]
 name = "mava-exchange"
-version = "0.2.1"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "pandas" },
@@ -1551,6 +1551,7 @@ docs = [
 [package.dev-dependencies]
 dev = [
     { name = "hypothesis" },
+    { name = "kurra" },
     { name = "mypy" },
     { name = "notebook" },
     { name = "pip-audit" },
@@ -1575,6 +1576,7 @@ provides-extras = ["docs"]
 [package.metadata.requires-dev]
 dev = [
     { name = "hypothesis", specifier = ">=6.0" },
+    { name = "kurra", specifier = "<3" },
     { name = "mypy", specifier = ">=1.0" },
     { name = "notebook", specifier = ">=7.3.2" },
     { name = "pip-audit", specifier = ">=2.0" },
@@ -2304,7 +2306,7 @@ wheels = [
 
 [[package]]
 name = "pylode"
-version = "3.6.0"
+version = "3.5.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dominate" },
@@ -2315,9 +2317,9 @@ dependencies = [
     { name = "rdflib" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/07/97/a76cde097b025f30ffa6b220e6f63339356807d1e0c22c8f3d32d7ae10f9/pylode-3.6.0.tar.gz", hash = "sha256:4a3d29775204b1f4f11d6eecf510bf356795154d61c80d836e66406b3a63f5de", size = 185325, upload-time = "2026-08-17T02:06:15.593Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/97/b716c5adbf90fe45f6228915cee2eb6dce2855761afef4f8ab7e15e4b04c/pylode-3.5.2.tar.gz", hash = "sha256:54fe43674c1fc83c7ae329c7db66353faa0b35a157aedb54f51906d1cf38b033", size = 220315, upload-time = "2026-08-06T11:55:37.874Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/95/7593923fd470450116588a323cdd586362ea998e799d56185f368e5fc931/pylode-3.6.0-py3-none-any.whl", hash = "sha256:8ffd10a326f5dc782a70f481a582dec574c54d8a1bc571a8c3c6f9d58df481ac", size = 204198, upload-time = "2026-08-17T02:06:14.138Z" },
+    { url = "https://files.pythonhosted.org/packages/49/fa/1183809f11a35f51c7c82ec4ad6262d2c8647302dac7d76bc86beac0b7df/pylode-3.5.2-py3-none-any.whl", hash = "sha256:3dd1a4daf29d5abb42b6f6bf87a2253b1633fc6aa665cab0c2a29ac52e1fb998", size = 238618, upload-time = "2026-08-06T11:55:36.361Z" },
 ]
 
 [[package]]
@@ -2878,10 +2880,10 @@ version = "9.2.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
     "python_full_version >= '3.15' and sys_platform == 'emscripten'",
-    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version >= '3.15' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32'",
+    "python_full_version == '3.14.*' and sys_platform == 'emscripten'",
     "python_full_version == '3.14.*' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'win32'",
     "python_full_version == '3.13.*' and sys_platform == 'emscripten'",
