@@ -45,10 +45,12 @@ def _relations(track: Any) -> dict[str, Any]:
         d["method"] = track.method
     return d
 
-# For each mava series, there's the optional property for tool specific data
-# models. Since it's shared across tracks, a common function is in place.
-def _add_optional_common_fields(track: Any, d: dict[str, Any]) -> dict[str, Any]:
-    """Optional tool specific data model, emitted only when present."""
+def _tool_specific_data_model(track: Any, d: dict[str, Any]) -> dict[str, Any]:
+    """Add the optional tool-specific data model, when the track declares one.
+
+    Shared by all four series types. Copies the dict so a caller mutating the
+    manifest cannot reach back into the track definition.
+    """
     if track.tool_specific_data_model is not None:
         d["tool_specific_data_model"] = dict(track.tool_specific_data_model)
     return d
@@ -156,7 +158,7 @@ class ObservationSeries:
         }
         if self.sampling_interval is not None:
             d["sampling_interval_seconds"] = self.sampling_interval
-        d = _add_optional_common_fields(self, d)
+        d = _tool_specific_data_model(self, d)
         return d
 
 
@@ -219,7 +221,7 @@ class AnnotationSeries:
             "columns":     self.columns,
             }
 
-        return _add_optional_common_fields(self, d)
+        return _tool_specific_data_model(self, d)
 
 
 @dataclass
@@ -285,7 +287,7 @@ class AnnotationListSeries:
             "columns":     self.columns,
             }
 
-        return _add_optional_common_fields(self, d)
+        return _tool_specific_data_model(self, d)
 
 
 @dataclass
@@ -360,7 +362,7 @@ class RegionSeries:
         }
         if self.sampling_interval is not None:
             d["sampling_interval_seconds"] = self.sampling_interval
-        return _add_optional_common_fields(self, d)
+        return _tool_specific_data_model(self, d)
 
 
 # Type alias for any kind of track
