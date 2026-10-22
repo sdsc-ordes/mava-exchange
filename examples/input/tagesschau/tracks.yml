@@ -17,7 +17,7 @@ shot_density:
       description: Shot Density
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 dominant_colors:
   type: mava:ObservationSeries
   description: Dominant Color(s)
@@ -34,7 +34,7 @@ dominant_colors:
       description: Component b
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "RGB_HIST"
+    tibava: ["RGB_HIST"]
 shot_sizes:
   type: mava:AnnotationSeries
   description: Shot Sizes
@@ -54,7 +54,7 @@ close_up:
       description: Close-Up
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 medium_shot:
   type: mava:ObservationSeries
   description: Medium Shot
@@ -65,7 +65,7 @@ medium_shot:
       description: Medium Shot
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 long_shot:
   type: mava:ObservationSeries
   description: Long Shot
@@ -76,7 +76,7 @@ long_shot:
       description: Long Shot
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 whisper_transcript:
   type: mava:AnnotationSeries
   description: Whisper Transcript
@@ -109,7 +109,7 @@ happy:
       description: Happy
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 sad:
   type: mava:ObservationSeries
   description: Sad
@@ -120,7 +120,7 @@ sad:
       description: Sad
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 neutral:
   type: mava:ObservationSeries
   description: Neutral
@@ -131,7 +131,7 @@ neutral:
       description: Neutral
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 anchor_daubner:
   type: mava:ObservationSeries
   description: "Anchor: Daubner"
@@ -142,7 +142,7 @@ anchor_daubner:
       description: "Anchor: Daubner"
       range: "[0,1]"
   tool_specific_data_model:
-    tibava: "SCALAR"
+    tibava: ["SCALAR"]
 shots_modified:
   type: mava:AnnotationSeries
   description: Shots-modified
