@@ -180,11 +180,63 @@ def _check_track(track_name: str, track: dict, result: ValidationResult, strict:
     else:
         result.ok()
 
+    _check_tool_specific_data_model(track_name, track, result)
+
     if track.get("type") == "mava:ObservationSeries":
         _check_observation_series_track(track_name, track, result, strict)
 
     if track.get("type") == "mava:RegionSeries":
         _check_region_series_track(track_name, track, result, strict)
+
+
+def _check_tool_specific_data_model(
+    track_name: str, track: dict, result: ValidationResult
+) -> None:
+    """Check the optional tool_specific_data_model is well formed.
+
+    An object keyed by tool name, because a package may pass through several
+    tools and each needs its own entry to round-trip (SPEC.md). A bare string
+    or list at the top level carries no tool name and would be unusable on
+    import.
+
+    Each value is either one model name or a list of them: SPEC.md states the
+    field exists for the case where *several* of one tool's data models map to
+    a single mava series, so a single tool's entry must be able to name more
+    than one.
+    """
+    if "tool_specific_data_model" not in track:
+        return
+
+    tsdm = track["tool_specific_data_model"]
+    if not isinstance(tsdm, dict):
+        result.error(
+            f"Track '{track_name}': 'tool_specific_data_model' must be an object "
+            f"keyed by tool name, got {type(tsdm).__name__}"
+        )
+        return
+    result.ok()
+
+    for tool, model in tsdm.items():
+        if not isinstance(tool, str) or not tool:
+            result.error(
+                f"Track '{track_name}': 'tool_specific_data_model' has a "
+                f"non-string or empty tool name"
+            )
+        elif isinstance(model, str):
+            result.ok()
+        elif isinstance(model, list) and all(isinstance(m, str) for m in model):
+            if model:
+                result.ok()
+            else:
+                result.error(
+                    f"Track '{track_name}': 'tool_specific_data_model[{tool}]' "
+                    f"is an empty list — omit the tool instead"
+                )
+        else:
+            result.error(
+                f"Track '{track_name}': 'tool_specific_data_model[{tool}]' must "
+                f"be a string or a list of strings, got {type(model).__name__}"
+            )
 
 
 def _check_tracks(manifest: dict, result: ValidationResult, strict: bool) -> None:

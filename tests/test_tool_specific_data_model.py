@@ -7,7 +7,10 @@ every hop: manifest, reader, and RDF export. Each hop has its own test here,
 because the field has silently lost data at two of them before.
 """
 
+import contextlib
+import io
 import json
+import zipfile
 
 import pandas as pd
 import pytest
@@ -23,6 +26,7 @@ from mava_exchange import (
     RegionSeries,
 )
 from mava_exchange.rdf import export_manifest_as_rdf
+from mava_exchange.validate import validate_mediapkg
 
 MAVA_TSDM = rdflib.URIRef("http://example.org/mava/ontology#toolSpecificDataModel")
 
@@ -125,6 +129,14 @@ class TestRoundTrip:
         with MediaPackageReader(pkg) as r:
             assert r.track_def(track.name).tool_specific_data_model is None
 
+    def test_several_models_from_one_tool(self, tmp_path):
+        """The scenario SPEC.md names: two of a tool's models, one series."""
+        several = {"tibava": ["emotion-data", "colour-data"]}
+        track = _observation(tool_specific_data_model=several)
+        pkg = _write_pkg(tmp_path / "t.mediapkg", track)
+        with MediaPackageReader(pkg) as r:
+            assert r.track_def("obs").tool_specific_data_model == several
+
     def test_multiple_tools_on_one_series(self, tmp_path):
         both = {"tibava": "SCALAR", "autoannotator": "video_brightness"}
         track = _observation(tool_specific_data_model=both)
@@ -184,3 +196,52 @@ class TestRDFExport:
 def _manifest_of(pkg):
     with MediaPackageReader(pkg) as r:
         return r.manifest
+
+
+# ─────────────────────────────────────────────
+# Validation
+# ─────────────────────────────────────────────
+
+class TestValidation:
+
+    def _validate_with(self, tmp_path, value):
+        """Write a valid package, rewrite the field, then validate it."""
+        pkg = _write_pkg(tmp_path / "t.mediapkg", _observation(tool_specific_data_model=TSDM))
+        patched = tmp_path / "patched.mediapkg"
+        with zipfile.ZipFile(pkg) as zin, zipfile.ZipFile(patched, "w") as zout:
+            for item in zin.infolist():
+                data = zin.read(item.filename)
+                if item.filename == "manifest.json":
+                    manifest = json.loads(data)
+                    manifest["tracks"]["obs"]["tool_specific_data_model"] = value
+                    data = json.dumps(manifest, indent=2).encode()
+                zout.writestr(item, data)
+        with contextlib.redirect_stdout(io.StringIO()):
+            result = validate_mediapkg(patched)
+        return [e for e in result.errors if "tool_specific" in e]
+
+    def test_one_model_per_tool_accepted(self, tmp_path):
+        assert self._validate_with(tmp_path, {"tibava": "SCALAR"}) == []
+
+    def test_several_models_from_one_tool_accepted(self, tmp_path):
+        """SPEC.md: the field exists for several of a tool's models mapping
+        to one series, so a single tool's entry may name more than one."""
+        value = {"tibava": ["emotion-data", "colour-data"]}
+        assert self._validate_with(tmp_path, value) == []
+
+    def test_several_tools_accepted(self, tmp_path):
+        """A package picks up a key per tool as it is re-exported."""
+        value = {"tibava": "SCALAR", "autoannotator": ["brightness", "waveform"]}
+        assert self._validate_with(tmp_path, value) == []
+
+    @pytest.mark.parametrize("value", [["SCALAR"], "SCALAR", 3])
+    def test_non_object_rejected(self, tmp_path, value):
+        """The pre-migration form carried no tool name; it must not pass."""
+        assert self._validate_with(tmp_path, value)
+
+    @pytest.mark.parametrize("model", [3, {"nested": "object"}, ["ok", 3], []])
+    def test_malformed_model_rejected(self, tmp_path, model):
+        assert self._validate_with(tmp_path, {"tibava": model})
+
+    def test_empty_tool_name_rejected(self, tmp_path):
+        assert self._validate_with(tmp_path, {"": "SCALAR"})
