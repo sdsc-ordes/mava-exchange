@@ -101,9 +101,13 @@ def _add_tracks(g, manifest, MAVA, EX) -> None:
                    Literal(track_def["description"])))
 
         if "tool_specific_data_model" in track_def:
-            for model in track_def["tool_specific_data_model"]:
-                g.add((series_uri, MAVA.toolSpecificDataModel,
-                           Literal(model)))
+            # Serialised whole: the manifest field is an object keyed by tool
+            # name, and mava:toolSpecificDataModel has range rdf:JSON.
+            # sort_keys keeps regeneration byte-stable.
+            g.add((series_uri, MAVA.toolSpecificDataModel,
+                   Literal(json.dumps(track_def["tool_specific_data_model"],
+                                      sort_keys=True),
+                           datatype=RDF.JSON)))
 
         _add_relations(g, series_uri, track_def, MAVA, EX)
 
