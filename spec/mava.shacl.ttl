@@ -182,23 +182,58 @@ mava:RegionSeriesShape a sh:NodeShape ;
     ] .
 
 # ───────────────────────────────────────────────────────────────────────
-# ToolSpecificDataModel
-# Optional on every series type, so this targets the property rather than
-# repeating the same constraint in four node shapes. The manifest field is a
-# JSON object keyed by tool name, exported whole as one rdf:JSON literal.
+# ToolDataModel
+# Optional on every series type. When present, a series has one
+# ToolDataModel per contributing tool, and no tool name may appear twice
+# on the same series. JSON content is validated in Python, not here.
+# A tool_data_model entry whose key is an empty string is dropped on
+# export and creates no ToolDataModel.
 # ───────────────────────────────────────────────────────────────────────
 
-mava:ToolSpecificDataModelShape a sh:NodeShape ;
-    sh:targetSubjectsOf mava:toolSpecificDataModel ;
-    sh:description "A series may record at most one tool-specific data model object." ;
-
+mava:SeriesToolDataModelShape a sh:NodeShape ;
+    sh:targetSubjectsOf mava:hasToolDataModel ;
+    sh:description "Series-level checks for tool data models." ;
+    sh:or (
+        [ sh:class mava:AnnotationSeries ]
+        [ sh:class mava:ObservationSeries ]
+        [ sh:class mava:AnnotationListSeries ]
+        [ sh:class mava:RegionSeries ]
+    ) ;
+    sh:message "Only series may have tool data models." ;
     sh:property [
-        sh:path     mava:toolSpecificDataModel ;
-        sh:maxCount 1 ;
-        sh:datatype rdf:JSON ;
-        sh:message  "Optional. If present, exactly one rdf:JSON literal holding the tool_specific_data_model object." ;
+        sh:path    mava:hasToolDataModel ;
+        sh:class   mava:ToolDataModel ;
+        sh:node    mava:ToolDataModelShape ;
+        sh:message "hasToolDataModel must point to a ToolDataModel." ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "Tool name {?name} appears more than once on this series." ;
+        sh:prefixes mava:ShapesPrefixes ;
+        sh:select """
+            SELECT $this ?name WHERE {
+                $this mava:hasToolDataModel ?a , ?b .
+                ?a mava:toolName ?name .
+                ?b mava:toolName ?name .
+                FILTER (?a != ?b)
+            }""" ;
     ] .
 
+mava:ToolDataModelShape a sh:NodeShape ;
+    sh:property [
+        sh:path     mava:toolName ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1 ;
+        sh:message  "A ToolDataModel needs exactly one non-empty toolName." ;
+    ] ;
+    sh:property [
+        sh:path     mava:toolDataModelMetadata ;
+        sh:datatype rdf:JSON ;
+        sh:maxCount 1 ;
+        sh:message  "toolDataModelMetadata must be a single rdf:JSON literal." ;
+    ] .
 
 # ───────────────────────────────────────────────────────────────────────
 # Dimension
