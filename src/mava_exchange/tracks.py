@@ -34,8 +34,6 @@ from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
-MAX_TOOL_DATA_MODEL_BYTES = 64 * 1024
-
 
 # The relationship fields (parent/derived_from/method) are repeated per type
 # rather than inherited from a base class: the shared *logic* lives in

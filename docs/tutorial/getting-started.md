@@ -371,7 +371,7 @@ with MediaPackageReader("corpus.mediapkg") as reader:
     track = reader.track_def("dominant_colors")
     print(track.sampling_interval)        # 0.5
     print([d.name for d in track.dimensions])  # ['r', 'g', 'b']
-    print(track.tool_data_model) # {'tibava': 'RGB_HIST'}
+    print(track.tool_data_model) # {'tibava': {'model': 'RGB_HIST'}}
 
     # Get video metadata
     meta = reader.video_meta("tagesschau")

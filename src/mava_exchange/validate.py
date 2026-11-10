@@ -180,7 +180,7 @@ def _check_track(track_name: str, track: dict, result: ValidationResult, strict:
     else:
         result.ok()
 
-    _check_tool_specific_data_model(track_name, track, result)
+    _check_tool_data_model(track_name, track, result)
 
     if track.get("type") == "mava:ObservationSeries":
         _check_observation_series_track(track_name, track, result, strict)
@@ -188,48 +188,44 @@ def _check_track(track_name: str, track: dict, result: ValidationResult, strict:
     if track.get("type") == "mava:RegionSeries":
         _check_region_series_track(track_name, track, result, strict)
 
-def _check_tool_specific_data_model(
+def _check_tool_data_model(
     track_name: str, track: dict, result: ValidationResult
 ) -> None:
-    """Check the optional tool_specific_data_model is well formed.
+    """Check the optional tool_data_model is well formed.
 
-    A dict with tools names as keys and lists of strings as values. A
-    list at the top level carries no tool name and would be unusable on
-    import.
-
-    Each value is a list of keywords with at least one entry.
+    An object keyed by tool name: names must be non-empty, and each value
+    must be an object. Value contents are defined by each tool and are not
+    checked here.
     """
-    if "tool_specific_data_model" not in track:
+    if "tool_data_model" not in track:
         return
 
-    tsdm = track["tool_specific_data_model"]
-    if not isinstance(tsdm, dict):
+    tdm = track["tool_data_model"]
+    if not isinstance(tdm, dict):
         result.error(
-            f"Track '{track_name}': 'tool_specific_data_model' must be a dictionary"
-            f"keyed by tool name, got {type(tsdm).__name__}"
+            f"Track '{track_name}': 'tool_data_model' must be an object "
+            f"keyed by tool name, got {type(tdm).__name__}"
+        )
+        return
+    if not tdm:
+        result.warning(
+            f"Track '{track_name}': 'tool_data_model' is empty; omit it instead"
         )
         return
     result.ok()
 
-    for tool, keyword in tsdm.items():
-        if not isinstance(tool, str) or not tool:
+    for tool, entry in tdm.items():
+        if not isinstance(tool, str) or not tool.strip():
             result.error(
-                f"Track '{track_name}': 'tool_specific_data_model' has a "
-                f"non-string or empty tool name"
+                f"Track '{track_name}': 'tool_data_model' has an empty tool name"
             )
-        elif isinstance(keyword, list) and all(isinstance(m, str) for m in keyword):
-            if keyword:
-                result.ok()
-            else:
-                result.error(
-                    f"Track '{track_name}': 'tool_specific_data_model[{tool}]' "
-                    f"is an empty list — omit the tool instead"
-                )
+        elif not isinstance(entry, dict):
+            result.error(
+                f"Track '{track_name}': 'tool_data_model[{tool!r}]' must be "
+                f"an object, got {type(entry).__name__}"
+            )
         else:
-            result.error(
-                f"Track '{track_name}': 'tool_specific_data_model[{tool}]' must "
-                f"be a a list of strings, got {type(keyword).__name__}"
-            )
+            result.ok()
 
 
 def _check_tracks(manifest: dict, result: ValidationResult, strict: bool) -> None:

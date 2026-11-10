@@ -20,7 +20,8 @@
 #    - DimensionShape
 #    - TrackHierarchyShape   (hasParent)
 #    - TrackDerivationShape  (derivedFrom + derivationMethod)
-#    - ToolSpecificDataModelShape (toolSpecificDataModel)
+#    - SeriesToolDataModelShape (ToolDataModel)
+#    - ToolDataModelShape (ToolDataModel)
 #
 # 2. DATA SHAPES — validate individual Parquet rows exported as RDF
 #    - ObservationPointShape
