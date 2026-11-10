@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from urllib.parse import quote
 
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, XSD
@@ -100,14 +101,16 @@ def _add_tracks(g, manifest, MAVA, EX) -> None:
             g.add((series_uri, MAVA.seriesDescription,
                    Literal(track_def["description"])))
 
-        if "tool_specific_data_model" in track_def:
-            for model in track_def["tool_specific_data_model"]:
-                g.add((series_uri, MAVA.toolSpecificDataModel,
-                           Literal(model)))
-                # sort_keys keeps regeneration byte-stable.
-                g.add((series_uri, MAVA.toolSpecificDataModel,
-                    Literal(json.dumps(track_def["tool_specific_data_model"],
-                                       sort_keys=True),
+        if "tool_data_model" in track_def:
+            for tool_name, metadata in track_def["tool_data_model"].items():
+                tdm_uri = URIRef(f"{series_uri}/tool-data-model/{quote(tool_name, safe='')}")
+                g.add((series_uri, MAVA.hasToolDataModel, tdm_uri))
+                g.add((tdm_uri, RDF.type, MAVA.ToolDataModel))
+                g.add((tdm_uri, MAVA.toolName, Literal(tool_name)))
+                # sort_keys and fixed separators keep the literal byte-stable.
+                g.add((tdm_uri, MAVA.toolDataModelMetadata,
+                    Literal(json.dumps(metadata, sort_keys=True,
+                                        separators=(",", ":"), allow_nan=False),
                             datatype=RDF.JSON)))
 
         _add_relations(g, series_uri, track_def, MAVA, EX)
