@@ -256,16 +256,17 @@ with no spaces (use underscores).
 
 Each track entry MUST contain:
 
-| Field                       | Type             | Required                                    | Description                                                                                                            |
-| --------------------------- | ---------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `type`                      | string           | MUST                                        | One of `"mava:ObservationSeries"`, `"mava:AnnotationSeries"`, `"mava:AnnotationListSeries"`, or `"mava:RegionSeries"`. |
-| `description`               | string           | MUST                                        | Human-readable description of the track.                                                                               |
-| `columns`                   | array of strings | MUST                                        | Ordered list of column names in the Parquet file.                                                                      |
-| `dimensions`                | object           | MUST for `ObservationSeries`/`RegionSeries` | Maps each value column name to its description and value range.                                                        |
-| `sampling_interval_seconds` | number           | OPTIONAL                                    | For `ObservationSeries` / `RegionSeries`: the sampling interval in seconds.                                            |
-| `parent`                    | string           | OPTIONAL                                    | Containment parent: the name of the track this one lives under. At most one; the parent graph MUST be acyclic.         |
-| `derived_from`              | array of strings | OPTIONAL                                    | Provenance: names of the tracks this track is computed from (1..n).                                                    |
-| `method`                    | string           | MUST when `derived_from` present            | How the track was derived, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`.                               |
+| Field                       | Type             | Required                                    | Description                                                                                                                                                                                                                                                                                         |
+| --------------------------- | ---------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`                      | string           | MUST                                        | One of `"mava:ObservationSeries"`, `"mava:AnnotationSeries"`, `"mava:AnnotationListSeries"`, or `"mava:RegionSeries"`.                                                                                                                                                                              |
+| `description`               | string           | MUST                                        | Human-readable description of the track.                                                                                                                                                                                                                                                            |
+| `columns`                   | array of strings | MUST                                        | Ordered list of column names in the Parquet file.                                                                                                                                                                                                                                                   |
+| `dimensions`                | object           | MUST for `ObservationSeries`/`RegionSeries` | Maps each value column name to its description and value range.                                                                                                                                                                                                                                     |
+| `sampling_interval_seconds` | number           | OPTIONAL                                    | For `ObservationSeries` / `RegionSeries`: the sampling interval in seconds.                                                                                                                                                                                                                         |
+| `tool_data_model`           | object           | OPTIONAL                                    | Records data model of a tool a series was produced from, so that series of the same mava type originating from different tool data models can be told apart on import. Each member name is the name of a tool and MUST NOT be empty; each value is an object whose content is defined by that tool. |
+| `parent`                    | string           | OPTIONAL                                    | Containment parent: the name of the track this one lives under. At most one; the parent graph MUST be acyclic.                                                                                                                                                                                      |
+| `derived_from`              | array of strings | OPTIONAL                                    | Provenance: names of the tracks this track is computed from (1..n).                                                                                                                                                                                                                                 |
+| `method`                    | string           | MUST when `derived_from` present            | How the track was derived, e.g. `"argmax"`, `"cluster_to_scalar"`, `"aggregate_scalar"`.                                                                                                                                                                                                            |
 
 **Track relationships.** `parent` and `derived_from` are two distinct edges and
 MUST NOT be conflated. `parent` is single-valued containment (where a track
@@ -282,6 +283,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
   "type": "mava:ObservationSeries",
   "description": "Per-frame probability scores from face analysis, sampled every 0.5s.",
   "sampling_interval_seconds": 0.5,
+  "tool_data_model": { "tibava": { "model": "emotions" } },
   "columns": ["start_seconds", "angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"],
   "dimensions": {
     "angry":    {"description": "Anger probability score",    "range": "[0,1]"},
@@ -301,6 +303,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
 "transcript": {
   "type": "mava:AnnotationSeries",
   "description": "Speech-to-text segments from Whisper transcription model.",
+  "tool_data_model": { "tibava": { "model": "transcript" } },
   "columns": ["start_seconds", "end_seconds", "annotations"]
 }
 ```
@@ -311,6 +314,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
 "scene_tags": {
   "type": "mava:AnnotationListSeries",
   "description": "Scene classification tags from Places3 model (indoor/outdoor + natural/man-made)",
+  "tool_data_model": { "tibava": { "model": "scene-tags" } },
   "columns": ["start_seconds", "end_seconds", "annotations"]
 }
 ```
@@ -322,6 +326,7 @@ track defined in `tracks`, and the `parent` graph MUST be acyclic.
   "type": "mava:RegionSeries",
   "description": "Per-frame face bounding boxes, sampled every 0.5s. Coordinates normalized to [0,1] of the frame, top-left origin.",
   "sampling_interval_seconds": 0.5,
+  "tool_data_model": { "tibava": { "model": "face_regions" } },
   "columns": ["start_seconds", "x", "y", "w", "h", "det_score", "cluster_id", "label"],
   "dimensions": {
     "x":         {"description": "Box left edge, normalized",  "range": "[0,1]"},
@@ -629,6 +634,13 @@ The ontology defines:
   boxes), long format
 - `mava:Dimension` — a single measured quantity within an ObservationSeries or
   RegionSeries
+- `mava:ToolDataModel`: records which internal data model of a tool a series was
+  produced from, so that series of the same type coming from different tool data
+  models can be told apart on import. A series links to zero or more of these
+  through `mava:hasToolDataModel`, at most one per tool. Each has a required
+  `mava:toolName` identifying the tool and an optional
+  `mava:toolDataModelMetadata`, a JSON object whose content is defined by that
+  tool.
 - Time properties: `mava:atTime`, `mava:startTime`, `mava:endTime`
 - Value properties: `mava:numericValue`, `mava:stringValue`, `mava:listValue`
 - Region geometry / identity: `mava:x`, `mava:y`, `mava:width`, `mava:height`,
@@ -773,6 +785,22 @@ machine-actionable: a JSON-LD processor can expand column names to full URIs and
 convert rows to RDF triples without any custom code. Plain URI mappings would
 require a custom parser. Both approaches store the same information, but JSON-LD
 is more interoperable.
+
+### How to handle ambiguity and information loss when multiple data models map to a single MAVA series?
+
+For a given tool, MAVA aims for a lossless round trip: exporting and importing
+again, any number of times, should not lose information. The main obstacle is
+when several internal data models of one tool map to the same MAVA series type.
+The distinction between them is lost on export, so on import the tool can’t tell
+which of its data models a series came from.
+
+The optional `tool_data_model` field preserves that distinction. On export, a
+tool adds an entry under its own name describing the internal data model the
+series came from; on import, it reads its own entry to restore the original
+mapping.
+
+The content of each entry is defined by the tool. Tools should ignore other
+tools’ entries and keep them unchanged when rewriting a package.
 
 ---
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from urllib.parse import quote
 
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import DCTERMS, RDF, XSD
@@ -100,6 +101,18 @@ def _add_tracks(g, manifest, MAVA, EX) -> None:
             g.add((series_uri, MAVA.seriesDescription,
                    Literal(track_def["description"])))
 
+        if "tool_data_model" in track_def:
+            for tool_name, metadata in track_def["tool_data_model"].items():
+                tdm_uri = URIRef(f"{series_uri}/tool-data-model/{quote(tool_name, safe='')}")
+                g.add((series_uri, MAVA.hasToolDataModel, tdm_uri))
+                g.add((tdm_uri, RDF.type, MAVA.ToolDataModel))
+                g.add((tdm_uri, MAVA.toolName, Literal(tool_name)))
+                # sort_keys and fixed separators keep the literal byte-stable.
+                g.add((tdm_uri, MAVA.toolDataModelMetadata,
+                    Literal(json.dumps(metadata, sort_keys=True,
+                                        separators=(",", ":"), allow_nan=False),
+                            datatype=RDF.JSON)))
+
         _add_relations(g, series_uri, track_def, MAVA, EX)
 
 
@@ -118,7 +131,7 @@ def _add_videos(g, manifest, pkg_uri, MAVA, EX) -> None:
             src_uri = URIRef(src) if "://" in src else EX[src]
             g.add((video_uri, DCTERMS.source, src_uri))
 
-        for track_name in video.get("files", {}).keys():
+        for track_name in video.get("files", {}):
             series_uri = EX[f"series_{track_name}"]
             g.add((video_uri, MAVA.hasAnalysis, series_uri))
 

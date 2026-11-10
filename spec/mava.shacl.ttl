@@ -1,5 +1,7 @@
 @prefix mava:    <http://example.org/mava/ontology#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -19,6 +21,8 @@
 #    - DimensionShape
 #    - TrackHierarchyShape   (hasParent)
 #    - TrackDerivationShape  (derivedFrom + derivationMethod)
+#    - SeriesToolDataModelShape (ToolDataModel)
+#    - ToolDataModelShape (ToolDataModel)
 #
 # 2. DATA SHAPES — validate individual Parquet rows exported as RDF
 #    - ObservationPointShape
@@ -177,6 +181,66 @@ mava:RegionSeriesShape a sh:NodeShape ;
         sh:datatype    xsd:decimal ;
         sh:minExclusive 0 ;
         sh:message   "Optional. If present, must be a positive number." ;
+    ] .
+
+# ───────────────────────────────────────────────────────────────────────
+# ToolDataModel
+# Optional on every series type. When present, a series has one
+# ToolDataModel per contributing tool, and no tool name may appear twice
+# on the same series. JSON content is validated in Python, not here.
+# A tool_data_model entry whose key is an empty string is dropped on
+# export and creates no ToolDataModel.
+# ───────────────────────────────────────────────────────────────────────
+
+mava:ShapesPrefixes a owl:Ontology ;
+    sh:declare [
+        sh:prefix    "mava" ;
+        sh:namespace "http://example.org/mava/ontology#"^^xsd:anyURI ;
+    ] .
+
+mava:SeriesToolDataModelShape a sh:NodeShape ;
+    sh:targetSubjectsOf mava:hasToolDataModel ;
+    sh:description "Series-level checks for tool data models." ;
+    sh:or (
+        [ sh:class mava:AnnotationSeries ]
+        [ sh:class mava:ObservationSeries ]
+        [ sh:class mava:AnnotationListSeries ]
+        [ sh:class mava:RegionSeries ]
+    ) ;
+    sh:message "Only series may have tool data models." ;
+    sh:property [
+        sh:path    mava:hasToolDataModel ;
+        sh:class   mava:ToolDataModel ;
+        sh:node    mava:ToolDataModelShape ;
+        sh:message "hasToolDataModel must point to a ToolDataModel." ;
+    ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:prefixes mava:ShapesPrefixes ;
+        sh:select """
+            SELECT $this ?name WHERE {
+                $this mava:hasToolDataModel ?a , ?b .
+                ?a mava:toolName ?name .
+                ?b mava:toolName ?name .
+                FILTER (?a != ?b)
+            }""" ;
+    ] .
+
+mava:ToolDataModelShape a sh:NodeShape ;
+    sh:property [
+        sh:path     mava:toolName ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 1 ;
+        sh:pattern "\\S";
+        sh:message  "A ToolDataModel needs exactly one non-empty toolName." ;
+    ] ;
+    sh:property [
+        sh:path     mava:toolDataModelMetadata ;
+        sh:datatype rdf:JSON ;
+        sh:maxCount 1 ;
+        sh:message  "toolDataModelMetadata must be a single rdf:JSON literal." ;
     ] .
 
 # ───────────────────────────────────────────────────────────────────────

@@ -26,8 +26,13 @@ Example::
 """
 from __future__ import annotations
 
+import copy
+import logging
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Literal
+
+logger = logging.getLogger(__name__)
 
 
 # The relationship fields (parent/derived_from/method) are repeated per type
@@ -45,6 +50,37 @@ def _relations(track: Any) -> dict[str, Any]:
         d["method"] = track.method
     return d
 
+def _check_tool_data_model(value: Any) -> dict[str, dict[str, Any]] | None:
+    """Validate a tool_data_model and return an independent copy.
+
+    Names must be non-empty strings (empty ones are dropped with a warning);
+    each value must be an object. Serialisation concerns live in the writer.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise TypeError(f"tool_data_model must be a mapping, got {type(value).__name__}")
+    result = {}
+    for name, entry in value.items():
+        if not isinstance(name, str):
+            raise TypeError(f"tool_data_model keys must be strings, got {type(name).__name__}")
+        if not name.strip():
+            logger.warning("Dropping tool_data_model entry with an empty tool name.")
+            continue
+        if not isinstance(entry, Mapping):
+            raise TypeError(f"tool_data_model[{name!r}] must be an object, got {type(entry).__name__}")
+        result[name] = copy.deepcopy(dict(entry))
+    return result or None
+
+def _tool_data_model(track: Any, d: dict[str, Any]) -> dict[str, Any]:
+    """Add the optional tool-specific data model, when the track declares one.
+
+    Shared by all four series types. Deep-copies the value so a caller
+    changing the manifest cannot reach back into the track definition.
+    """
+    if track.tool_data_model:
+        d["tool_data_model"] = copy.deepcopy(track.tool_data_model)
+    return d
 
 @dataclass
 class DimensionSpec:
@@ -126,6 +162,9 @@ class ObservationSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_data_model: dict[str, dict[str, Any]] | None = None
+    """Tool-internal data model(s) this series was produced from, keyed by tool name."""
+
     type: Literal["mava:ObservationSeries"] = field(
         default="mava:ObservationSeries", init=False
     )
@@ -146,7 +185,11 @@ class ObservationSeries:
         }
         if self.sampling_interval is not None:
             d["sampling_interval_seconds"] = self.sampling_interval
+        d = _tool_data_model(self, d)
         return d
+
+    def __post_init__(self) -> None:
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 @dataclass
@@ -187,6 +230,9 @@ class AnnotationSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_data_model: dict[str, dict[str, Any]] | None = None
+    """Tool-internal data model(s) this series was produced from, keyed by tool name."""
+
     type: Literal["mava:AnnotationSeries"] = field(
         default="mava:AnnotationSeries", init=False
     )
@@ -198,12 +244,17 @@ class AnnotationSeries:
 
     def to_dict(self) -> dict:
         """Converts to dictionary for manifest.json."""
-        return {
+        d: dict[str, Any] = {
             "type":        self.type,
             "description": self.description,
             **_relations(self),
             "columns":     self.columns,
-        }
+            }
+
+        return _tool_data_model(self, d)
+
+    def __post_init__(self) -> None:
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 @dataclass
@@ -248,6 +299,9 @@ class AnnotationListSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_data_model: dict[str, dict[str, Any]] | None = None
+    """Tool-internal data model(s) this series was produced from, keyed by tool name."""
+
     type: Literal["mava:AnnotationListSeries"] = field(
         default="mava:AnnotationListSeries", init=False
     )
@@ -259,12 +313,17 @@ class AnnotationListSeries:
 
     def to_dict(self) -> dict:
         """Converts to dictionary for manifest.json."""
-        return {
+        d: dict[str, Any] = {
             "type":        self.type,
             "description": self.description,
             **_relations(self),
             "columns":     self.columns,
-        }
+            }
+
+        return _tool_data_model(self, d)
+
+    def __post_init__(self) -> None:
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 @dataclass
@@ -316,6 +375,9 @@ class RegionSeries:
     method: str | None = None
     """Derivation method (e.g. 'argmax', 'cluster_to_scalar', 'aggregate_scalar')."""
 
+    tool_data_model: dict[str, dict[str, Any]] | None = None
+    """Tool-internal data model(s) this series was produced from, keyed by tool name."""
+
     type: Literal["mava:RegionSeries"] = field(
         default="mava:RegionSeries", init=False
     )
@@ -336,7 +398,10 @@ class RegionSeries:
         }
         if self.sampling_interval is not None:
             d["sampling_interval_seconds"] = self.sampling_interval
-        return d
+        return _tool_data_model(self, d)
+
+    def __post_init__(self) -> None:
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 # Type alias for any kind of track
