@@ -1,6 +1,6 @@
 # MediaPkg Format Specification
 
-**Version:** 0.3 (Draft) **Repository:**
+**Version:** 0.2 (Draft) **Repository:**
 https://github.com/smaennel/mava-exchange **Ontology:**
 http://example.org/mava/ontology# **License:** Apache 2.0
 
@@ -804,4 +804,4 @@ tools’ entries and keep them unchanged when rewriting a package.
 
 ---
 
-_MediaPkg v0.3 Draft — ETH Zurich / Swiss Data Science Center_
+_MediaPkg v0.2 Draft — ETH Zurich / Swiss Data Science Center_

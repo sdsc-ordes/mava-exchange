@@ -1,4 +1,5 @@
 @prefix mava:    <http://example.org/mava/ontology#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix sh:      <http://www.w3.org/ns/shacl#> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
@@ -191,6 +192,12 @@ mava:RegionSeriesShape a sh:NodeShape ;
 # export and creates no ToolDataModel.
 # ───────────────────────────────────────────────────────────────────────
 
+mava:ShapesPrefixes a owl:Ontology ;
+    sh:declare [
+        sh:prefix    "mava" ;
+        sh:namespace "http://example.org/mava/ontology#"^^xsd:anyURI ;
+    ] .
+
 mava:SeriesToolDataModelShape a sh:NodeShape ;
     sh:targetSubjectsOf mava:hasToolDataModel ;
     sh:description "Series-level checks for tool data models." ;
@@ -209,7 +216,6 @@ mava:SeriesToolDataModelShape a sh:NodeShape ;
     ] ;
     sh:sparql [
         a sh:SPARQLConstraint ;
-        sh:message "Tool name {?name} appears more than once on this series." ;
         sh:prefixes mava:ShapesPrefixes ;
         sh:select """
             SELECT $this ?name WHERE {
@@ -227,6 +233,7 @@ mava:ToolDataModelShape a sh:NodeShape ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
         sh:minLength 1 ;
+        sh:pattern "\\S";
         sh:message  "A ToolDataModel needs exactly one non-empty toolName." ;
     ] ;
     sh:property [

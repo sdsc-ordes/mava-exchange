@@ -93,9 +93,9 @@ explosion_track = ObservationSeries(
 
 ### 1.2 Ambiguous tracks
 
-If several of your tool’s internal data models map to the same MAVA `series`
-type, re-importing a package can’t tell them apart on its own. The
-`tool_data_model` field preserves that distinction.
+If several of your tool’s internal data models map to the same MAVA series type,
+re-importing a package can’t tell them apart on its own. The `tool_data_model`
+field preserves that distinction.
 
 For example, a tool called `Auto-Annotator` has two internal models,
 `VideoBrightness` and `AudioWaveform`. Both map to an `ObservationSeries`, but

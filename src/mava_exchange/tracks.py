@@ -189,7 +189,7 @@ class ObservationSeries:
         return d
 
     def __post_init__(self) -> None:
-            self.tool_data_model = _check_tool_data_model(self.tool_data_model)
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 @dataclass
@@ -254,7 +254,7 @@ class AnnotationSeries:
         return _tool_data_model(self, d)
 
     def __post_init__(self) -> None:
-            self.tool_data_model = _check_tool_data_model(self.tool_data_model)
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 @dataclass
@@ -323,7 +323,7 @@ class AnnotationListSeries:
         return _tool_data_model(self, d)
 
     def __post_init__(self) -> None:
-            self.tool_data_model = _check_tool_data_model(self.tool_data_model)
+        self.tool_data_model = _check_tool_data_model(self.tool_data_model)
 
 
 @dataclass

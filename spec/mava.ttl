@@ -204,7 +204,7 @@ mava:samplingInterval a owl:DatatypeProperty ;
 
 # ───────────────────────────────────────────────────────────────────────
 # ToolDataModel
-# Optional on every series type, so the SHACL shape (see <ToolDataModelShape>)
+# Optional on every series type, so the SHACL shape (see <SeriesToolDataModelShape>)
 # targets the property rather than repeating the same constraint in four
 # node shapes. On export, the manifest's tool_data_model object is split
 # into one ToolDataModel per tool per series: the key goes in toolName and
@@ -219,7 +219,7 @@ mava:ToolDataModel a owl:Class ;
 
 mava:hasToolDataModel a owl:ObjectProperty ;
     rdfs:label   "has tool data model" ;
-    rdfs:comment "Links a series to a tool's record of its source data model(s). One per tool that has written to this package." ;
+    rdfs:comment "Links a series to a tool's record of its source data model(s). At most one per tool per series." ;
     rdfs:domain [ a owl:Class ;
               owl:unionOf ( mava:AnnotationSeries mava:ObservationSeries
                             mava:AnnotationListSeries mava:RegionSeries ) ] ;
