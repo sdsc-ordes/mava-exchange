@@ -15,13 +15,18 @@ and readers that ignore unknown manifest fields are unaffected.
 
 ### Added
 
-- `tool_specific_data_model` on all four series types: an optional JSON object
-  keyed by tool name, recording which tool-internal data model a series came
-  from. Each value is an array of one or multiple keywords depending on how many
-  tool-internal models map to the same `mava` series. Prevents ambiguity at
-  import.
-- `mava:toolSpecificDataModel` ontology property, exported as a single
-  `rdf:JSON` literal, with a matching SHACL shape.
+- `tool_data_model` on all four series types: an optional JSON object whose
+  member names are tool names and whose values are objects defined by each tool,
+  recording which tool-internal data model a series was produced from. Lets
+  tools restore their original data model on import when several of them map to
+  the same `mava` series type. Tools should leave other tools' entries
+  unchanged.
+- `mava:ToolDataModel` ontology class, linked from series via
+  `mava:hasToolDataModel`, with `mava:toolName` and `mava:toolDataModelMetadata`
+  (an `rdf:JSON` literal holding that tool's object). Each `tool_data_model`
+  entry is exported as one `ToolDataModel`.
+- SHACL shapes checking that `mava:hasToolDataModel` is only used on series,
+  points to a `ToolDataModel`, and that tool names are unique within a series.
 - `validate_mediapkg` now checks the field's shape, so it is enforced rather
   than assumed.
 
