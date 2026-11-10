@@ -93,43 +93,54 @@ explosion_track = ObservationSeries(
 
 ### 1.2 Ambiguous tracks
 
-If you have two different data types that map to a MAVA `Series`, it is
-important to preserve information on how to differentiate them in case of a
-future re-import. For this purpose there's the `tool_specific_data_model` field.
+If several of your tool’s internal data models map to the same MAVA `series`
+type, re-importing a package can’t tell them apart on its own. The
+`tool_data_model` field preserves that distinction.
 
-Let's take as an example two internal types `VideoBrightness` and
-`AudioWaveform` from a tool called `Auto-Annotator`. Both map to a
-`ObservationSeries`, but internally `Auto-Annotator` treats them differently. To
-distinguish them we will define them as follows:
+For example, a tool called `Auto-Annotator` has two internal models,
+`VideoBrightness` and `AudioWaveform`. Both map to an `ObservationSeries`, but
+`Auto-Annotator` handles them differently. To keep them distinguishable, record
+the source model on each track:
 
 ```python
 brightness_track = ObservationSeries(
     name="video_brightness",
     description="Absolute video brightness",
     sampling_interval=0.1,
-    # we add a dict with key set as the source tool
-    # and a value as our internal identifier
-    tool_specific_data_model={"autoannotator": ["video_brightness"]},
+    # Key: the tool's name. Value: a dict object the tool can define,
+    # here the name of its internal data model.
+    tool_data_model={
+        "Auto-Annotator": {"model": "VideoBrightness"},
+    },
     dimensions=[
         DimensionSpec("brightness", "Brightness intensity", "[0,1]"),
-    ]
+    ],
 )
 
 audio_wave = ObservationSeries(
     name="audio_wave",
     description="Audio waveform",
     sampling_interval=0.1,
-    tool_specific_data_model={"autoannotator": ["audio_waveform"]},
+    tool_data_model={
+        "Auto-Annotator": {"model": "AudioWaveform"},
+    },
     dimensions=[
-        DimensionSpec("waveform", "Audio waveform", "[0,1]"),
-    ]
+        DimensionSpec("waveform", "Audio waveform amplitude", "[-1,1]"),
+    ],
 )
 ```
 
-We recommend preserving the content in `tool_specific_data_model` when importing
-and exporting `.mediapkg` files i.e. only add values to existing keys or add new
-keys, but do not delete or reset the content. By deleting or resetting content,
-the full interoperability of a `.mediapkg` is not guaranteed.
+On import, `Auto-Annotator` reads its own entry to restore the original model:
+
+```python
+entry = (track.tool_data_model or {}).get("Auto-Annotator", {})
+model = entry.get("model")  # "VideoBrightness", "AudioWaveform", or None
+```
+
+When importing and re-exporting `.mediapkg` files, keep tool_data_model intact.
+A tool may add or update the entry under its own name, but must leave other
+tools’ entries unchanged. Removing or altering them breaks the round trip for
+those tools.
 
 ### 1.3 Prepare your DataFrames
 
@@ -276,8 +287,8 @@ Geometry is always **normalized** to `[0,1]` of the frame (top-left origin), so
 video's `width`/`height`. `label` is nullable and need not be unique — several
 clusters may share one label.
 
-> ℹ️ **NOTE**: `RegionSeries` also supports the `tool_specific_data_model`
-> field. See section 1.2 for details
+> ℹ️ **NOTE**: `RegionSeries` also supports the `tool_data_model` field. See
+> section 1.2 for details
 
 ### 1.7 Declaring relationships between tracks
 
@@ -360,7 +371,7 @@ with MediaPackageReader("corpus.mediapkg") as reader:
     track = reader.track_def("dominant_colors")
     print(track.sampling_interval)        # 0.5
     print([d.name for d in track.dimensions])  # ['r', 'g', 'b']
-    print(track.tool_specific_data_model) # {'tibava': 'RGB_HIST'}
+    print(track.tool_data_model) # {'tibava': 'RGB_HIST'}
 
     # Get video metadata
     meta = reader.video_meta("tagesschau")
@@ -538,7 +549,7 @@ Dimensions:
   b                    Component b  [0,1]
 ```
 
-> ℹ️ **NOTE**: The `tool_specific_data_model` field is not shown in the
+> ℹ️ **NOTE**: The `tool_data_model` field is not shown in the
 > `mediapkg-inspect` because of its specificity. In order to check it, you
 > should use the `manifest` described in the next section.
 

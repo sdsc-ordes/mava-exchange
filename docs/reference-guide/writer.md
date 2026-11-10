@@ -96,38 +96,45 @@ with MediaPackageWriter("corpus.mediapkg") as w:
 
 ### Preserve the source data model
 
-Several of a tool's internal data models can end up in the same MAVA series.
-Exporting is fine; re-importing is ambiguous, because nothing records which
-dimension came from which model. `tool_specific_data_model` keeps that: a dict
-with tools' names as keys, and a list of keywords for each internal model.
+Several of a tool’s internal data models can map to the same MAVA series type.
+The distinction is lost on export: re-importing gives two `ObservationSeries`
+instances, with nothing recording which internal model each came from.
+`tool_data_model` preserves this information. It’s a dict whose keys are tool
+names and whose values are objects defined by each tool, for example the name of
+the internal model.
 
 ```python
-# `happy` comes from the tool's emotion model, `redness` from its colour model
+# `happy` comes from the tool's emotion model, `redness` from its colour model.
 emotions = ObservationSeries(
     name="emotions",
     description="Face emotion scores",
     sampling_interval=0.5,
+    tool_data_model={
+        "tibava": {"model": "emotion-model"},
+    },
     dimensions=[
         DimensionSpec("happy", "Happiness", "[0,1]"),
+    ],
+)
+colours = ObservationSeries(
+    name="colours",
+    description="Colour scores",
+    sampling_interval=0.5,
+    tool_data_model={
+        "tibava": {"model": "colour-model"},
+    },
+    dimensions=[
         DimensionSpec("redness", "Redness", "[0,1]"),
-    ]
-    tool_specific_data_model={
-        "tibava": ["emotion-model", "colour-model"],
-    }
+    ],
 )
 ```
 
-A single source model is written as a list with a single element:
-
-```python
-tool_specific_data_model={"tibava": ["emotion-model"]}
-```
-
-The field constantly follows the import-export cycle:
-`MediaPackageReader.track_def()` returns it unchanged, so an importer can route
-the series back to the right model. A package that passes through several tools
-gains a key per tool — add keys and values, never delete them. See
-[the tutorial](../tutorial/getting-started.md) for the full story.
+The field survives the import–export cycle: MediaPackageReader.track_def()
+returns it unchanged, so an importer can route each series back to the right
+model. A package that passes through several tools carries one entry per tool.
+Each tool may add or update its own entry, but should leave other tools’ entries
+unchanged. See the [the tutorial](../tutorial/getting-started.md) for the full
+example.
 
 ## What Gets Written
 
