@@ -27,7 +27,7 @@ Example::
 from __future__ import annotations
 
 import copy
-import logging
+import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any, Literal
