@@ -5,10 +5,10 @@ Checks that the reader correctly reconstructs manifest metadata,
 track definitions, and DataFrames from a written .mediapkg.
 """
 
-import pytest
 import pandas as pd
+import pytest
 
-from mava_exchange import MediaPackageReader, ObservationSeries, AnnotationSeries
+from mava_exchange import AnnotationSeries, MediaPackageReader, ObservationSeries
 from mava_exchange.reader import file_stats
 
 
@@ -66,9 +66,8 @@ class TestReaderTrackDefs:
         assert track.name == "transcript"
 
     def test_unknown_track_raises(self, single_video_pkg):
-        with MediaPackageReader(single_video_pkg) as r:
-            with pytest.raises(KeyError, match="nonexistent"):
-                r.track_def("nonexistent")
+        with MediaPackageReader(single_video_pkg) as r, pytest.raises(KeyError, match="nonexistent"):
+            r.track_def("nonexistent")
 
 
 class TestReaderData:
@@ -115,14 +114,12 @@ class TestReaderData:
         assert all(isinstance(df, pd.DataFrame) for df in tracks.values())
 
     def test_read_unknown_video_raises(self, single_video_pkg):
-        with MediaPackageReader(single_video_pkg) as r:
-            with pytest.raises(KeyError, match="nonexistent"):
-                r.read_track("nonexistent", "emotions")
+        with MediaPackageReader(single_video_pkg) as r, pytest.raises(KeyError, match="nonexistent"):
+            r.read_track("nonexistent", "emotions")
 
     def test_read_unknown_track_raises(self, single_video_pkg):
-        with MediaPackageReader(single_video_pkg) as r:
-            with pytest.raises(KeyError, match="nonexistent"):
-                r.read_track("v001", "nonexistent")
+        with MediaPackageReader(single_video_pkg) as r, pytest.raises(KeyError, match="nonexistent"):
+            r.read_track("v001", "nonexistent")
 
     def test_file_stats_row_counts(self, single_video_pkg, emotions_df,
                                    transcript_df):
@@ -135,9 +132,8 @@ class TestReaderData:
 class TestReaderErrors:
 
     def test_raises_on_missing_file(self, tmp_path):
-        with pytest.raises(FileNotFoundError):
-            with MediaPackageReader(tmp_path / "nonexistent.mediapkg"):
-                pass
+        with pytest.raises(FileNotFoundError), MediaPackageReader(tmp_path / "nonexistent.mediapkg"):
+            pass
 
     def test_requires_open_before_access(self, single_video_pkg):
         r = MediaPackageReader(single_video_pkg)

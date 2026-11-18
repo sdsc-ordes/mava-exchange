@@ -9,14 +9,13 @@ import pandas as pd
 import pytest
 
 from mava_exchange import (
-    AnnotationSeries,
     AnnotationListSeries,
+    AnnotationSeries,
     DimensionSpec,
     MediaPackageWriter,
     ObservationSeries,
     RegionSeries,
 )
-
 
 # ─────────────────────────────────────────────
 # Track definitions

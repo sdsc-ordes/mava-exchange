@@ -91,7 +91,58 @@ explosion_track = ObservationSeries(
 )
 ```
 
-### 1.2 Prepare your DataFrames
+### 1.2 Ambiguous tracks
+
+If several of your tool’s internal data models map to the same MAVA series type,
+re-importing a package can’t tell them apart on its own. The `tool_data_model`
+field preserves that distinction.
+
+For example, a tool called `Auto-Annotator` has two internal models,
+`VideoBrightness` and `AudioWaveform`. Both map to an `ObservationSeries`, but
+`Auto-Annotator` handles them differently. To keep them distinguishable, record
+the source model on each track:
+
+```python
+brightness_track = ObservationSeries(
+    name="video_brightness",
+    description="Absolute video brightness",
+    sampling_interval=0.1,
+    # Key: the tool's name. Value: a dict object the tool can define,
+    # here the name of its internal data model.
+    tool_data_model={
+        "Auto-Annotator": {"model": "VideoBrightness"},
+    },
+    dimensions=[
+        DimensionSpec("brightness", "Brightness intensity", "[0,1]"),
+    ],
+)
+
+audio_wave = ObservationSeries(
+    name="audio_wave",
+    description="Audio waveform",
+    sampling_interval=0.1,
+    tool_data_model={
+        "Auto-Annotator": {"model": "AudioWaveform"},
+    },
+    dimensions=[
+        DimensionSpec("waveform", "Audio waveform amplitude", "[-1,1]"),
+    ],
+)
+```
+
+On import, `Auto-Annotator` reads its own entry to restore the original model:
+
+```python
+entry = (track.tool_data_model or {}).get("Auto-Annotator", {})
+model = entry.get("model")  # "VideoBrightness", "AudioWaveform", or None
+```
+
+When importing and re-exporting `.mediapkg` files, keep tool_data_model intact.
+A tool may add or update the entry under its own name, but must leave other
+tools’ entries unchanged. Removing or altering them breaks the round trip for
+those tools.
+
+### 1.3 Prepare your DataFrames
 
 Each track expects a DataFrame with the columns declared in its definition.
 
@@ -126,8 +177,8 @@ transcript_df = pd.DataFrame({
 })
 ```
 
-For an **AnnotationListSeries**, the required columns are start_seconds,
-end_seconds, and annotations — but annotations contains lists of strings:
+For an **AnnotationListSeries**, the required columns are `start_seconds`,
+`end_seconds`, and `annotations` — but annotations contains lists of strings:
 
 ```
 scene_tags_df = pd.DataFrame({
@@ -141,7 +192,7 @@ scene_tags_df = pd.DataFrame({
 })
 ```
 
-### 1.3 Write the package
+### 1.4 Write the package
 
 Use `MediaPackageWriter` as a context manager. Call `add_video()` first, then
 `add_track()` for each track. The file is written when the `with` block exits.
@@ -158,7 +209,7 @@ with MediaPackageWriter("corpus.mediapkg", description="My annotation corpus") a
     writer.add_track("video_001", transcript_track, transcript_df)
 ```
 
-### 1.4 Multiple videos
+### 1.5 Multiple videos
 
 Add as many videos as you need before the `with` block exits. Videos can have
 different track sets — a track name shared across videos must have an identical
@@ -189,7 +240,7 @@ with MediaPackageWriter("corpus.mediapkg", description="Two-video corpus") as wr
     writer.add_track("video_002", transcript_track, transcript_df)
 ```
 
-### 1.5 Spatial detections — `RegionSeries`
+### 1.6 Spatial detections — `RegionSeries`
 
 A `RegionSeries` stores bounding boxes in **long format**: one row per
 detection, so several rows can share the same `start_seconds`. The geometry
@@ -236,7 +287,10 @@ Geometry is always **normalized** to `[0,1]` of the frame (top-left origin), so
 video's `width`/`height`. `label` is nullable and need not be unique — several
 clusters may share one label.
 
-### 1.6 Declaring relationships between tracks
+> ℹ️ **NOTE**: `RegionSeries` also supports the `tool_data_model` field. See
+> section 1.2 for details
+
+### 1.7 Declaring relationships between tracks
 
 Every track type accepts two independent, optional edges:
 
@@ -317,6 +371,7 @@ with MediaPackageReader("corpus.mediapkg") as reader:
     track = reader.track_def("dominant_colors")
     print(track.sampling_interval)        # 0.5
     print([d.name for d in track.dimensions])  # ['r', 'g', 'b']
+    print(track.tool_data_model) # {'tibava': {'model': 'RGB_HIST'}}
 
     # Get video metadata
     meta = reader.video_meta("tagesschau")
@@ -493,6 +548,10 @@ Dimensions:
   g                    Component g  [0,1]
   b                    Component b  [0,1]
 ```
+
+> ℹ️ **NOTE**: The `tool_data_model` field is not shown in the
+> `mediapkg-inspect` because of its specificity. In order to check it, you
+> should use the `manifest` described in the next section.
 
 ---
 

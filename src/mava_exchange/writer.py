@@ -6,13 +6,12 @@ incrementally by adding videos and their annotation tracks.
 """
 from __future__ import annotations
 
-from typing import Self
-
 import io
 import json
 import zipfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Self
 
 import pandas as pd
 import pyarrow as pa
@@ -112,7 +111,7 @@ class MediaPackageWriter:
         width:            int | None = None,
         height:           int | None = None,
         fps:              float | None = None,
-    ) -> "MediaPackageWriter":
+    ) -> MediaPackageWriter:
         """
         Register a video. Must be called before add_track for this video.
 
@@ -161,7 +160,7 @@ class MediaPackageWriter:
         video_id: str,
         track:    Track,
         df:       pd.DataFrame,
-    ) -> "MediaPackageWriter":
+    ) -> MediaPackageWriter:
         """
         Add a DataFrame as a track for a video.
 
@@ -263,7 +262,7 @@ class MediaPackageWriter:
         if not self._videos:
             raise ValueError("No videos added — nothing to write.")
 
-        created = self.created or datetime.now(timezone.utc)
+        created = self.created or datetime.now(UTC)
         # ZIP date_time supports only years >= 1980; created is always later.
         zip_date_time = created.timetuple()[:6]
 

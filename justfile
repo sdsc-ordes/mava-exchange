@@ -64,7 +64,9 @@ run *args:
 [group('spec')]
 pylode +args='':
     @echo "Generating pyLODE spec..."
-    @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/docs/_templates/mava.html" > /dev/null 2>&1
+    @uv run pylode {{args}} "{{root_dir}}/spec/mava.ttl" -o "{{root_dir}}/docs/_templates/mava.html" > /dev/null
+    @test -s "{{root_dir}}/docs/_templates/mava.html" \
+        || { echo "❌ pylode produced no output — see the error above"; exit 1; }
     @echo "✅ HTML successfully generated at: {{root_dir}}/docs/_templates/mava.html"
 
 # Build the .mediapkg corpus from the committed example inputs.

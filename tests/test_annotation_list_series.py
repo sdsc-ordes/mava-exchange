@@ -4,14 +4,14 @@ Tests for AnnotationListSeries track type.
 Tests the new multi-label annotation format with Parquet LIST columns.
 """
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
 from mava_exchange import (
     AnnotationListSeries,
-    MediaPackageWriter,
     MediaPackageReader,
+    MediaPackageWriter,
 )
 from mava_exchange.validate import validate_mediapkg
 
@@ -52,7 +52,7 @@ class TestAnnotationListSeriesWriteRead:
         assert list(df["start_seconds"]) == [0.0, 45.2, 78.5]
 
         # Check annotations are lists (PyArrow returns numpy arrays)
-        assert isinstance(df.loc[0, "annotations"], np.ndarray) or isinstance(df.loc[0, "annotations"], list)
+        assert isinstance(df.loc[0, "annotations"], (np.ndarray, list))
         assert list(df.loc[0, "annotations"]) == ["outdoor", "natural"]
         assert list(df.loc[1, "annotations"]) == ["indoor"]
         assert list(df.loc[2, "annotations"]) == ["outdoor", "man-made"]
@@ -147,8 +147,7 @@ class TestAnnotationListSeriesValidation:
         pkg = tmp_path / "test.mediapkg"
 
         # Writer should reject missing columns
-        with pytest.raises(ValueError, match="missing columns"):
-            with MediaPackageWriter(pkg, description="Test") as w:
+        with pytest.raises(ValueError, match="missing columns"), MediaPackageWriter(pkg, description="Test") as w:
                 w.add_video("v001", "https://example.org/v.mp4")
                 w.add_track("v001", scene_tags_track, df)
 

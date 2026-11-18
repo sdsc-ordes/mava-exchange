@@ -41,13 +41,13 @@ _value_float = st.floats(min_value=-1e6, max_value=1e6, allow_nan=False, allow_i
 _pos_duration = st.floats(min_value=0.001, max_value=50.0, allow_nan=False, allow_infinity=False)
 _unit_float = st.floats(min_value=0.0, max_value=1.0, allow_nan=False, allow_infinity=False)
 
-_DEFAULT_SETTINGS = dict(
-    max_examples=40,
-    deadline=None,
+_DEFAULT_SETTINGS = {
+    "max_examples": 40,
+    "deadline": None,
     # tmp_path is function-scoped and shared across examples — safe here because
     # each example overwrites test.mediapkg before reading it back.
-    suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
-)
+    "suppress_health_check": [HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
+}
 
 
 # ─────────────────────────────────────────────
