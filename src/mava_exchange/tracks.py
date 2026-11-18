@@ -69,7 +69,14 @@ def _check_tool_data_model(value: Any) -> dict[str, dict[str, Any]] | None:
             continue
         if not isinstance(entry, Mapping):
             raise TypeError(f"tool_data_model[{name!r}] must be an object, got {type(entry).__name__}")
-        result[name] = copy.deepcopy(dict(entry))
+        try:
+            encoded = json.dumps(dict(entry), allow_nan=False)
+        except (TypeError, ValueError) as err:
+            raise ValueError(
+                f"tool_data_model[{name!r}] must contain only JSON values "
+                f"(no NaN or infinity): {err}"
+            ) from err
+        result[name] = json.loads(encoded)
     return result or None
 
 def _tool_data_model(track: Any, d: dict[str, Any]) -> dict[str, Any]:
