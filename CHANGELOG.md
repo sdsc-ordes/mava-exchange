@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-09-12
+## [0.3.0] - 2026-11-18
 
 Format version stays `0.2`. **Additive** — all existing packages remain valid,
 and readers that ignore unknown manifest fields are unaffected.
