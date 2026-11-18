@@ -187,9 +187,8 @@ mava:RegionSeriesShape a sh:NodeShape ;
 # ToolDataModel
 # Optional on every series type. When present, a series has one
 # ToolDataModel per contributing tool, and no tool name may appear twice
-# on the same series. JSON content is validated in Python, not here.
-# A tool_data_model entry whose key is an empty string is dropped on
-# export and creates no ToolDataModel.
+# on the same series. A toolName must not be empty or whitespace-only. 
+# The content must be valid JSON.
 # ───────────────────────────────────────────────────────────────────────
 
 mava:ShapesPrefixes a owl:Ontology ;
