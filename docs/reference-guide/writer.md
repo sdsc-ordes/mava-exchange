@@ -133,7 +133,7 @@ The field survives the import–export cycle: `MediaPackageReader.track_def()`
 returns it unchanged, so an importer can route each series back to the right
 model. A package that passes through several tools carries one entry per tool.
 Each tool may add or update its own entry, but must leave other tools’ entries
-unchanged. See the [the tutorial](../tutorial/getting-started.md) for the full
+unchanged. See the [tutorial](../tutorial/getting-started.md) for the full
 example.
 
 ## What Gets Written
